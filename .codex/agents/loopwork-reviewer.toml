@@ -1,0 +1,3 @@
+name = "loopwork-reviewer"
+description = "Loopwork 只读判卷员：两段式审查（合规+质量），只看不改"
+sandbox_mode = "read-only"

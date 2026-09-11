@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "stage": "0",
+  "phase": "test-writing",
+  "cycle": 1,
+  "project_name": "Learning English in Singapore",
+  "round_count": 0,
+  "round_cap": 20,
+  "batch_size": 5,
+  "last_round_commit": "",
+  "milestones": [],
+  "env": {"node": "v24.15.0", "python3": "3.9.6"}
+}
