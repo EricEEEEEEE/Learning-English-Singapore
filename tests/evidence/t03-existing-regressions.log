@@ -1,0 +1,556 @@
+
+> test
+> playwright test --config playwright.config.mjs t01-local-entry.spec.mjs t02-language-login.spec.mjs t02-boundaries.spec.mjs
+
+[WebServer] (node:20348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 57 tests using 1 worker
+
+(node:20349) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [small-phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (287ms)
+  ✓   2 [small-phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (223ms)
+  ✓   3 [small-phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (227ms)
+  ✓   4 [small-phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (192ms)
+  ✘   5 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (5.6s)
+(node:20834) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (5.7s)
+(node:22475) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (5.7s)
+(node:22690) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (5.7s)
+(node:22714) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 [small-phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (459ms)
+  ✓  10 [small-phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (287ms)
+  ✓  11 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (472ms)
+  ✓  12 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (516ms)
+  ✓  13 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (489ms)
+  ✓  14 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (504ms)
+  ✓  15 [small-phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (374ms)
+  ✓  16 [small-phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (484ms)
+  ✓  17 [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (234ms)
+  ✓  18 [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (245ms)
+  ✓  19 [small-phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (296ms)
+(node:22757) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  20 [phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (282ms)
+  ✓  21 [phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (225ms)
+  ✓  22 [phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (234ms)
+  ✓  23 [phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (222ms)
+  ✘  24 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (5.6s)
+(node:23991) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  25 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (5.7s)
+(node:24446) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  26 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (5.7s)
+(node:26058) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  27 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (5.7s)
+(node:26072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  28 [phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (478ms)
+  ✓  29 [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (288ms)
+  ✓  30 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (508ms)
+  ✓  31 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (535ms)
+  ✓  32 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (478ms)
+  ✓  33 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (481ms)
+  ✓  34 [phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (362ms)
+  ✓  35 [phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (483ms)
+  ✓  36 [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (247ms)
+  ✓  37 [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (246ms)
+  ✓  38 [phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (296ms)
+(node:26316) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  39 [desktop] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (288ms)
+  ✓  40 [desktop] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (234ms)
+  ✓  41 [desktop] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (239ms)
+  ✓  42 [desktop] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (216ms)
+  ✘  43 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (5.6s)
+(node:27160) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  44 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (5.7s)
+(node:28176) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  45 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (5.7s)
+(node:28990) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  46 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (5.7s)
+(node:29800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  47 [desktop] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (470ms)
+  ✓  48 [desktop] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (291ms)
+  ✓  49 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (502ms)
+  ✓  50 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (541ms)
+  ✓  51 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (473ms)
+  ✓  52 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (468ms)
+  ✓  53 [desktop] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (391ms)
+  ✓  54 [desktop] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (485ms)
+  ✓  55 [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (240ms)
+  ✓  56 [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (237ms)
+  ✓  57 [desktop] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (317ms)
+
+
+  1) [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-ac253--survives-a-language-change-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-2db6d--survives-a-language-change-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-9ed82--survives-a-language-change-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change 
+
+    Error: expect(page).toHaveTitle(expected) failed
+
+    Expected pattern: /start by listening/
+    Received string:  "Learning English in Singapore · 从听懂开始"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveTitle" with timeout 5000ms
+        14 × locator resolved to <html lang="en">…</html>
+           - unexpected value "Learning English in Singapore · 从听懂开始"
+
+
+      37 |     await page.getByRole('button', { name: /^English/ }).tap();
+      38 |     await page.reload();
+    > 39 |     await expect(page).toHaveTitle(/start by listening/);
+         |                        ^
+      40 |     await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
+      41 |     await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
+      42 |     await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-boundaries.spec.mjs:39:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t02-boundaries-T02-bou-a4750--survives-a-language-change-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12 failed
+    [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change 
+    [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change 
+    [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change 
+    [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change 
+    [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change 
+    [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change 
+    [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change 
+    [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change 
+    [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change 
+    [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change 
+    [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change 
+    [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change 
+  45 passed (1.5m)

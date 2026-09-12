@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url));
 
 export default defineConfig({
-  testDir: './e2e',
+  testDir: '.',
   outputDir: '../test-results',
   forbidOnly: true,
   retries: 0,
@@ -20,9 +20,10 @@ export default defineConfig({
     screenshot: 'only-on-failure',
   },
   projects: [
-    { name: 'small-phone', use: { viewport: { width: 320, height: 740 }, hasTouch: true } },
-    { name: 'phone', use: { viewport: { width: 390, height: 844 }, hasTouch: true } },
-    { name: 'desktop', use: { viewport: { width: 1280, height: 800 } } },
+    { name: 'small-phone', testMatch: 'e2e/*.spec.mjs', use: { viewport: { width: 320, height: 740 }, hasTouch: true } },
+    { name: 'phone', testMatch: 'e2e/*.spec.mjs', use: { viewport: { width: 390, height: 844 }, hasTouch: true } },
+    { name: 'desktop', testMatch: 'e2e/*.spec.mjs', use: { viewport: { width: 1280, height: 800 } } },
+    { name: 'domain', testMatch: 'domain/*.spec.mjs' },
   ],
   webServer: {
     command: 'npm run start -- --hostname 127.0.0.1 --port 3210',

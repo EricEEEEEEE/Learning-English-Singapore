@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
-  "round_count": 1,
+  "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "e00a874ecc09fa4dff66f6bc6f04bd75cbe3fcf3",
+  "last_round_commit": "64c8ad4baa6a89d6bd4617a02665ecc789932272",
   "milestones": [
     "T01"
   ],
@@ -15,15 +15,15 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-12T11:35:41+08:00",
+  "last_session": "2026-09-12T11:48:04+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 28911,
-  "blocks_seen": 73,
-  "red_commit_pending": true,
+  "audit_bytes": 43846,
+  "blocks_seen": 96,
+  "red_commit_pending": false,
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T02 先选辅助语言再看两个简单登录入口"
+    "kind": "red",
+    "msg": "存档: T03 红考题"
   }
 }

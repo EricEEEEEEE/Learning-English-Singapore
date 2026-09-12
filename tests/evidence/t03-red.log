@@ -1,0 +1,77 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=phone --project=domain --grep separate demo entry|core and optional paths
+
+[WebServer] (node:10181) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:10182) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (20.1s)
+(node:10203) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [domain] › domain/t03-onboarding-state.spec.mjs:18:1 › T03: core and optional paths have separate hard caps and unique question identities (1ms)
+
+
+  1) [phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone 
+
+    Test timeout of 20000ms exceeded.
+
+    Error: locator.tap: Test timeout of 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '预览逐题引导', exact: true })
+
+
+      35 | async function enter(page) {
+      36 |   await page.getByRole('button', { name: /^简体中文/ }).tap();
+    > 37 |   await page.getByRole('button', { name: '预览逐题引导', exact: true }).tap();
+         |                                                                   ^
+      38 |   await expect(current(page)).toBeVisible();
+      39 | }
+      40 | async function goToListening(page) {
+        at enter (/Users/eric/projects/Learning English  Singapore/tests/e2e/t03-onboarding.spec.mjs:37:67)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t03-onboarding.spec.mjs:63:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t03-onboarding-T03-F2--d3be1-without-login-or-microphone-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t03-onboarding-T03-F2--d3be1-without-login-or-microphone-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t03-onboarding-T03-F2--d3be1-without-login-or-microphone-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t03-onboarding-T03-F2--d3be1-without-login-or-microphone-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [domain] › domain/t03-onboarding-state.spec.mjs:18:1 › T03: core and optional paths have separate hard caps and unique question identities 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/onboarding.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t03-onboarding-state.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 |
+    > 3 | const loadFlow = () => import('../../lib/onboarding.ts');
+        |                        ^
+      4 | const answer = (flow, state, choiceId = null, response = 'unknown') => flow.applyOnboardingEvent(state, {
+      5 |   type: 'answer', questionId: flow.getCurrentQuestion(state).id, choiceId, response,
+      6 | });
+        at loadFlow (/Users/eric/projects/Learning English  Singapore/tests/domain/t03-onboarding-state.spec.mjs:3:24)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t03-onboarding-state.spec.mjs:19:22
+
+    Error Context: ../test-results/domain-t03-onboarding-stat-6962c--unique-question-identities-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t03-onboarding-stat-6962c--unique-question-identities-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t03-onboarding-stat-6962c--unique-question-identities-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone 
+    [domain] › domain/t03-onboarding-state.spec.mjs:18:1 › T03: core and optional paths have separate hard caps and unique question identities 
