@@ -1,0 +1,13 @@
+{
+  "app/demo-notice.tsx": "0efa8bf21a7e05749b635bd1a683e6f892cbbca95c4e4b259b46bbe1f3ad4f42",
+  "app/entry-copy.ts": "8cd761019f11a58b8628795401e8f13d94ba3f3311df03378ad4b1fc95cbeb5f",
+  "app/entry.tsx": "33557167e81279a8722497e6456ca487c01b2d20cda55aa18717fc284e95491a",
+  "app/globals.css": "10cd8dd59b980a36584c2896a3d3a5a887ab2a547ed3cca039377aa72aa0f2d4",
+  "app/guide-copy.ts": "98bb54245c9d773c091158d2563ae9afe78a87a2cc0c62fa42c8c8f7b5fdac5e",
+  "app/guide-icons.tsx": "c56470421808700b8ed0198f445c117df5fbb0466c203a6c7dd7ecdca8a8caad",
+  "app/icon.svg": "48e2a9a6bb0f4b9d2f33df7016d6cb6e6f3fd64df0f2d82615f1994247ac751f",
+  "app/layout.tsx": "cd6f87b1623ad89ab149fce7a46e4f2e0b974f90bd31fa7f5357086a19bb80df",
+  "app/onboarding.tsx": "b12363668ea1d0d7db45627bac4e7af96e2749bdd68a8d94cb4eb522ee45c24a",
+  "app/page.tsx": "94fb2706305a33adbfa393a0e171aea1b8a2432c14824dc4a5f35221caa21e69",
+  "lib/onboarding.ts": "f86a1b5b253e3c68b3a4f6ae3daedf8e029ff3ef345597733b728c151238dc89"
+}

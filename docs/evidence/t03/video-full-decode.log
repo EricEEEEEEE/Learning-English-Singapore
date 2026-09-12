@@ -1,0 +1,39 @@
+[libvpx @ 0xa09040000] v1.14.1
+Input #0, matroska,webm, from '/Users/eric/projects/Learning English  Singapore/docs/evidence/t03/walkthrough-phone.webm':
+  Metadata:
+    creation_time   : 2026-09-12T04:02:10.438000Z
+    ENCODER         : Lavf61.1.100
+  Duration: 00:00:07.60, start: 0.000000, bitrate: 478 kb/s
+  Stream #0:0(eng): Video: vp8 (libvpx), yuv420p(tv, progressive), 390x844, SAR 1:1 DAR 195:422, 25 fps, 25 tbr, 1k tbn (default)
+      Metadata:
+        ENCODER         : Lavc61.3.100 libvpx
+        DURATION        : 00:00:07.600000000
+[libvpx @ 0xa09040700] v1.14.1
+Stream mapping:
+  Stream #0:0 -> #0:0 (vp8 (libvpx) -> png (native))
+Press [q] to stop, [?] for help
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09910000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09920000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09930000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09998000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa099a8000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa099d0000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa099f8000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a08000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a18000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a28000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a38000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a48000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a58000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09a68000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09ad0000] No accelerated colorspace conversion found from yuv420p to rgb24.
+[swscaler @ 0xa097e8000] [swscaler @ 0xa09ae0000] No accelerated colorspace conversion found from yuv420p to rgb24.
+Output #0, image2, to '/Users/eric/projects/Learning English  Singapore/tmp/t03-decoded-frames/frame-%03d.png':
+  Metadata:
+    encoder         : Lavf61.1.100
+  Stream #0:0(eng): Video: png, rgb24(pc, gbr/unknown/unknown, progressive), 390x844 [SAR 1:1 DAR 195:422], q=2-31, 200 kb/s, 25 fps, 25 tbn (default)
+      Metadata:
+        DURATION        : 00:00:07.600000000
+        encoder         : Lavc61.3.100 png
+[out#0/image2 @ 0xa08c20240] video:18691KiB audio:0KiB subtitle:0KiB other streams:0KiB global headers:0KiB muxing overhead: unknown
+frame=  190 fps=0.0 q=-0.0 Lsize=N/A time=00:00:07.60 bitrate=N/A speed=61.7x    

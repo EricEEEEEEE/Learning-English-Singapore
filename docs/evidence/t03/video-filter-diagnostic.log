@@ -1,0 +1,16 @@
+[libvpx @ 0x871020000] v1.14.1
+Input #0, matroska,webm, from 'docs/evidence/t03/walkthrough-phone.webm':
+  Metadata:
+    creation_time   : 2026-09-12T04:02:10.438000Z
+    ENCODER         : Lavf61.1.100
+  Duration: 00:00:07.60, start: 0.000000, bitrate: 478 kb/s
+  Stream #0:0(eng): Video: vp8 (libvpx), yuv420p(tv, progressive), 390x844, SAR 1:1 DAR 195:422, 25 fps, 25 tbr, 1k tbn (default)
+      Metadata:
+        ENCODER         : Lavc61.3.100 libvpx
+        DURATION        : 00:00:07.600000000
+[AVFilterGraph @ 0x870c08b60] No option name near '1/5'
+[AVFilterGraph @ 0x870c08b60] Error parsing a filter description around: 
+[AVFilterGraph @ 0x870c08b60] Error parsing filterchain 'fps=1/5' around: 
+[vost#0:0/png @ 0x870c60000] Error initializing a simple filtergraph
+Error opening output file docs/evidence/t03/video-frame-%02d.png.
+Error opening output files: Invalid argument

@@ -1,0 +1,155 @@
+[verify] tests/run.sh（超时上限 300s）
+
+> learning-english-singapore@0.1.0 typecheck
+> NEXT_TELEMETRY_DISABLED=1 next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+> learning-english-singapore@0.1.0 build
+> NEXT_TELEMETRY_DISABLED=1 next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 11ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 159ms
+  Running TypeScript ...
+  Finished TypeScript in 583ms ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/4) ...
+  Generating static pages using 5 workers (1/4) 
+  Generating static pages using 5 workers (2/4) 
+  Generating static pages using 5 workers (3/4) 
+✓ Generating static pages using 5 workers (4/4) in 161ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ○ /icon.svg
+
+
+○  (Static)  prerendered as static content
+
+
+> test
+> playwright test --config playwright.config.mjs
+
+[WebServer] (node:51289) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 102 tests using 1 worker
+
+(node:51290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    1 [small-phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (279ms)
+  ✓    2 [small-phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (244ms)
+  ✓    3 [small-phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (237ms)
+  ✓    4 [small-phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (201ms)
+  ✓    5 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (660ms)
+  ✓    6 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (665ms)
+  ✓    7 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (699ms)
+  ✓    8 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (663ms)
+  ✓    9 [small-phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (398ms)
+  ✓   10 [small-phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (257ms)
+  ✓   11 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (477ms)
+  ✓   12 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (516ms)
+  ✓   13 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (458ms)
+  ✓   14 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (496ms)
+  ✓   15 [small-phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (361ms)
+  ✓   16 [small-phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (463ms)
+  ✓   17 [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (247ms)
+  ✓   18 [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (230ms)
+  ✓   19 [small-phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (311ms)
+  ✓   20 [small-phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (425ms)
+  ✓   21 [small-phone] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown (1.0s)
+  ✓   22 [small-phone] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap (1.2s)
+  ✓   23 [small-phone] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice (550ms)
+  ✓   24 [small-phone] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh (1.2s)
+  ✓   25 [small-phone] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure (365ms)
+  ✓   26 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   27 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   28 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   29 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   30 [small-phone] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice (514ms)
+  ✓   31 [small-phone] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh (811ms)
+  ✓   32 [small-phone] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow (432ms)
+(node:54143) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   33 [phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (290ms)
+  ✓   34 [phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (230ms)
+  ✓   35 [phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (233ms)
+  ✓   36 [phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (220ms)
+  ✓   37 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (644ms)
+  ✓   38 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (654ms)
+  ✓   39 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (654ms)
+  ✓   40 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (651ms)
+  ✓   41 [phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (382ms)
+  ✓   42 [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (264ms)
+  ✓   43 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (482ms)
+  ✓   44 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (549ms)
+  ✓   45 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (500ms)
+  ✓   46 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (484ms)
+  ✓   47 [phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (374ms)
+  ✓   48 [phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (487ms)
+  ✓   49 [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (247ms)
+  ✓   50 [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (232ms)
+  ✓   51 [phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (307ms)
+  ✓   52 [phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (426ms)
+  ✓   53 [phone] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown (976ms)
+  ✓   54 [phone] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap (1.2s)
+  ✓   55 [phone] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice (547ms)
+  ✓   56 [phone] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh (1.2s)
+  ✓   57 [phone] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure (366ms)
+  ✓   58 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   59 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   60 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   61 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   62 [phone] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice (519ms)
+  ✓   63 [phone] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh (810ms)
+  ✓   64 [phone] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow (420ms)
+(node:57561) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   65 [desktop] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (298ms)
+  ✓   66 [desktop] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (238ms)
+  ✓   67 [desktop] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (253ms)
+  ✓   68 [desktop] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (214ms)
+  ✓   69 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (647ms)
+  ✓   70 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (670ms)
+  ✓   71 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (634ms)
+  ✓   72 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (643ms)
+  ✓   73 [desktop] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (390ms)
+  ✓   74 [desktop] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (296ms)
+  ✓   75 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (506ms)
+  ✓   76 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (559ms)
+  ✓   77 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (486ms)
+  ✓   78 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (521ms)
+  ✓   79 [desktop] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (369ms)
+  ✓   80 [desktop] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (487ms)
+  ✓   81 [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (255ms)
+  ✓   82 [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (251ms)
+  ✓   83 [desktop] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (307ms)
+  ✓   84 [desktop] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (416ms)
+  ✓   85 [desktop] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown (1.0s)
+  ✓   86 [desktop] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap (1.2s)
+  ✓   87 [desktop] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice (558ms)
+  ✓   88 [desktop] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh (1.2s)
+  ✓   89 [desktop] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure (370ms)
+  ✓   90 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   91 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   92 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   93 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   94 [desktop] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice (523ms)
+  ✓   95 [desktop] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh (812ms)
+  ✓   96 [desktop] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow (425ms)
+(node:60465) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   97 [domain] › domain/t03-onboarding-state.spec.mjs:18:1 › T03: core and optional paths have separate hard caps and unique question identities (80ms)
+  ✓   98 [domain] › domain/t03-onboarding-state.spec.mjs:48:3 › T03: first answer, replay and full-answer history survive back and changed answers (help first=true) (1ms)
+  ✓   99 [domain] › domain/t03-onboarding-state.spec.mjs:48:3 › T03: first answer, replay and full-answer history survive back and changed answers (help first=false) (1ms)
+  ✓  100 [domain] › domain/t03-onboarding-state.spec.mjs:85:1 › T03: failed playback, unknown and skipped responses stay separate and never become played answers (0ms)
+  ✓  101 [domain] › domain/t03-onboarding-state.spec.mjs:107:1 › T03: pause/finish ignore late question events and an early finish does not force the minimum core length (0ms)
+  ✓  102 [domain] › domain/t03-onboarding-state.spec.mjs:125:1 › T03: changing self-report changes content identities without erasing earlier support evidence (1ms)
+
+  102 passed (1.0m)

@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Learning English in Singapore · 从听懂开始',
   description: '面向新加坡成人新来者的英语学习流程演示。听优先，按自己的节奏练习。',
   robots: { index: false, follow: false },
 };

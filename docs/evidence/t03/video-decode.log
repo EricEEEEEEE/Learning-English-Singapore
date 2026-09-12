@@ -1,0 +1,14 @@
+[libvpx @ 0xc1f044000] v1.14.1
+Input #0, matroska,webm, from 'docs/evidence/t03/walkthrough-phone.webm':
+  Metadata:
+    creation_time   : 2026-09-12T04:02:10.438000Z
+    ENCODER         : Lavf61.1.100
+  Duration: 00:00:07.60, start: 0.000000, bitrate: 478 kb/s
+  Stream #0:0(eng): Video: vp8 (libvpx), yuv420p(tv, progressive), 390x844, SAR 1:1 DAR 195:422, 25 fps, 25 tbr, 1k tbn (default)
+      Metadata:
+        ENCODER         : Lavc61.3.100 libvpx
+        DURATION        : 00:00:07.600000000
+[AVFormatContext @ 0xc1ec18280] Requested output format 'null' is not known.
+[out#0 @ 0xc1ec0c3c0] Error initializing the muxer for pipe:: Invalid argument
+Error opening output file -.
+Error opening output files: Invalid argument

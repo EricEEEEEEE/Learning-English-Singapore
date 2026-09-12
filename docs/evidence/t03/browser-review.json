@@ -1,0 +1,136 @@
+{
+  "browser": "153.0.8010.36",
+  "emulation": true,
+  "layouts": [
+    {
+      "language": "zh-Hans",
+      "width": 320,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "id",
+      "width": 320,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "ja",
+      "width": 320,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "zh-Hans",
+      "width": 390,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "id",
+      "width": 390,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "ja",
+      "width": 390,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "zh-Hans",
+      "width": 1280,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "id",
+      "width": 1280,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "ja",
+      "width": 1280,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "firstQuestion": "pass",
+      "expandedListening": "pass",
+      "minimumTargets": "44x44",
+      "externalAndMediaCalls": 0
+    }
+  ],
+  "damagedSnapshots": [
+    {
+      "variant": "invalid-json",
+      "bytesUnchanged": true,
+      "temporaryFlowAndResume": "pass"
+    },
+    {
+      "variant": "null",
+      "bytesUnchanged": true,
+      "temporaryFlowAndResume": "pass"
+    },
+    {
+      "variant": "unsupported-record",
+      "bytesUnchanged": true,
+      "temporaryFlowAndResume": "pass"
+    }
+  ],
+  "recordingSteps": [
+    "Local entry",
+    "Two unconnected sign-in options and separate demo entry",
+    "One question, optional speaking and no real audio",
+    "Tab and Space answer the next question",
+    "Listening pictures and unavailable familiar-language audio help",
+    "Explicit simulated playback events, no sound",
+    "Changed choice, replay and support survive refresh",
+    "Paused position survives refresh",
+    "Early finish: listening unknown and speaking unobserved"
+  ],
+  "video": {
+    "file": "walkthrough-phone.webm",
+    "bytes": 454574,
+    "sound": "none; no media capabilities were called",
+    "operator": "assistant via Playwright; not a human usability study"
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "task": "T03",
+  "status": "verified and independently reviewed; green archive awaiting real Stop receipt",
+  "red_archive": "cee8b9556c294abd276a82720436a4b0862f0c60",
+  "green_archive": null,
+  "environment": {
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "chrome": "153.0.8010.36",
+    "browser_emulation": true,
+    "viewports": [
+      "320x740",
+      "390x844",
+      "1280x800"
+    ]
+  },
+  "automated": {
+    "command": "bash .loopwork/hooks/verify.sh",
+    "expected": 102,
+    "passed": 102,
+    "failed": 0,
+    "browser": 96,
+    "domain": 6,
+    "exit_code": 0,
+    "initial_log": "verify-initial.log",
+    "independent_exit_code": 0,
+    "independent_log": "independent-verify.log",
+    "scope": "original T01/T02 42 + T02 boundaries 15 + T03 browser 39 + T03 state 6"
+  },
+  "supplementary": {
+    "exit_code": 0,
+    "large_text_language_viewports": {
+      "expected": 12,
+      "passed": 12
+    },
+    "damaged_snapshot_preservation": {
+      "expected": 3,
+      "passed": 3
+    },
+    "evidence": "browser-review.json",
+    "source": "browser-review-source.mjs.txt",
+    "source_reproduction": "Copy unchanged probe to tmp/t03-browser-review.mjs, start the built app at 127.0.0.1:3000, then run node tmp/t03-browser-review.mjs. This probe is supplementary evidence, outside the frozen test suite.",
+    "recording": "walkthrough-phone.webm",
+    "recording_validation": "video-check.json"
+  },
+  "acceptance": [
+    {
+      "id": "F2.1",
+      "scope": "prototype",
+      "evidence": "One question at a time in four experimental support languages, 2–4 icon choices; no countdown, scoring, reading-aloud or microphone gate."
+    },
+    {
+      "id": "F2.2",
+      "scope": "prototype",
+      "evidence": "12 core questions: 5 preferences and 7 listening-picture placeholders; at most 4 optional questions with a separate counter; unknown, skip and early finish available."
+    },
+    {
+      "id": "F2.3",
+      "scope": "T03 state contract only",
+      "evidence": "First response, current response, prompt/replay/support/device-failure history survives back, reanswer and reload. Duplicate events do not create additional question identities. Actual placement rules belong to T04."
+    },
+    {
+      "id": "F5.2",
+      "scope": "prototype",
+      "evidence": "Familiar-language instruction/help controls are visibly unavailable; explicit simulated playback events preserve first-choice support and answer-exposure history. No audio capability called."
+    },
+    {
+      "id": "F13.1",
+      "scope": "prototype",
+      "evidence": "Three viewport widths, four languages, large text, native icons, 44px controls, keyboard and touch emulation; screenshots and interaction recording."
+    }
+  ],
+  "review_changes": [
+    "Damaged onboarding snapshots remain byte-for-byte unchanged during a temporary preview; four-language notice explains that new choices are not saved.",
+    "T02 English refresh title regression fixed using one localized React title. All 12 previously failing title-boundary cases pass."
+  ],
+  "independent_review": {
+    "agent": "t01_review",
+    "result": "pass, T03 local prototype only",
+    "outstanding_blockers": 0,
+    "evidence": "review.md"
+  },
+  "frozen_files": "No diff from red archive in tests/, spec.md, rules.md, .loopwork/hooks/ or .codex/.",
+  "source_hashes": "source-sha256.json",
+  "limits": [
+    "All onboarding responses remain simulation with eligibleForAssessment=false; real listening/speaking ability was not assessed.",
+    "No real OAuth, paid product API, audio/video generation, microphone use or publishing.",
+    "Four-language copy and question content await native-speaker/content review; physical phones, screen readers and adult usability studies remain untested.",
+    "Damaged-snapshot checks are supplementary; promote them into frozen regression tests during T04 test-writing.",
+    "The recorded path is automated Playwright interaction, not a human study. Primary agent inspected sampled frames; independent reviewer inspected screenshots but did not watch the full video."
+  ]
+}

@@ -1,8 +1,8 @@
 {
   "task": "T02",
-  "status": "verified and independently reviewed; awaiting real green archive receipt",
+  "status": "verified, independently reviewed and archived with a real Stop receipt",
   "red_archive": "e00a874ecc09fa4dff66f6bc6f04bd75cbe3fcf3",
-  "green_archive": "pending Stop receipt; do not count as archived",
+  "green_archive": "64c8ad4baa6a89d6bd4617a02665ecc789932272",
   "environment": {
     "node": "24.15.0",
     "npm": "11.12.1",
@@ -87,5 +87,12 @@
     "result": "pass, T02 prototype only",
     "evidence": "review.md",
     "outstanding_blockers": 0
+  },
+  "follow_up": {
+    "task": "T03",
+    "new_regression": "After switching to English and reloading, the title reverted to Chinese while the page stayed English.",
+    "red_archive": "cee8b9556c294abd276a82720436a4b0862f0c60",
+    "fix_verification": "T03 final independent verify: 102/102, exit 0, ../t03/independent-verify.log",
+    "fix_archive": "awaiting T03 real green receipt"
   }
 }

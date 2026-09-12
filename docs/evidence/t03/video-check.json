@@ -1,0 +1,24 @@
+{
+  "exitCode": 0,
+  "decodedFrames": 190,
+  "codec": "VP8",
+  "dimensions": "390x844",
+  "durationSeconds": 7.6,
+  "sourceSha256": "ec454f0a9ae401e7d1bbe0d17eebf45f7e300234a967d4b3e6f49fe20d0ed422",
+  "sampledFrames": [
+    {
+      "file": "video-frame-01.png",
+      "atSeconds": 2.5
+    },
+    {
+      "file": "video-frame-02.png",
+      "atSeconds": 4.5
+    },
+    {
+      "file": "video-frame-03.png",
+      "atSeconds": 6.8
+    }
+  ],
+  "visualReview": "Assistant inspected extracted frames and browser screenshots; independent reviewer inspected screenshots, not full playback.",
+  "toolDiagnostics": "Earlier fps filter and null muxer attempts failed because bundled FFmpeg lacks them. Successful complete decoding used supported image2 output; original failure logs retained."
+}

@@ -1,0 +1,148 @@
+import { createRequire } from 'node:module';
+import { mkdir, writeFile, stat } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { guideCopy, optionText } from '../app/guide-copy.ts';
+import { languageChoices, entryCopy } from '../app/entry-copy.ts';
+const require = createRequire(import.meta.url);
+const { chromium, expect } = require('../tests/node_modules/@playwright/test');
+const out = fileURLToPath(new URL('../docs/evidence/t03/', import.meta.url));
+const rawVideo = fileURLToPath(new URL('./t03-recordings/', import.meta.url));
+await mkdir(out, { recursive: true });
+await mkdir(rawVideo, { recursive: true });
+const browser = await chromium.launch({ channel: 'chrome' });
+const report = { browser: browser.version(), emulation: true, layouts: [], damagedSnapshots: [], recordingSteps: [] };
+async function checkedPage(context) {
+  const problems = [];
+  await context.route('**/*', async route => {
+    if (new URL(route.request().url()).origin === 'http://127.0.0.1:3000') return route.continue();
+    problems.push('external HTTP'); await route.abort();
+  });
+  await context.routeWebSocket('**/*', route => { problems.push('WebSocket'); route.close(); });
+  await context.addInitScript(() => {
+    window.__reviewMedia = [];
+    HTMLMediaElement.prototype.play = () => { window.__reviewMedia.push('media'); return Promise.resolve(); };
+    if (window.speechSynthesis) window.speechSynthesis.speak = () => window.__reviewMedia.push('tts');
+    if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = async () => { window.__reviewMedia.push('microphone'); throw new Error('No microphone expected'); };
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => problems.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') problems.push(message.text()); });
+  await page.goto('http://127.0.0.1:3000');
+  return { page, assertClean: async () => { expect(problems).toEqual([]); expect(await page.evaluate(() => window.__reviewMedia)).toEqual([]); } };
+}
+async function fits(page) {
+  const width = page.viewportSize().width;
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  for (const control of await page.locator('button:visible, summary:visible').all()) {
+    const box = await control.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+    await expect(control).toHaveAccessibleName(/\S/);
+  }
+}
+try {
+  for (const width of [320, 390, 1280]) for (const language of languageChoices) {
+    const context = await browser.newContext({ viewport: { width, height: 844 }, hasTouch: true });
+    const { page, assertClean } = await checkedPage(context);
+    const copy = guideCopy(language.code);
+    const entry = entryCopy[language.code];
+    await page.getByRole('button', { name: new RegExp(`^${language.name}`) }).tap();
+    await page.getByRole('button', { name: entry.settings, exact: true }).tap();
+    await page.getByRole('checkbox', { name: entry.large, exact: true }).check();
+    await page.getByRole('button', { name: copy.entry, exact: true }).tap();
+    await fits(page);
+    await page.screenshot({ path: `${out}large-first-${language.code}-${width}.png`, fullPage: true });
+    await page.getByRole('button', { name: optionText('new', language.code), exact: true }).tap();
+    for (let step = 0; step < 4; step += 1) await page.getByRole('button', { name: copy.unknown, exact: true }).tap();
+    await page.getByRole('button', { name: copy.help, exact: true }).tap();
+    await page.getByText(copy.simulationControls, { exact: true }).tap();
+    await page.getByRole('button', { name: copy.promptEnded, exact: true }).tap();
+    await page.getByRole('button', { name: copy.promptEnded, exact: true }).tap();
+    await fits(page);
+    await page.screenshot({ path: `${out}large-listening-${language.code}-${width}.png`, fullPage: true });
+    await assertClean();
+    report.layouts.push({ language: language.code, width, firstQuestion: 'pass', expandedListening: 'pass', minimumTargets: '44x44', externalAndMediaCalls: 0 });
+    await context.close();
+  }
+
+  for (const variant of ['invalid-json', 'null', 'unsupported-record']) {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true });
+    const { page, assertClean } = await checkedPage(context);
+    const copy = guideCopy('zh-Hans');
+    await page.getByRole('button', { name: /^简体中文/ }).tap();
+    await page.getByRole('button', { name: copy.entry, exact: true }).tap();
+    await page.getByRole('button', { name: '几乎不会英语', exact: true }).tap();
+    const key = await page.evaluate(() => Object.keys(localStorage).find(key => key.includes('onboarding')));
+    const original = await page.evaluate(key => localStorage.getItem(key), key);
+    const damaged = variant === 'invalid-json' ? original.slice(0, -1) : variant === 'null' ? 'null' : JSON.stringify({ ...JSON.parse(original), records: { ...JSON.parse(original).records, recoverableOldQuestion: { response: 'choice', note: 'synthetic record to preserve' } } });
+    await page.evaluate(({ key, damaged }) => localStorage.setItem(key, damaged), { key, damaged });
+    await page.reload();
+    await expect(page.getByRole('main')).toContainText(copy.readError);
+    await page.getByRole('button', { name: copy.entry, exact: true }).tap();
+    await page.getByRole('button', { name: '几乎不会英语', exact: true }).tap();
+    await page.getByRole('button', { name: copy.pause, exact: true }).tap();
+    await page.getByRole('button', { name: copy.resume, exact: true }).tap();
+    await expect(page.getByRole('article', { name: copy.article, exact: true })).toContainText('第 2 / 12 题');
+    expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(damaged);
+    await assertClean();
+    report.damagedSnapshots.push({ variant, bytesUnchanged: true, temporaryFlowAndResume: 'pass' });
+    await context.close();
+  }
+
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, recordVideo: { dir: rawVideo, size: { width: 390, height: 844 } } });
+  const { page, assertClean } = await checkedPage(context);
+  const copy = guideCopy('zh-Hans');
+  const article = page.getByRole('article', { name: copy.article, exact: true });
+  const options = () => article.getByRole('group', { name: copy.answerChoices, exact: true }).getByRole('button');
+  // These pauses set the viewing cadence of the recording; state waits use assertions.
+  const show = async label => { report.recordingSteps.push(label); await page.waitForTimeout(700); };
+  await show('Local entry');
+  await page.getByRole('button', { name: /^简体中文/ }).tap();
+  await show('Two unconnected sign-in options and separate demo entry');
+  await page.getByRole('button', { name: copy.entry, exact: true }).tap();
+  await show('One question, optional speaking and no real audio');
+  await page.getByRole('button', { name: '几乎不会英语', exact: true }).tap();
+  await page.keyboard.press('Tab');
+  await expect(options().first()).toBeFocused();
+  await page.keyboard.press('Space');
+  await show('Tab and Space answer the next question');
+  for (let step = 0; step < 3; step += 1) await page.getByRole('button', { name: copy.unknown, exact: true }).tap();
+  await page.getByRole('button', { name: copy.help, exact: true }).tap();
+  await show('Listening pictures and unavailable familiar-language audio help');
+  await page.getByText(copy.simulationControls, { exact: true }).tap();
+  await page.getByRole('button', { name: copy.promptEnded, exact: true }).tap();
+  await page.getByRole('button', { name: copy.promptEnded, exact: true }).tap();
+  await show('Explicit simulated playback events, no sound');
+  await options().first().tap();
+  await page.getByRole('button', { name: copy.back, exact: true }).tap();
+  await page.getByText(copy.simulationControls, { exact: true }).tap();
+  await page.getByRole('button', { name: copy.answerEnded, exact: true }).tap();
+  await options().nth(1).tap();
+  await page.getByRole('button', { name: copy.back, exact: true }).tap();
+  await page.reload();
+  await expect(article).toContainText('已重听 1 次（模拟）');
+  await expect(article).toContainText(copy.answerShown);
+  await expect(options().nth(1)).toHaveAttribute('aria-pressed', 'true');
+  await show('Changed choice, replay and support survive refresh');
+  await page.getByRole('button', { name: copy.pause, exact: true }).tap();
+  await page.reload();
+  await expect(page.getByRole('heading', { name: copy.paused, exact: true })).toBeVisible();
+  await show('Paused position survives refresh');
+  await page.getByRole('button', { name: copy.resume, exact: true }).tap();
+  await expect(article).toContainText(copy.answerShown);
+  await page.getByRole('button', { name: copy.finish, exact: true }).tap();
+  await expect(page.getByRole('main')).toContainText(copy.unknownResult);
+  await show('Early finish: listening unknown and speaking unobserved');
+  await page.screenshot({ path: `${out}early-finish-phone.png`, fullPage: true });
+  await assertClean();
+  const video = page.video();
+  await context.close();
+  await video.saveAs(`${out}walkthrough-phone.webm`);
+  report.video = { file: 'walkthrough-phone.webm', bytes: (await stat(`${out}walkthrough-phone.webm`)).size, sound: 'none; no media capabilities were called', operator: 'assistant via Playwright; not a human usability study' };
+  await writeFile(`${out}browser-review.json`, JSON.stringify(report, null, 2) + '\n');
+  console.log('T03 supplementary: 12 layout paths, 3 damaged-snapshot preservation cases, and recorded interaction path passed');
+} finally {
+  await browser.close();
+}
