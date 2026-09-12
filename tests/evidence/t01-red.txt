@@ -1,0 +1,27 @@
+T01 red evidence — 2026-09-12
+
+Application baseline: 46c2e01c17c6838105eea3f4f55b806d3436be7f
+Runtime: Node v24.15.0 / npm 11.12.1
+Test runner: @playwright/test 1.63.0 (tests/package-lock.json)
+
+$ npm --prefix tests run list
+Total: 12 tests in 1 file
+exit 0
+
+$ bash .loopwork/hooks/verify.sh
+[verify] tests/run.sh（超时上限 300s）
+[verify] ❌ 不通过 (exit 254)
+npm error code ENOENT
+npm error syscall open
+npm error path /Users/eric/projects/Learning English  Singapore/package.json
+npm error errno -2
+npm error enoent Could not read package.json: ENOENT
+exit 254
+
+Interpretation: the application and its typecheck/build/start commands do not
+exist yet. Verification fails at the first application prerequisite. The 12
+browser cases were collected, but their UI assertions have not executed.
+This is not a claim of 12 assertion failures or a passing functional check.
+
+Full local log: .loopwork/logs/verify-20260912-110407.log
+No application implementation, provider calls or OAuth connection in this round.

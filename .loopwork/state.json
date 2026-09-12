@@ -1,24 +1,26 @@
 {
   "schema": 1,
-  "stage": "0",
+  "stage": "4",
   "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 0,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "",
+  "last_round_commit": "46c2e01c17c6838105eea3f4f55b806d3436be7f",
   "milestones": [],
   "env": {
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-12T10:56:16+08:00",
+  "last_session": "2026-09-12T11:04:38+08:00",
   "authorized_batch": "B1",
-  "setup_status": "hooks_trusted_pending_receipt",
-  "hook_runtime_status": "definitions_active_lifecycle_unverified",
+  "setup_status": "note_receipt_verified",
+  "hook_runtime_status": "posttooluse_stop_verified",
+  "audit_bytes": 1899,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: 初始化核验与B1授权记录"
-  }
+    "kind": "red",
+    "msg": "存档: T01 红考题"
+  },
+  "blocks_seen": 1
 }

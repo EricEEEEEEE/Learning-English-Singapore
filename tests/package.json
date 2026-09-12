@@ -1,0 +1,12 @@
+{
+  "name": "learning-english-singapore-tests",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test --config playwright.config.mjs",
+    "list": "playwright test --config playwright.config.mjs --list"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}
