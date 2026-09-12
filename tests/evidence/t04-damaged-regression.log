@@ -1,0 +1,26 @@
+
+> test
+> playwright test --config playwright.config.mjs e2e/t04-profile.spec.mjs --grep T04 regression: damaged onboarding
+
+[WebServer] (node:36493) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:36494) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [small-phone] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes (747ms)
+  ✓  2 [small-phone] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes (635ms)
+  ✓  3 [small-phone] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes (596ms)
+(node:36514) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [phone] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes (726ms)
+  ✓  5 [phone] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes (646ms)
+  ✓  6 [phone] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes (599ms)
+(node:36532) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  7 [desktop] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes (720ms)
+  ✓  8 [desktop] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes (652ms)
+  ✓  9 [desktop] › e2e/t04-profile.spec.mjs:185:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes (605ms)
+
+  9 passed (7.5s)

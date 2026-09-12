@@ -1,0 +1,79 @@
+[
+  {
+    "name": "t04-domain-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t04-placement.spec.mjs"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t04-domain-red.log"
+  },
+  {
+    "name": "t04-ui-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=phone",
+      "e2e/t04-profile.spec.mjs",
+      "--grep",
+      "T04 / F2.3,F2.4: zh-Hans"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t04-ui-red.log"
+  },
+  {
+    "name": "t04-damaged-regression",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "e2e/t04-profile.spec.mjs",
+      "--grep",
+      "T04 regression: damaged onboarding"
+    ],
+    "exit_code": 0,
+    "log": ".loopwork/logs/t04-damaged-regression.log"
+  },
+  {
+    "name": "t04-domain-red-reviewed",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t04-placement.spec.mjs",
+      "--grep",
+      "requires every preceding band|four-question budget|unresolved conflict overrides|study adjustments and feedback|new evidence updates"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t04-domain-red-reviewed.log"
+  },
+  {
+    "name": "t04-ui-red-reviewed",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=phone",
+      "e2e/t04-profile.spec.mjs",
+      "--grep",
+      "T04 / F2.3,F2.4: zh-Hans"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t04-ui-red-reviewed.log"
+  }
+]

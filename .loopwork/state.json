@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
-  "round_count": 2,
+  "round_count": 3,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "cee8b9556c294abd276a82720436a4b0862f0c60",
+  "last_round_commit": "2a1749086d613d96fc0f5b37d1760c64b270e83e",
   "milestones": [
     "T01"
   ],
@@ -15,15 +15,15 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-12T12:07:33+08:00",
+  "last_session": "2026-09-12T12:18:36+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 56531,
-  "blocks_seen": 138,
-  "red_commit_pending": true,
+  "audit_bytes": 74379,
+  "blocks_seen": 160,
+  "red_commit_pending": false,
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T03 逐题选择认识自己随时跳过和继续"
+    "kind": "red",
+    "msg": "存档: T04 红考题"
   }
 }

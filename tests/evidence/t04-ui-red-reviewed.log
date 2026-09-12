@@ -1,0 +1,54 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=phone e2e/t04-profile.spec.mjs --grep T04 / F2.3,F2.4: zh-Hans
+
+[WebServer] (node:45892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:45895) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support (5.5s)
+
+
+  1) [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('region', { name: '学习起点与帮助', exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('region', { name: '学习起点与帮助', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学习起点与帮助', exact: true })
+
+
+      57 |   await enter(page, language);
+      58 |   await page.getByRole('button', { name: language.finish, exact: true }).tap();
+    > 59 |   await expect(panel(page, language)).toBeVisible();
+         |                                       ^
+      60 | }
+      61 | async function fit(page) {
+      62 |   const width = page.viewportSize().width;
+        at finish (/Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:59:39)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:75:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 

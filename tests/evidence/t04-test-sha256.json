@@ -1,0 +1,5 @@
+{
+  "tests/domain/t04-placement.spec.mjs": "f33a6c5677067886588fc3d52052cc882538c3564846a7d49f9753ca400dacae",
+  "tests/e2e/t04-profile.spec.mjs": "3f0ceb442a9e5a05aedbe07f48e5e4e816fb1af741f5e95f7202c1c9771481aa",
+  "tests/evidence/t04-contract.md": "d4bdf9f522e7630ffcd57288a0ba930ca463e3b0792a6986aa42482f8789a63d"
+}

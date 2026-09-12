@@ -1,0 +1,793 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t04-placement.spec.mjs
+
+[WebServer] (node:36339) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:36340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [domain] › domain/t04-placement.spec.mjs:33:1 › T04: empty, all skipped and all unknown remain unknown, never measured L0 (1ms)
+(node:36342) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 [domain] › domain/t04-placement.spec.mjs:40:1 › T04: a lucky isolated L4 answer cannot bypass prerequisites or create speaking evidence (1ms)
+(node:36343) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   3 [domain] › domain/t04-placement.spec.mjs:49:1 › T04: L0 needs two attempted playable basic tasks still needing answer demonstration (1ms)
+(node:36344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   4 [domain] › domain/t04-placement.spec.mjs:58:1 › T04: two L1 topics suffice without L0 evidence; replays preserve independent success (1ms)
+(node:36345) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   5 [domain] › domain/t04-placement.spec.mjs:70:1 › T04: two questions in one topic and many tags are not two independent topics (1ms)
+(node:36346) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 [domain] › domain/t04-placement.spec.mjs:77:1 › T04: duplicate identity and changed topic labels cannot double-count or overwrite the first response (1ms)
+(node:36347) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: answer-before excludes answers from the valid denominator and higher-band success (1ms)
+(node:36348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: translation-before excludes answers from the valid denominator and higher-band success (1ms)
+(node:36357) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: device-failure excludes answers from the valid denominator and higher-band success (1ms)
+(node:36358) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  10 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: no-playback excludes answers from the valid denominator and higher-band success (1ms)
+(node:36363) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: simulation excludes answers from the valid denominator and higher-band success (1ms)
+(node:36368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: unreviewed excludes answers from the valid denominator and higher-band success (1ms)
+(node:36372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  13 [domain] › domain/t04-placement.spec.mjs:109:1 › T04: help after the first independent answer cannot erase it; a corrected later answer cannot manufacture it (1ms)
+(node:36374) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  14 [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L2 requires every preceding band, not only two successes at its own band (1ms)
+(node:36375) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  15 [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L3 requires every preceding band, not only two successes at its own band (1ms)
+(node:36376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  16 [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L4 requires every preceding band, not only two successes at its own band (1ms)
+(node:36377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  17 [domain] › domain/t04-placement.spec.mjs:128:1 › T04: L4 needs two different reviewed local voices across two topics, without requiring four cross-product samples (1ms)
+(node:36378) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [domain] › domain/t04-placement.spec.mjs:145:1 › T04: same task conflict requests one differently worded follow-up and keeps L2 unconfirmed (1ms)
+(node:36379) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  19 [domain] › domain/t04-placement.spec.mjs:153:3 › T04: incorrect follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 (1ms)
+(node:36380) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  20 [domain] › domain/t04-placement.spec.mjs:153:3 › T04: skipped follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 (1ms)
+(node:36381) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  21 [domain] › domain/t04-placement.spec.mjs:153:3 › T04: unknown follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 (1ms)
+(node:36382) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  22 [domain] › domain/t04-placement.spec.mjs:162:1 › T04: successful follow-up resolves only with a second topic and reduces confidence (1ms)
+(node:36383) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  23 [domain] › domain/t04-placement.spec.mjs:174:1 › T04: a second follow-up for the same task cannot wash out a failed first follow-up (1ms)
+(node:36384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  24 [domain] › domain/t04-placement.spec.mjs:183:1 › T04: all optional work shares the four-question budget and ending never forces another question (1ms)
+(node:36385) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  25 [domain] › domain/t04-placement.spec.mjs:201:1 › T04: number and intent observations stay separate; no local familiarity without reviewed local success (1ms)
+(node:36386) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  26 [domain] › domain/t04-placement.spec.mjs:211:1 › T04: completed onboarding remains unknown even after every simulated prompt and selected answer (82ms)
+(node:36387) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  27 [domain] › domain/t04-placement.spec.mjs:230:1 › T04: study adjustments and feedback are reversible preferences, never altered ability evidence (1ms)
+
+
+  1) [domain] › domain/t04-placement.spec.mjs:33:1 › T04: empty, all skipped and all unknown remain unknown, never measured L0 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:34:17
+
+    Error Context: ../test-results/domain-t04-placement-T04-e-58bb2-n-unknown-never-measured-L0-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-e-58bb2-n-unknown-never-measured-L0-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-e-58bb2-n-unknown-never-measured-L0-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [domain] › domain/t04-placement.spec.mjs:40:1 › T04: a lucky isolated L4 answer cannot bypass prerequisites or create speaking evidence 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:41:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-a-5a7f8-or-create-speaking-evidence-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-a-5a7f8-or-create-speaking-evidence-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-a-5a7f8-or-create-speaking-evidence-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [domain] › domain/t04-placement.spec.mjs:49:1 › T04: L0 needs two attempted playable basic tasks still needing answer demonstration 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:52:17
+
+    Error Context: ../test-results/domain-t04-placement-T04-L-26c82-eeding-answer-demonstration-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-L-26c82-eeding-answer-demonstration-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-L-26c82-eeding-answer-demonstration-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [domain] › domain/t04-placement.spec.mjs:58:1 › T04: two L1 topics suffice without L0 evidence; replays preserve independent success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:61:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-t-c0b6b-reserve-independent-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-t-c0b6b-reserve-independent-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-t-c0b6b-reserve-independent-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [domain] › domain/t04-placement.spec.mjs:70:1 › T04: two questions in one topic and many tags are not two independent topics 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:71:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-t-a367f--not-two-independent-topics-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-t-a367f--not-two-independent-topics-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-t-a367f--not-two-independent-topics-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [domain] › domain/t04-placement.spec.mjs:77:1 › T04: duplicate identity and changed topic labels cannot double-count or overwrite the first response 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:80:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-d-2f2fc-verwrite-the-first-response-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-d-2f2fc-verwrite-the-first-response-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-d-2f2fc-verwrite-the-first-response-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [domain] › domain/t04-placement.spec.mjs:98:3 › T04: answer-before excludes answers from the valid denominator and higher-band success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:100:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-a-a38c0-tor-and-higher-band-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-a-a38c0-tor-and-higher-band-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-a-a38c0-tor-and-higher-band-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [domain] › domain/t04-placement.spec.mjs:98:3 › T04: translation-before excludes answers from the valid denominator and higher-band success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:100:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-t-ec407-tor-and-higher-band-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-t-ec407-tor-and-higher-band-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-t-ec407-tor-and-higher-band-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [domain] › domain/t04-placement.spec.mjs:98:3 › T04: device-failure excludes answers from the valid denominator and higher-band success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:100:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-d-c8eb4-tor-and-higher-band-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-d-c8eb4-tor-and-higher-band-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-d-c8eb4-tor-and-higher-band-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [domain] › domain/t04-placement.spec.mjs:98:3 › T04: no-playback excludes answers from the valid denominator and higher-band success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:100:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-n-0d16a-tor-and-higher-band-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-n-0d16a-tor-and-higher-band-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-n-0d16a-tor-and-higher-band-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [domain] › domain/t04-placement.spec.mjs:98:3 › T04: simulation excludes answers from the valid denominator and higher-band success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:100:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-s-abf5a-tor-and-higher-band-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-s-abf5a-tor-and-higher-band-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-s-abf5a-tor-and-higher-band-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [domain] › domain/t04-placement.spec.mjs:98:3 › T04: unreviewed excludes answers from the valid denominator and higher-band success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:100:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-u-1a117-tor-and-higher-band-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-u-1a117-tor-and-higher-band-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-u-1a117-tor-and-higher-band-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [domain] › domain/t04-placement.spec.mjs:109:1 › T04: help after the first independent answer cannot erase it; a corrected later answer cannot manufacture it 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:111:14
+
+    Error Context: ../test-results/domain-t04-placement-T04-h-da7e0-nswer-cannot-manufacture-it-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-h-da7e0-nswer-cannot-manufacture-it-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-h-da7e0-nswer-cannot-manufacture-it-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L2 requires every preceding band, not only two successes at its own band 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:119:19
+
+    Error Context: ../test-results/domain-t04-placement-T04-L-6599a-o-successes-at-its-own-band-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-L-6599a-o-successes-at-its-own-band-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-L-6599a-o-successes-at-its-own-band-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L3 requires every preceding band, not only two successes at its own band 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:119:19
+
+    Error Context: ../test-results/domain-t04-placement-T04-L-8388b-o-successes-at-its-own-band-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-L-8388b-o-successes-at-its-own-band-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-L-8388b-o-successes-at-its-own-band-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L4 requires every preceding band, not only two successes at its own band 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:119:19
+
+    Error Context: ../test-results/domain-t04-placement-T04-L-c64e0-o-successes-at-its-own-band-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-L-c64e0-o-successes-at-its-own-band-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-L-c64e0-o-successes-at-its-own-band-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [domain] › domain/t04-placement.spec.mjs:128:1 › T04: L4 needs two different reviewed local voices across two topics, without requiring four cross-product samples 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:131:14
+
+    Error Context: ../test-results/domain-t04-placement-T04-L-2507f--four-cross-product-samples-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-L-2507f--four-cross-product-samples-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-L-2507f--four-cross-product-samples-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [domain] › domain/t04-placement.spec.mjs:145:1 › T04: same task conflict requests one differently worded follow-up and keeps L2 unconfirmed 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:146:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-s-58f1c-up-and-keeps-L2-unconfirmed-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-s-58f1c-up-and-keeps-L2-unconfirmed-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-s-58f1c-up-and-keeps-L2-unconfirmed-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  19) [domain] › domain/t04-placement.spec.mjs:153:3 › T04: incorrect follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:155:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-i-20b61--falls-back-to-supported-L1-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-i-20b61--falls-back-to-supported-L1-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-i-20b61--falls-back-to-supported-L1-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20) [domain] › domain/t04-placement.spec.mjs:153:3 › T04: skipped follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:155:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-s-f4411--falls-back-to-supported-L1-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-s-f4411--falls-back-to-supported-L1-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-s-f4411--falls-back-to-supported-L1-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  21) [domain] › domain/t04-placement.spec.mjs:153:3 › T04: unknown follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:155:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-u-a6a85--falls-back-to-supported-L1-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-u-a6a85--falls-back-to-supported-L1-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-u-a6a85--falls-back-to-supported-L1-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  22) [domain] › domain/t04-placement.spec.mjs:162:1 › T04: successful follow-up resolves only with a second topic and reduces confidence 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:164:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-s-6a63a-opic-and-reduces-confidence-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-s-6a63a-opic-and-reduces-confidence-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-s-6a63a-opic-and-reduces-confidence-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  23) [domain] › domain/t04-placement.spec.mjs:174:1 › T04: a second follow-up for the same task cannot wash out a failed first follow-up 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:175:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-a-712a2-ut-a-failed-first-follow-up-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-a-712a2-ut-a-failed-first-follow-up-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-a-712a2-ut-a-failed-first-follow-up-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  24) [domain] › domain/t04-placement.spec.mjs:183:1 › T04: all optional work shares the four-question budget and ending never forces another question 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:185:26
+
+    Error Context: ../test-results/domain-t04-placement-T04-a-dabba-ver-forces-another-question-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-a-dabba-ver-forces-another-question-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-a-dabba-ver-forces-another-question-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  25) [domain] › domain/t04-placement.spec.mjs:201:1 › T04: number and intent observations stay separate; no local familiarity without reviewed local success 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at evaluate (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:20:17)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:204:25
+
+    Error Context: ../test-results/domain-t04-placement-T04-n-b8553-hout-reviewed-local-success-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-n-b8553-hout-reviewed-local-success-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-n-b8553-hout-reviewed-local-success-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  26) [domain] › domain/t04-placement.spec.mjs:211:1 › T04: completed onboarding remains unknown even after every simulated prompt and selected answer 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:213:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-c-e33ab--prompt-and-selected-answer-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-c-e33ab--prompt-and-selected-answer-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-c-e33ab--prompt-and-selected-answer-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  27) [domain] › domain/t04-placement.spec.mjs:230:1 › T04: study adjustments and feedback are reversible preferences, never altered ability evidence 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/placement.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs
+
+      3 | // Synthetic, editor-reviewed observation fixtures exercise rules only.
+      4 | // They are never imported into the browser or reported as real study results.
+    > 5 | const load = () => import('../../lib/placement.ts');
+        |                    ^
+      6 | const at = '2026-09-12T04:00:00.000Z';
+      7 | const options = { as_of: at, previous_extra_question_ids: [], ended: false };
+      8 | const item = (id, band = 'L1', topic = 'daily', patch = {}) => ({
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:5:20)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t04-placement.spec.mjs:231:27
+
+    Error Context: ../test-results/domain-t04-placement-T04-s-bb796-er-altered-ability-evidence-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t04-placement-T04-s-bb796-er-altered-ability-evidence-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t04-placement-T04-s-bb796-er-altered-ability-evidence-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  27 failed
+    [domain] › domain/t04-placement.spec.mjs:33:1 › T04: empty, all skipped and all unknown remain unknown, never measured L0 
+    [domain] › domain/t04-placement.spec.mjs:40:1 › T04: a lucky isolated L4 answer cannot bypass prerequisites or create speaking evidence 
+    [domain] › domain/t04-placement.spec.mjs:49:1 › T04: L0 needs two attempted playable basic tasks still needing answer demonstration 
+    [domain] › domain/t04-placement.spec.mjs:58:1 › T04: two L1 topics suffice without L0 evidence; replays preserve independent success 
+    [domain] › domain/t04-placement.spec.mjs:70:1 › T04: two questions in one topic and many tags are not two independent topics 
+    [domain] › domain/t04-placement.spec.mjs:77:1 › T04: duplicate identity and changed topic labels cannot double-count or overwrite the first response 
+    [domain] › domain/t04-placement.spec.mjs:98:3 › T04: answer-before excludes answers from the valid denominator and higher-band success 
+    [domain] › domain/t04-placement.spec.mjs:98:3 › T04: translation-before excludes answers from the valid denominator and higher-band success 
+    [domain] › domain/t04-placement.spec.mjs:98:3 › T04: device-failure excludes answers from the valid denominator and higher-band success 
+    [domain] › domain/t04-placement.spec.mjs:98:3 › T04: no-playback excludes answers from the valid denominator and higher-band success 
+    [domain] › domain/t04-placement.spec.mjs:98:3 › T04: simulation excludes answers from the valid denominator and higher-band success 
+    [domain] › domain/t04-placement.spec.mjs:98:3 › T04: unreviewed excludes answers from the valid denominator and higher-band success 
+    [domain] › domain/t04-placement.spec.mjs:109:1 › T04: help after the first independent answer cannot erase it; a corrected later answer cannot manufacture it 
+    [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L2 requires every preceding band, not only two successes at its own band 
+    [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L3 requires every preceding band, not only two successes at its own band 
+    [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L4 requires every preceding band, not only two successes at its own band 
+    [domain] › domain/t04-placement.spec.mjs:128:1 › T04: L4 needs two different reviewed local voices across two topics, without requiring four cross-product samples 
+    [domain] › domain/t04-placement.spec.mjs:145:1 › T04: same task conflict requests one differently worded follow-up and keeps L2 unconfirmed 
+    [domain] › domain/t04-placement.spec.mjs:153:3 › T04: incorrect follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 
+    [domain] › domain/t04-placement.spec.mjs:153:3 › T04: skipped follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 
+    [domain] › domain/t04-placement.spec.mjs:153:3 › T04: unknown follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 
+    [domain] › domain/t04-placement.spec.mjs:162:1 › T04: successful follow-up resolves only with a second topic and reduces confidence 
+    [domain] › domain/t04-placement.spec.mjs:174:1 › T04: a second follow-up for the same task cannot wash out a failed first follow-up 
+    [domain] › domain/t04-placement.spec.mjs:183:1 › T04: all optional work shares the four-question budget and ending never forces another question 
+    [domain] › domain/t04-placement.spec.mjs:201:1 › T04: number and intent observations stay separate; no local familiarity without reviewed local success 
+    [domain] › domain/t04-placement.spec.mjs:211:1 › T04: completed onboarding remains unknown even after every simulated prompt and selected answer 
+    [domain] › domain/t04-placement.spec.mjs:230:1 › T04: study adjustments and feedback are reversible preferences, never altered ability evidence 
