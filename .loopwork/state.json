@@ -6,8 +6,19 @@
   "project_name": "Learning English in Singapore",
   "round_count": 0,
   "round_cap": 20,
-  "batch_size": 5,
+  "batch_size": 6,
   "last_round_commit": "",
   "milestones": [],
-  "env": {"node": "v24.15.0", "python3": "3.9.6"}
+  "env": {
+    "node": "v24.15.0",
+    "python3": "3.9.6"
+  },
+  "last_session": "2026-09-12T10:56:16+08:00",
+  "authorized_batch": "B1",
+  "setup_status": "hooks_trusted_pending_receipt",
+  "hook_runtime_status": "definitions_active_lifecycle_unverified",
+  "pending_commit": {
+    "kind": "note",
+    "msg": "存档: 初始化核验与B1授权记录"
+  }
 }
