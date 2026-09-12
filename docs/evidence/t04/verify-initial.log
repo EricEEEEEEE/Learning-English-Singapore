@@ -1,0 +1,834 @@
+[verify] tests/run.sh（超时上限 300s）
+
+> learning-english-singapore@0.1.0 typecheck
+> NEXT_TELEMETRY_DISABLED=1 next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+> learning-english-singapore@0.1.0 build
+> NEXT_TELEMETRY_DISABLED=1 next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 12ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 180ms
+  Running TypeScript ...
+  Finished TypeScript in 614ms ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/4) ...
+  Generating static pages using 5 workers (1/4) 
+  Generating static pages using 5 workers (2/4) 
+  Generating static pages using 5 workers (3/4) 
+✓ Generating static pages using 5 workers (4/4) in 177ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ○ /icon.svg
+
+
+○  (Static)  prerendered as static content
+
+
+> test
+> playwright test --config playwright.config.mjs
+
+[WebServer] (node:63631) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 167 tests using 1 worker
+
+(node:63632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓    1 [small-phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (316ms)
+  ✓    2 [small-phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (239ms)
+  ✓    3 [small-phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (240ms)
+  ✓    4 [small-phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (222ms)
+  ✓    5 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (630ms)
+  ✓    6 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (648ms)
+  ✓    7 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (681ms)
+  ✓    8 [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (666ms)
+  ✓    9 [small-phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (413ms)
+  ✓   10 [small-phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (255ms)
+  ✓   11 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (458ms)
+  ✓   12 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (512ms)
+  ✓   13 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (479ms)
+  ✓   14 [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (504ms)
+  ✓   15 [small-phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (370ms)
+  ✓   16 [small-phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (481ms)
+  ✓   17 [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (246ms)
+  ✓   18 [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (233ms)
+  ✓   19 [small-phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (294ms)
+  ✓   20 [small-phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (428ms)
+  ✓   21 [small-phone] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown (1.0s)
+  ✓   22 [small-phone] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap (1.2s)
+  ✓   23 [small-phone] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice (545ms)
+  ✓   24 [small-phone] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh (1.1s)
+  ✓   25 [small-phone] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure (368ms)
+  ✓   26 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   27 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   28 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   29 [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   30 [small-phone] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice (518ms)
+  ✓   31 [small-phone] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh (803ms)
+  ✓   32 [small-phone] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow (411ms)
+  ✘   33 [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support (5.8s)
+(node:66608) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   34 [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:68424) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   35 [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:69234) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   36 [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:69650) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   37 [small-phone] › e2e/t04-profile.spec.mjs:112:1 › T04: all simulated listening choices stay unknown and disclose zero independent observations (1.8s)
+  ✓   38 [small-phone] › e2e/t04-profile.spec.mjs:131:1 › T04 / F2.5,F10.5: choice overrides survive language changes, reload and optional answers; restore is explicit (1.4s)
+  ✓   39 [small-phone] › e2e/t04-profile.spec.mjs:152:1 › T04: large-text controls fit and keyboard actions change settings while ability stays unknown (518ms)
+  ✓   40 [small-phone] › e2e/t04-profile.spec.mjs:169:1 › T04: failed preference saves are visible, recover without reload and keep current choices usable (455ms)
+  ✓   41 [small-phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes (588ms)
+  ✓   42 [small-phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes (583ms)
+  ✓   43 [small-phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes (580ms)
+  ✓   44 [small-phone] › e2e/t04-profile.spec.mjs:217:1 › T04: malformed saved study settings remain untouched while temporary adjustments work (397ms)
+(node:70291) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   45 [phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (297ms)
+  ✓   46 [phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (246ms)
+  ✓   47 [phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (252ms)
+  ✓   48 [phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (217ms)
+  ✓   49 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (665ms)
+  ✓   50 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (668ms)
+  ✓   51 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (685ms)
+  ✓   52 [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (649ms)
+  ✓   53 [phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (383ms)
+  ✓   54 [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (257ms)
+  ✓   55 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (499ms)
+  ✓   56 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (553ms)
+  ✓   57 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (497ms)
+  ✓   58 [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (482ms)
+  ✓   59 [phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (364ms)
+  ✓   60 [phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (478ms)
+  ✓   61 [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (231ms)
+  ✓   62 [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (242ms)
+  ✓   63 [phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (315ms)
+  ✓   64 [phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (408ms)
+  ✓   65 [phone] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown (1.0s)
+  ✓   66 [phone] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap (1.2s)
+  ✓   67 [phone] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice (550ms)
+  ✓   68 [phone] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh (1.1s)
+  ✓   69 [phone] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure (368ms)
+  ✓   70 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   71 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   72 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   73 [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓   74 [phone] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice (517ms)
+  ✓   75 [phone] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh (839ms)
+  ✓   76 [phone] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow (412ms)
+  ✘   77 [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support (5.8s)
+(node:72393) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   78 [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:72531) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   79 [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:72627) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   80 [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support (5.9s)
+(node:73444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   81 [phone] › e2e/t04-profile.spec.mjs:112:1 › T04: all simulated listening choices stay unknown and disclose zero independent observations (1.8s)
+  ✓   82 [phone] › e2e/t04-profile.spec.mjs:131:1 › T04 / F2.5,F10.5: choice overrides survive language changes, reload and optional answers; restore is explicit (1.4s)
+  ✓   83 [phone] › e2e/t04-profile.spec.mjs:152:1 › T04: large-text controls fit and keyboard actions change settings while ability stays unknown (705ms)
+  ✓   84 [phone] › e2e/t04-profile.spec.mjs:169:1 › T04: failed preference saves are visible, recover without reload and keep current choices usable (475ms)
+  ✓   85 [phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes (603ms)
+  ✓   86 [phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes (598ms)
+  ✓   87 [phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes (584ms)
+  ✓   88 [phone] › e2e/t04-profile.spec.mjs:217:1 › T04: malformed saved study settings remain untouched while temporary adjustments work (398ms)
+(node:74076) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   89 [desktop] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (303ms)
+  ✓   90 [desktop] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (239ms)
+  ✓   91 [desktop] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (238ms)
+  ✓   92 [desktop] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (212ms)
+  ✓   93 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change (669ms)
+  ✓   94 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change (673ms)
+  ✓   95 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change (677ms)
+  ✓   96 [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change (658ms)
+  ✓   97 [desktop] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds (388ms)
+  ✓   98 [desktop] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (260ms)
+  ✓   99 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help (499ms)
+  ✓  100 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help (541ms)
+  ✓  101 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help (483ms)
+  ✓  102 [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help (524ms)
+  ✓  103 [desktop] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference (372ms)
+  ✓  104 [desktop] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls (486ms)
+  ✓  105 [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation (249ms)
+  ✓  106 [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation (239ms)
+  ✓  107 [desktop] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (314ms)
+  ✓  108 [desktop] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone (415ms)
+  ✓  109 [desktop] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown (978ms)
+  ✓  110 [desktop] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap (1.2s)
+  ✓  111 [desktop] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice (552ms)
+  ✓  112 [desktop] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh (1.1s)
+  ✓  113 [desktop] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure (373ms)
+  ✓  114 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓  115 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓  116 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓  117 [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language (1.3s)
+  ✓  118 [desktop] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice (518ms)
+  ✓  119 [desktop] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh (830ms)
+  ✓  120 [desktop] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow (420ms)
+  ✘  121 [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support (5.8s)
+(node:75792) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  122 [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:75809) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  123 [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:76036) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  124 [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support (6.0s)
+(node:76051) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  125 [desktop] › e2e/t04-profile.spec.mjs:112:1 › T04: all simulated listening choices stay unknown and disclose zero independent observations (1.8s)
+  ✓  126 [desktop] › e2e/t04-profile.spec.mjs:131:1 › T04 / F2.5,F10.5: choice overrides survive language changes, reload and optional answers; restore is explicit (1.4s)
+  ✓  127 [desktop] › e2e/t04-profile.spec.mjs:152:1 › T04: large-text controls fit and keyboard actions change settings while ability stays unknown (548ms)
+  ✓  128 [desktop] › e2e/t04-profile.spec.mjs:169:1 › T04: failed preference saves are visible, recover without reload and keep current choices usable (460ms)
+  ✓  129 [desktop] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes (589ms)
+  ✓  130 [desktop] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes (596ms)
+  ✓  131 [desktop] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes (604ms)
+  ✓  132 [desktop] › e2e/t04-profile.spec.mjs:217:1 › T04: malformed saved study settings remain untouched while temporary adjustments work (402ms)
+(node:76884) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  133 [domain] › domain/t03-onboarding-state.spec.mjs:18:1 › T03: core and optional paths have separate hard caps and unique question identities (89ms)
+  ✓  134 [domain] › domain/t03-onboarding-state.spec.mjs:48:3 › T03: first answer, replay and full-answer history survive back and changed answers (help first=true) (2ms)
+  ✓  135 [domain] › domain/t03-onboarding-state.spec.mjs:48:3 › T03: first answer, replay and full-answer history survive back and changed answers (help first=false) (1ms)
+  ✓  136 [domain] › domain/t03-onboarding-state.spec.mjs:85:1 › T03: failed playback, unknown and skipped responses stay separate and never become played answers (0ms)
+  ✓  137 [domain] › domain/t03-onboarding-state.spec.mjs:107:1 › T03: pause/finish ignore late question events and an early finish does not force the minimum core length (0ms)
+  ✓  138 [domain] › domain/t03-onboarding-state.spec.mjs:125:1 › T03: changing self-report changes content identities without erasing earlier support evidence (1ms)
+  ✓  139 [domain] › domain/t04-placement.spec.mjs:33:1 › T04: empty, all skipped and all unknown remain unknown, never measured L0 (15ms)
+  ✓  140 [domain] › domain/t04-placement.spec.mjs:40:1 › T04: a lucky isolated L4 answer cannot bypass prerequisites or create speaking evidence (0ms)
+  ✓  141 [domain] › domain/t04-placement.spec.mjs:49:1 › T04: L0 needs two attempted playable basic tasks still needing answer demonstration (0ms)
+  ✓  142 [domain] › domain/t04-placement.spec.mjs:58:1 › T04: two L1 topics suffice without L0 evidence; replays preserve independent success (0ms)
+  ✓  143 [domain] › domain/t04-placement.spec.mjs:70:1 › T04: two questions in one topic and many tags are not two independent topics (0ms)
+  ✓  144 [domain] › domain/t04-placement.spec.mjs:77:1 › T04: duplicate identity and changed topic labels cannot double-count or overwrite the first response (0ms)
+  ✓  145 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: answer-before excludes answers from the valid denominator and higher-band success (0ms)
+  ✓  146 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: translation-before excludes answers from the valid denominator and higher-band success (0ms)
+  ✓  147 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: device-failure excludes answers from the valid denominator and higher-band success (0ms)
+  ✓  148 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: no-playback excludes answers from the valid denominator and higher-band success (0ms)
+  ✓  149 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: simulation excludes answers from the valid denominator and higher-band success (0ms)
+  ✓  150 [domain] › domain/t04-placement.spec.mjs:98:3 › T04: unreviewed excludes answers from the valid denominator and higher-band success (0ms)
+  ✓  151 [domain] › domain/t04-placement.spec.mjs:109:1 › T04: help after the first independent answer cannot erase it; a corrected later answer cannot manufacture it (0ms)
+  ✓  152 [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L2 requires every preceding band, not only two successes at its own band (1ms)
+  ✓  153 [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L3 requires every preceding band, not only two successes at its own band (0ms)
+  ✓  154 [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L4 requires every preceding band, not only two successes at its own band (0ms)
+  ✓  155 [domain] › domain/t04-placement.spec.mjs:131:1 › T04: L4 needs two different reviewed local voices across two topics, without requiring four cross-product samples (0ms)
+  ✓  156 [domain] › domain/t04-placement.spec.mjs:148:1 › T04: same task conflict requests one differently worded follow-up and keeps L2 unconfirmed (0ms)
+  ✓  157 [domain] › domain/t04-placement.spec.mjs:155:1 › T04: unresolved conflict overrides two otherwise sufficient successes at the same band (0ms)
+  ✓  158 [domain] › domain/t04-placement.spec.mjs:171:3 › T04: incorrect follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 (0ms)
+  ✓  159 [domain] › domain/t04-placement.spec.mjs:171:3 › T04: skipped follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 (0ms)
+  ✓  160 [domain] › domain/t04-placement.spec.mjs:171:3 › T04: unknown follow-up leaves conflicting L2 unconfirmed and falls back to supported L1 (0ms)
+  ✓  161 [domain] › domain/t04-placement.spec.mjs:180:1 › T04: successful follow-up resolves only with a second topic and reduces confidence (0ms)
+  ✓  162 [domain] › domain/t04-placement.spec.mjs:192:1 › T04: a second follow-up for the same task cannot wash out a failed first follow-up (0ms)
+  ✓  163 [domain] › domain/t04-placement.spec.mjs:201:1 › T04: all optional work shares the four-question budget and ending never forces another question (1ms)
+  ✓  164 [domain] › domain/t04-placement.spec.mjs:225:1 › T04: number and intent observations stay separate; no local familiarity without reviewed local success (0ms)
+  ✓  165 [domain] › domain/t04-placement.spec.mjs:235:1 › T04: completed onboarding remains unknown even after every simulated prompt and selected answer (1ms)
+  ✓  166 [domain] › domain/t04-placement.spec.mjs:254:1 › T04: study adjustments and feedback are reversible preferences, never altered ability evidence (1ms)
+  ✓  167 [domain] › domain/t04-placement.spec.mjs:287:1 › T04: new evidence updates the recommendation without clearing user choices; restore uses the new recommendation (1ms)
+
+
+  1) [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - 当前练习设置
+    - 内容
+    - 短句入门
+    - 速度
+    - 慢一点
+    - 帮助
+    - 充分帮助
+    + 当前练习设置内容短句入门速度慢一点帮助充分帮助
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" aria-label="当前练习设置" class="profile-settings">…</div>
+           - unexpected value "当前练习设置内容短句入门速度慢一点帮助充分帮助"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - Pengaturan latihan saat ini
+    - Materi
+    - Mulai dengan frasa pendek
+    - Kecepatan
+    - Pelan-pelan
+    - Bantuan
+    - Bantuan lengkap
+    + Pengaturan latihan saat iniMateriMulai dengan frasa pendekKecepatanPelan-pelanBantuanBantuan lengkap
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" class="profile-settings" aria-label="Pengaturan latihan saat ini">…</div>
+           - unexpected value "Pengaturan latihan saat iniMateriMulai dengan frasa pendekKecepatanPelan-pelanBantuanBantuan lengkap"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - 現在の練習設定
+    - 内容
+    - 短い表現から始める
+    - 速さ
+    - ゆっくり
+    - サポート
+    - 十分なサポート
+    + 現在の練習設定内容短い表現から始める速さゆっくりサポート十分なサポート
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" aria-label="現在の練習設定" class="profile-settings">…</div>
+           - unexpected value "現在の練習設定内容短い表現から始める速さゆっくりサポート十分なサポート"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - Current practice settings
+    - Content
+    - Start with short phrases
+    - Speed
+    - Slow
+    - Support
+    - Full support
+    + Current practice settingsContentStart with short phrasesSpeedSlowSupportFull support
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" class="profile-settings" aria-label="Current practice settings">…</div>
+           - unexpected value "Current practice settingsContentStart with short phrasesSpeedSlowSupportFull support"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-small-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-small-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-small-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-small-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - 当前练习设置
+    - 内容
+    - 短句入门
+    - 速度
+    - 慢一点
+    - 帮助
+    - 充分帮助
+    + 当前练习设置内容短句入门速度慢一点帮助充分帮助
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" aria-label="当前练习设置" class="profile-settings">…</div>
+           - unexpected value "当前练习设置内容短句入门速度慢一点帮助充分帮助"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - Pengaturan latihan saat ini
+    - Materi
+    - Mulai dengan frasa pendek
+    - Kecepatan
+    - Pelan-pelan
+    - Bantuan
+    - Bantuan lengkap
+    + Pengaturan latihan saat iniMateriMulai dengan frasa pendekKecepatanPelan-pelanBantuanBantuan lengkap
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" class="profile-settings" aria-label="Pengaturan latihan saat ini">…</div>
+           - unexpected value "Pengaturan latihan saat iniMateriMulai dengan frasa pendekKecepatanPelan-pelanBantuanBantuan lengkap"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - 現在の練習設定
+    - 内容
+    - 短い表現から始める
+    - 速さ
+    - ゆっくり
+    - サポート
+    - 十分なサポート
+    + 現在の練習設定内容短い表現から始める速さゆっくりサポート十分なサポート
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" aria-label="現在の練習設定" class="profile-settings">…</div>
+           - unexpected value "現在の練習設定内容短い表現から始める速さゆっくりサポート十分なサポート"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - Current practice settings
+    - Content
+    - Start with short phrases
+    - Speed
+    - Slow
+    - Support
+    - Full support
+    + Current practice settingsContentStart with short phrasesSpeedSlowSupportFull support
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" class="profile-settings" aria-label="Current practice settings">…</div>
+           - unexpected value "Current practice settingsContentStart with short phrasesSpeedSlowSupportFull support"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - 当前练习设置
+    - 内容
+    - 短句入门
+    - 速度
+    - 慢一点
+    - 帮助
+    - 充分帮助
+    + 当前练习设置内容短句入门速度慢一点帮助充分帮助
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学习起点与帮助', exact: true }).getByRole('status', { name: '当前练习设置', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" aria-label="当前练习设置" class="profile-settings">…</div>
+           - unexpected value "当前练习设置内容短句入门速度慢一点帮助充分帮助"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-de1ff-king-and-adjustable-support-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - Pengaturan latihan saat ini
+    - Materi
+    - Mulai dengan frasa pendek
+    - Kecepatan
+    - Pelan-pelan
+    - Bantuan
+    - Bantuan lengkap
+    + Pengaturan latihan saat iniMateriMulai dengan frasa pendekKecepatanPelan-pelanBantuanBantuan lengkap
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Titik awal dan bantuan', exact: true }).getByRole('status', { name: 'Pengaturan latihan saat ini', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" class="profile-settings" aria-label="Pengaturan latihan saat ini">…</div>
+           - unexpected value "Pengaturan latihan saat iniMateriMulai dengan frasa pendekKecepatanPelan-pelanBantuanBantuan lengkap"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-78742-king-and-adjustable-support-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - 現在の練習設定
+    - 内容
+    - 短い表現から始める
+    - 速さ
+    - ゆっくり
+    - サポート
+    - 十分なサポート
+    + 現在の練習設定内容短い表現から始める速さゆっくりサポート十分なサポート
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: '学習の出発点とサポート', exact: true }).getByRole('status', { name: '現在の練習設定', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" aria-label="現在の練習設定" class="profile-settings">…</div>
+           - unexpected value "現在の練習設定内容短い表現から始める速さゆっくりサポート十分なサポート"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-561da-king-and-adjustable-support-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true })
+    Timeout: 5000ms
+    - Expected  - 7
+    + Received  + 1
+
+    - Current practice settings
+    - Content
+    - Start with short phrases
+    - Speed
+    - Slow
+    - Support
+    - Full support
+    + Current practice settingsContentStart with short phrasesSpeedSlowSupportFull support
+
+    Call log:
+      - Expect "toHaveText" getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true }) with timeout 5000ms
+      - waiting for getByRole('region', { name: 'Starting point and support', exact: true }).getByRole('status', { name: 'Current practice settings', exact: true })
+        14 × locator resolved to <div role="status" aria-live="polite" class="profile-settings" aria-label="Current practice settings">…</div>
+           - unexpected value "Current practice settingsContentStart with short phrasesSpeedSlowSupportFull support"
+
+
+       99 |     await expect(settings(page, language)).toContainText(language.next);
+      100 |     await result.getByRole('button', { name: language.restore, exact: true }).tap();
+    > 101 |     await expect(settings(page, language)).toHaveText(initial);
+          |                                            ^
+      102 |     await page.reload();
+      103 |     await expect(result).toContainText(language.flagged);
+      104 |     await expect(result).toContainText(language.unknown);
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t04-profile.spec.mjs:101:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-desktop/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-desktop/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-desktop/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t04-profile-T04-F2-3-F-55bf4-king-and-adjustable-support-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12 failed
+    [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+    [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support 
+    [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support 
+    [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support 
+    [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+    [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support 
+    [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support 
+    [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support 
+    [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support 
+    [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support 
+    [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support 
+    [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support 
+  155 passed (2.6m)

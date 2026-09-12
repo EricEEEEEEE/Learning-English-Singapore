@@ -1,0 +1,40 @@
+{
+  "operator": "assistant",
+  "kind": "supplementary deterministic checks; synthetic observations only",
+  "expected": 7,
+  "passed": 7,
+  "results": [
+    {
+      "name": "support history after-choice",
+      "result": "pass"
+    },
+    {
+      "name": "support history before-choice",
+      "result": "pass"
+    },
+    {
+      "name": "support history late-first-playback",
+      "result": "pass"
+    },
+    {
+      "name": "out-of-order repeated snapshots preserve the earliest response",
+      "result": "pass"
+    },
+    {
+      "name": "a successful follow-up stays unconfirmed when prerequisites are missing",
+      "result": "pass"
+    },
+    {
+      "name": "a resolved prerequisite conflict keeps confidence reduced at higher supported bands",
+      "result": "pass"
+    },
+    {
+      "name": "malformed settings reject null and unsupported schemas without touching their source bytes",
+      "result": "pass"
+    }
+  ],
+  "exit_code": 0,
+  "limits": [
+    "The malformed-string case only checks parser rejection. Storage byte preservation is checked in the frozen browser suite and browser-review.json."
+  ]
+}

@@ -1,0 +1,144 @@
+{
+  "operator": "assistant through Playwright, not a human usability study",
+  "browser": "153.0.8010.36",
+  "emulation": true,
+  "layouts": [
+    {
+      "language": "zh-Hans",
+      "width": 320,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "id",
+      "width": 320,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "ja",
+      "width": 320,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "en",
+      "width": 320,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "zh-Hans",
+      "width": 390,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "id",
+      "width": 390,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "ja",
+      "width": 390,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "en",
+      "width": 390,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "zh-Hans",
+      "width": 1280,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "id",
+      "width": 1280,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "ja",
+      "width": 1280,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    },
+    {
+      "language": "en",
+      "width": 1280,
+      "largeText": true,
+      "minimumTarget": "44x44",
+      "horizontalOverflow": false,
+      "observedExternalOrMediaCalls": 0
+    }
+  ],
+  "damagedSettings": [
+    {
+      "language": "zh-Hans",
+      "variant": "invalid-json",
+      "rawBytesPreserved": true,
+      "temporaryChoicesSurviveLanguageSwitch": true
+    },
+    {
+      "language": "id",
+      "variant": "null",
+      "rawBytesPreserved": true,
+      "temporaryChoicesSurviveLanguageSwitch": true
+    },
+    {
+      "language": "ja",
+      "variant": "unsupported-schema",
+      "rawBytesPreserved": true,
+      "temporaryChoicesSurviveLanguageSwitch": true
+    },
+    {
+      "language": "en",
+      "variant": "invalid-content-band",
+      "rawBytesPreserved": true,
+      "temporaryChoicesSurviveLanguageSwitch": true
+    }
+  ],
+  "keyboard": {
+    "actualTabTraversal": true,
+    "forwardSteps": 9,
+    "restoreSteps": 4,
+    "enterChangesContent": true,
+    "spaceRestoresRecommendation": true
+  },
+  "exit_code": 0,
+  "visual_review": [
+    "zh-Hans 390 large",
+    "id 320 large",
+    "ja 320 large",
+    "en 320 large",
+    "en 1280 large"
+  ]
+}

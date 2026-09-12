@@ -67,6 +67,10 @@ const optionalFoundation = foundation.slice(0, 4).map(q => ({ ...q, id: `intro-v
 const optionalNatural = [natural[4], natural[1], natural[2], natural[6]].map(q => ({ ...q, id: `intro-v1:extra-${q.key}`, key: `extra-${q.key}` }));
 const allQuestions = [...preferences, ...foundation, ...natural, ...optionalFoundation, ...optionalNatural];
 
+export function getOnboardingQuestion(id: string): Question | undefined {
+  return allQuestions.find(question => question.id === id);
+}
+
 export function createOnboardingSession(): OnboardingSession {
   return { schema: 1, createdAt: new Date().toISOString(), status: 'active', phase: 'core', cursor: 0, optionalUsed: 0, records: {} };
 }

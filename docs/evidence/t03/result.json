@@ -1,8 +1,8 @@
 {
   "task": "T03",
-  "status": "verified and independently reviewed; green archive awaiting real Stop receipt",
+  "status": "verified, independently reviewed and archived with a real Stop receipt",
   "red_archive": "cee8b9556c294abd276a82720436a4b0862f0c60",
-  "green_archive": null,
+  "green_archive": "2a1749086d613d96fc0f5b37d1760c64b270e83e",
   "environment": {
     "node": "24.15.0",
     "npm": "11.12.1",

@@ -93,6 +93,6 @@
     "new_regression": "After switching to English and reloading, the title reverted to Chinese while the page stayed English.",
     "red_archive": "cee8b9556c294abd276a82720436a4b0862f0c60",
     "fix_verification": "T03 final independent verify: 102/102, exit 0, ../t03/independent-verify.log",
-    "fix_archive": "awaiting T03 real green receipt"
+    "fix_archive": "2a1749086d613d96fc0f5b37d1760c64b270e83e"
   }
 }

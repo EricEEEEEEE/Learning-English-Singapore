@@ -1,0 +1,114 @@
+import { createRequire } from 'node:module';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { entryCopy, languageChoices } from '../app/entry-copy.ts';
+import { guideCopy } from '../app/guide-copy.ts';
+import { profileCopy, choiceText } from '../app/profile-copy.ts';
+const require = createRequire(import.meta.url);
+const { chromium, expect } = require('../tests/node_modules/@playwright/test');
+const out = fileURLToPath(new URL('../docs/evidence/t04/', import.meta.url));
+await mkdir(out, { recursive: true });
+const browser = await chromium.launch({ channel: 'chrome' });
+const report = { operator: 'assistant through Playwright, not a human usability study', browser: browser.version(), emulation: true, layouts: [], damagedSettings: [] };
+async function open(context) {
+  const problems = [];
+  await context.route('**/*', async route => {
+    if (new URL(route.request().url()).origin === 'http://127.0.0.1:3000') return route.continue();
+    problems.push('External HTTP'); await route.abort();
+  });
+  await context.routeWebSocket('**/*', route => { problems.push('WebSocket'); route.close(); });
+  await context.addInitScript(() => {
+    window.__t04Media = [];
+    HTMLMediaElement.prototype.play = () => { window.__t04Media.push('media'); return Promise.resolve(); };
+    if (window.speechSynthesis) window.speechSynthesis.speak = () => window.__t04Media.push('tts');
+    if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = async () => { window.__t04Media.push('microphone'); throw new Error('No microphone expected'); };
+  });
+  const page = await context.newPage();
+  page.on('pageerror', error => problems.push(error.message));
+  page.on('console', message => { if (message.type() === 'error') problems.push(message.text()); });
+  await page.goto('http://127.0.0.1:3000');
+  return { page, clean: async () => { expect(problems).toEqual([]); expect(await page.evaluate(() => window.__t04Media)).toEqual([]); } };
+}
+async function fits(page) {
+  const width = page.viewportSize().width;
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+  for (const button of await page.locator('button:visible').all()) {
+    const box = await button.boundingBox();
+    expect(box.width).toBeGreaterThanOrEqual(44); expect(box.height).toBeGreaterThanOrEqual(44);
+    expect(box.x).toBeGreaterThanOrEqual(0); expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
+    await expect(button).toHaveAccessibleName(/\S/);
+  }
+}
+async function finish(page, code) {
+  const language = languageChoices.find(row => row.code === code);
+  await page.getByRole('button', { name: new RegExp(`^${language.name}`) }).tap();
+  await page.getByRole('button', { name: guideCopy(code).entry, exact: true }).tap();
+  await page.getByRole('button', { name: guideCopy(code).finish, exact: true }).tap();
+  return page.getByRole('region', { name: profileCopy(code).region, exact: true });
+}
+try {
+  for (const width of [320, 390, 1280]) for (const language of languageChoices) {
+    const context = await browser.newContext({ viewport: { width, height: 844 }, hasTouch: true });
+    const { page, clean } = await open(context);
+    const region = await finish(page, language.code);
+    const copy = profileCopy(language.code);
+    const entry = entryCopy[language.code];
+    await page.getByRole('button', { name: entry.settings, exact: true }).tap();
+    await page.getByRole('checkbox', { name: entry.large, exact: true }).check();
+    await region.getByRole('button', { name: copy.natural, exact: true }).tap();
+    await region.getByRole('button', { name: copy.fewer, exact: true }).tap();
+    await region.getByRole('button', { name: copy.feedback, exact: true }).tap();
+    await expect(region).toContainText(copy.unknown);
+    await expect(region).toContainText(guideCopy(language.code).speaking);
+    if (width === 390 && language.code === 'zh-Hans') {
+      async function tabTo(button) {
+        for (let steps = 0; steps < 80; steps += 1) {
+          if (await button.evaluate(element => element === document.activeElement)) return steps;
+          await page.keyboard.press('Tab');
+        }
+        throw new Error('Tab could not reach the profile control');
+      }
+      const forwardSteps = await tabTo(region.getByRole('button', { name: copy.natural, exact: true }));
+      await page.keyboard.press('Enter');
+      const status = region.getByRole('status', { name: copy.settings, exact: true });
+      await expect(status).toContainText(choiceText({ content_band: 'L2', speed: 'slow', support: 'minimal' }, language.code).content);
+      const restoreSteps = await tabTo(region.getByRole('button', { name: copy.restore, exact: true }));
+      await page.keyboard.press('Space');
+      await expect(status).toContainText(choiceText({ content_band: 'L0', speed: 'slow', support: 'full' }, language.code).content);
+      await expect(region).toContainText(copy.unknown);
+      report.keyboard = { actualTabTraversal: true, forwardSteps, restoreSteps, enterChangesContent: true, spaceRestoresRecommendation: true };
+    }
+    await fits(page); await clean();
+    await page.screenshot({ path: `${out}large-profile-${language.code}-${width}.png`, fullPage: true });
+    report.layouts.push({ language: language.code, width, largeText: true, minimumTarget: '44x44', horizontalOverflow: false, observedExternalOrMediaCalls: 0 });
+    await context.close();
+  }
+  const bad = ['{broken', 'null', '{"schema":99}', '{"schema":1,"recommended":{"content_band":"L0","speed":"slow","support":"full"},"chosen":{"content_band":"L9","speed":"slow","support":"full"},"user_modified":true,"feedback_flagged":false}'];
+  for (let index = 0; index < languageChoices.length; index += 1) {
+    const language = languageChoices[index];
+    const context = await browser.newContext({ viewport: { width: 320, height: 844 }, hasTouch: true });
+    const { page, clean } = await open(context);
+    await page.evaluate(raw => localStorage.setItem('le-sg-study-preferences-v1', raw), bad[index]);
+    const region = await finish(page, language.code);
+    const copy = profileCopy(language.code);
+    await expect(region).toContainText(copy.readError);
+    await region.getByRole('button', { name: copy.natural, exact: true }).tap();
+    await region.getByRole('button', { name: copy.fewer, exact: true }).tap();
+    const nextLanguage = language.code === 'en' ? 'ja' : 'en';
+    await page.getByRole('button', { name: entryCopy[language.code].change, exact: true }).tap();
+    const next = languageChoices.find(row => row.code === nextLanguage);
+    await page.getByRole('button', { name: new RegExp(`^${next.name}`) }).tap();
+    const translated = page.getByRole('region', { name: profileCopy(nextLanguage).region, exact: true });
+    const chosen = choiceText({ content_band: 'L1', speed: 'slow', support: 'minimal' }, nextLanguage);
+    const status = translated.getByRole('status', { name: profileCopy(nextLanguage).settings, exact: true });
+    await expect(status).toContainText(chosen.content); await expect(status).toContainText(chosen.support);
+    await expect(translated).toContainText(profileCopy(nextLanguage).readError);
+    expect(await page.evaluate(() => localStorage.getItem('le-sg-study-preferences-v1'))).toBe(bad[index]);
+    await fits(page); await clean();
+    report.damagedSettings.push({ language: language.code, variant: ['invalid-json', 'null', 'unsupported-schema', 'invalid-content-band'][index], rawBytesPreserved: true, temporaryChoicesSurviveLanguageSwitch: true });
+    await context.close();
+  }
+  expect(report.layouts).toHaveLength(12); expect(report.damagedSettings).toHaveLength(4);
+  await writeFile(`${out}browser-review.json`, JSON.stringify(report, null, 2)+'\n');
+  console.log(JSON.stringify({ exit: 0, layouts: 12, damagedSettings: 4 }));
+} finally { await browser.close(); }

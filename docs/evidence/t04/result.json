@@ -1,0 +1,97 @@
+{
+  "task": "T04",
+  "status": "verified and independently reviewed; awaiting real green Stop receipt",
+  "red_archive": "53fdf9ac020c21f6fcdb87a72b266f8201f38352",
+  "green_archive": null,
+  "automated": {
+    "command": "bash .loopwork/hooks/verify.sh",
+    "expected": 167,
+    "passed": 167,
+    "failed": 0,
+    "browser": 132,
+    "domain": 35,
+    "exit_code": 0,
+    "log": "verify.log",
+    "independent_exit_code": 0,
+    "independent_log": "independent-verify.log"
+  },
+  "supplementary": {
+    "domain": {
+      "expected": 7,
+      "passed": 7,
+      "exit_code": 0,
+      "evidence": "domain-review.json"
+    },
+    "large_text_layouts": {
+      "expected": 12,
+      "passed": 12
+    },
+    "damaged_settings": {
+      "expected": 4,
+      "passed": 4
+    },
+    "actual_tab_enter_space": {
+      "passed": true,
+      "programmatic_button_focus": false
+    },
+    "browser_exit_code": 0,
+    "browser_evidence": "browser-review.json",
+    "browser_log": "browser-review.log"
+  },
+  "acceptance": [
+    {
+      "id": "F2.3",
+      "scope": "prototype and deterministic rules",
+      "evidence": "Unknown/skip stays unknown with introductory content L0; legitimate L0 needs two attempted playable basic tasks still requiring examples. Simulated app answers never support ability."
+    },
+    {
+      "id": "F2.4",
+      "scope": "prototype and deterministic rules",
+      "evidence": "Four-language result separates listening observations, unobserved speaking, content recommendation, speed and help; fields include rule version, confidence, date, evidence/exclusions, support and task-specific observations. No total score or formal certification."
+    },
+    {
+      "id": "F2.5",
+      "scope": "prototype preferences; synthetic rule updates",
+      "evidence": "Simpler/more-natural, slow/natural pace and fewer hints change chosen preferences; language changes, reload and optional answers retain them. L1-to-L2 rule update preserves manual choices; explicit restore uses the current recommendation. Actual audio changes remain unavailable."
+    },
+    {
+      "id": "F10.5",
+      "scope": "prototype",
+      "evidence": "Unreliable listening stays unknown, speaking unobserved. Incorrect-feedback flag persists without rewriting ability or silently lowering the content choice."
+    },
+    {
+      "id": "spec 6.2",
+      "scope": "deterministic synthetic fixtures only",
+      "evidence": "Independent questions/topics, every prerequisite, two reviewed local voice IDs for L4, replay/first-response support/device exclusions, conflicting evidence even after two successes, one follow-up per task, unique union of all extra-question IDs capped at four, and ending without forced follow-up."
+    }
+  ],
+  "review_changes": [
+    "Retained cumulative prompt count, answer exposure and device failure alongside first-response snapshots in profile support records.",
+    "Added real whitespace between definition-list labels/values so aggregate text matches its visible reading order.",
+    "Feedback copy no longer implies successful persistence when storage is unavailable."
+  ],
+  "verification_history": [
+    "Initial typecheck found TS2724 from importing ContentBand from the wrong owning module; fixed the import. Its shell wrapper ended with tail, so the wrapper exit alone was not treated as successful typecheck evidence.",
+    "Initial full verify exited 1: 155 passed/12 failed. All failures concerned the four-language restored text lacking text-node separators; initial logs and a failure snapshot remain.",
+    "Final main and independent verify each exited 0, 167/167; the same 15 source fingerprints were checked.",
+    "Supplementary Node imports emitted a module-type performance warning. The browser run exited 0 with no page/console errors or external/media calls; no package change was made solely to suppress this warning."
+  ],
+  "independent_review": {
+    "agent": "t01_review",
+    "result": "pass, T04 prototype and deterministic rules only",
+    "unresolved_blockers": 0,
+    "evidence": "review.md"
+  },
+  "source_hashes": "source-sha256.json",
+  "reproduction": {
+    "domain": "Compile lib/placement.ts and lib/onboarding.ts with local tsc to tmp/t04-domain using --target ES2022 --module commonjs --strict --skipLibCheck; copy domain-review-source.cjs.txt to tmp/t04-domain-review.cjs and run node on it.",
+    "browser": "Start the verified production build at 127.0.0.1:3000; copy browser-review-source.mjs.txt unchanged to tmp/t04-browser-review.mjs and run node on it."
+  },
+  "limits": [
+    "B1 app inputs remain simulation; observed fixtures are synthetic algorithm inputs, not real adult or audio measurements.",
+    "Real voice identity, question wording difference, translation/content review, calibration and physical phones/screen readers remain untested.",
+    "No paid product API, real OAuth, external publication or actual microphone/audio use.",
+    "Supplementary cumulative-support and actual Tab checks are not frozen tests; promote both during T05 test-writing.",
+    "Rule parser rejection does not prove stored bytes remain untouched; that claim relies on frozen browser cases and browser-review.json."
+  ]
+}

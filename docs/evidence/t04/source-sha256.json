@@ -1,0 +1,17 @@
+{
+  "app/demo-notice.tsx": "0efa8bf21a7e05749b635bd1a683e6f892cbbca95c4e4b259b46bbe1f3ad4f42",
+  "app/entry-copy.ts": "8cd761019f11a58b8628795401e8f13d94ba3f3311df03378ad4b1fc95cbeb5f",
+  "app/entry.tsx": "a850c22e35621397f97a586ac84e104825a1bcff2a0f226c9f6cbf75cf0ed08f",
+  "app/globals.css": "44dd0ae022563e595edd2b217791fb27c3e95d6840abfd2e52f66876b331af16",
+  "app/guide-copy.ts": "98bb54245c9d773c091158d2563ae9afe78a87a2cc0c62fa42c8c8f7b5fdac5e",
+  "app/guide-icons.tsx": "c56470421808700b8ed0198f445c117df5fbb0466c203a6c7dd7ecdca8a8caad",
+  "app/icon.svg": "48e2a9a6bb0f4b9d2f33df7016d6cb6e6f3fd64df0f2d82615f1994247ac751f",
+  "app/layout.tsx": "cd6f87b1623ad89ab149fce7a46e4f2e0b974f90bd31fa7f5357086a19bb80df",
+  "app/learning-profile.tsx": "8a595ac3eb80eabb89357b5538efb300600b4cc193cbaefd49137b49394ad1f0",
+  "app/onboarding.tsx": "d7f71d44a77507c226623128592567fe943f48fd89f0d4afe943ee46f875ea0a",
+  "app/page.tsx": "94fb2706305a33adbfa393a0e171aea1b8a2432c14824dc4a5f35221caa21e69",
+  "app/profile-copy.ts": "77a7a53c202c6ec37bef5479841d8787d34073b1bdc99000e76ce17ec54cb90c",
+  "app/use-study-settings.ts": "ec259c5911bfcee075d60b4e1cdfd32c3fc135e269d8d4f48228008d2720b454",
+  "lib/onboarding.ts": "bd34b74743a79fbd7bb6dd147aa6ff364b5f26d508136e0645945246337e3cea",
+  "lib/placement.ts": "ae8118e4e0f596ca1ecc8af060db1a2bafaa572ec87d35c82c811dc7de56b753"
+}

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { canStartOptional, getCurrentQuestion, type OnboardingEvent, type OnboardingSession } from '../lib/onboarding';
 import { entryCopy, type EntryLanguage } from './entry-copy';
 import { guideCopy, optionText, questionText, withNumber } from './guide-copy';
@@ -12,9 +12,10 @@ type Props = {
   onEvent: (event: OnboardingEvent) => void;
   onLanguage: () => void;
   onLeave: () => void;
+  profilePanel: ReactNode;
 };
 
-export default function Onboarding({ language, session, onEvent, onLanguage, onLeave }: Props) {
+export default function Onboarding({ language, session, onEvent, onLanguage, onLeave, profilePanel }: Props) {
   const copy = guideCopy(language);
   const entry = entryCopy[language];
   const question = getCurrentQuestion(session);
@@ -51,7 +52,7 @@ export default function Onboarding({ language, session, onEvent, onLanguage, onL
           <h2 ref={heading} tabIndex={-1}>{copy.summary}</h2>
           <p>{copy.starter}</p>
           <p>{copy.unknownResult}</p>
-          <p className="speaking-unknown">{copy.speaking}</p>
+          {profilePanel}
           {canStartOptional(session) && <button type="button" className="guide-primary" onClick={() => onEvent({ type: 'start-optional' })}><GuideIcon name="next" />{copy.optional}</button>}
           <button type="button" className="text-button" onClick={onLeave}><GuideIcon name="back" />{copy.leave}</button>
         </div>

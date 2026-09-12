@@ -1,8 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import DemoNotice from './demo-notice';
 import Onboarding from './onboarding';
+import LearningProfilePanel from './learning-profile';
+import { useStudySettings } from './use-study-settings';
+import { profileFromOnboarding } from '../lib/placement';
 import { guideCopy } from './guide-copy';
 import { applyOnboardingEvent, createOnboardingSession, readOnboardingSession, type OnboardingEvent, type OnboardingSession } from '../lib/onboarding';
 import { entryCopy, languageChoices, type EntryLanguage } from './entry-copy';
@@ -57,6 +60,8 @@ export default function Entry() {
   const showChoices = !preferences.language || choosingLanguage;
   const showGuide = guideOpen && onboarding !== null && !showChoices;
   const guide = guideCopy(language);
+  const profile = useMemo(() => onboarding ? profileFromOnboarding(onboarding, onboarding.createdAt) : null, [onboarding]);
+  const study = useStudySettings(profile);
 
   useEffect(() => {
     try {
@@ -169,7 +174,9 @@ export default function Entry() {
       {showGuide && onboarding ? (
         <main className="guide-main">
           <Onboarding language={language} session={onboarding} onEvent={guideEvent}
-            onLanguage={() => setChoosingLanguage(true)} onLeave={() => setGuideOpen(false)} />
+            onLanguage={() => setChoosingLanguage(true)} onLeave={() => setGuideOpen(false)}
+            profilePanel={profile && study.settings ? <LearningProfilePanel language={language} profile={profile}
+              settings={study.settings} error={study.error} onAction={study.act} /> : null} />
           <aside className="guide-utilities" aria-label={copy.settings}>{utilities}</aside>
         </main>
       ) : (

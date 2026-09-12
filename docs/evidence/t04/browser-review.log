@@ -1,0 +1,5 @@
+(node:5186) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/eric/projects/Learning%20English%20%20Singapore/app/entry-copy.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/eric/projects/Learning English  Singapore/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{"exit":0,"layouts":12,"damagedSettings":4}
