@@ -1,0 +1,72 @@
+{
+  "task_id": "T01",
+  "acceptance_ids": [
+    "F13.1 local-entry subset",
+    "F15.1 local-entry subset"
+  ],
+  "gate": "B1/T01 local prototype; G1-G6 remain untested",
+  "code_commit": "SELF: first commit adding docs/evidence/t01/result.json",
+  "commit_lookup": "git log --diff-filter=A --format=%H -- docs/evidence/t01/result.json",
+  "red_commit": "9008f9995e3876ec6b9e152c7d390d8e8490f8e8",
+  "source_sha256": "2d73f15c2cae109b5a241417cc6382e35d2d14b8470dfcff3b1b01482f8a55c0",
+  "source_files": [
+    "app/demo-notice.tsx",
+    "app/globals.css",
+    "app/icon.svg",
+    "app/layout.tsx",
+    "app/page.tsx",
+    "next-env.d.ts",
+    "next.config.ts",
+    "package-lock.json",
+    "package.json",
+    "tsconfig.json"
+  ],
+  "content_version": "0.1.0",
+  "model_snapshot": null,
+  "environment": {
+    "os": "macOS 26.6.2",
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "chrome": "153.0.8010.36",
+    "playwright": "1.63.0",
+    "viewports": [
+      "320x740",
+      "390x844",
+      "1280x800"
+    ]
+  },
+  "started_at": "2026-09-12T11:08:18+08:00",
+  "sample_count": 12,
+  "pass_count": 12,
+  "failure_count": 0,
+  "checks": {
+    "typecheck": 0,
+    "build": 0,
+    "verify_sh": 0,
+    "independent_verify_sh": 0,
+    "clean_application_npm_ci": 0,
+    "clean_test_npm_ci": 0,
+    "clean_verify_offline": 0,
+    "clean_verify_e2e": 0,
+    "manual_keyboard_and_touch": 0
+  },
+  "evidence_paths": [
+    "tests/evidence/t01-red.txt",
+    "docs/evidence/t01/independent-verify.log",
+    "docs/evidence/t01/clean-reproduction.log",
+    "docs/evidence/t01/manual-checks.json",
+    "docs/evidence/t01/small-phone.png",
+    "docs/evidence/t01/phone.png",
+    "docs/evidence/t01/desktop.png",
+    "docs/evidence/t01/phone-expanded.png"
+  ],
+  "reviewer": "/root/t01_review (independent read-only agent)",
+  "verdict": "Local T01 checks passed; green archive requires the subsequent Stop receipt",
+  "limitations": [
+    "Red verification failed on missing package.json (exit 254); browser assertions had not executed.",
+    "First implementation verification built successfully but sandbox blocked port 3210 (EPERM, exit 1); same suite subsequently passed after execution approval.",
+    "Chrome viewport and touch emulation do not certify real iOS Safari, Android Chrome or WeChat.",
+    "Tab/Space/tap are manual supplemental evidence, not persistent regression tests in this red archive.",
+    "No OAuth, model calls, generated media, language-quality or learning-effect validation."
+  ]
+}

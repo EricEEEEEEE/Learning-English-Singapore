@@ -1,0 +1,12 @@
+{
+  "url": "http://127.0.0.1:3000/",
+  "tabNavigation": true,
+  "spaceOpens": true,
+  "enterCloses": true,
+  "tapOpensAndCloses": true,
+  "expandedAt320WithoutOverflow": true,
+  "consoleErrors": [],
+  "externalRequests": [],
+  "browser": "153.0.8010.36",
+  "exitCode": 0
+}

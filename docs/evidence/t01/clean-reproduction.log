@@ -1,0 +1,74 @@
+
+added 60 packages in 2s
+
+added 3 packages in 152ms
+
+> learning-english-singapore@0.1.0 verify:offline
+> npm run typecheck && npm run build
+
+
+> learning-english-singapore@0.1.0 typecheck
+> NEXT_TELEMETRY_DISABLED=1 next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+
+> learning-english-singapore@0.1.0 build
+> NEXT_TELEMETRY_DISABLED=1 next build
+
+▲ Next.js 16.3.5 (Turbopack)
+✓ Running next.config.ts took 11ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 863ms
+  Running TypeScript ...
+  Finished TypeScript in 531ms ...
+  Collecting page data using 5 workers ...
+  Generating static pages using 5 workers (0/4) ...
+  Generating static pages using 5 workers (1/4) 
+  Generating static pages using 5 workers (2/4) 
+  Generating static pages using 5 workers (3/4) 
+✓ Generating static pages using 5 workers (4/4) in 197ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+└ ○ /icon.svg
+
+
+○  (Static)  prerendered as static content
+
+
+> learning-english-singapore@0.1.0 verify:e2e
+> npm --prefix tests test
+
+
+> test
+> playwright test --config playwright.config.mjs
+
+[WebServer] (node:83446) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 12 tests using 1 worker
+
+(node:83447) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [small-phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (315ms)
+  ✓   2 [small-phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (194ms)
+  ✓   3 [small-phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (228ms)
+  ✓   4 [small-phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (198ms)
+(node:83470) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   5 [phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (282ms)
+  ✓   6 [phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (193ms)
+  ✓   7 [phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (245ms)
+  ✓   8 [phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (209ms)
+(node:83491) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 [desktop] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo (318ms)
+  ✓  10 [desktop] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets (209ms)
+  ✓  11 [desktop] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities (253ms)
+  ✓  12 [desktop] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate (222ms)
+
+  12 passed (4.9s)
