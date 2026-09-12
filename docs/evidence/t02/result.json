@@ -1,0 +1,91 @@
+{
+  "task": "T02",
+  "status": "verified and independently reviewed; awaiting real green archive receipt",
+  "red_archive": "e00a874ecc09fa4dff66f6bc6f04bd75cbe3fcf3",
+  "green_archive": "pending Stop receipt; do not count as archived",
+  "environment": {
+    "node": "24.15.0",
+    "npm": "11.12.1",
+    "chrome": "153.0.8010.36",
+    "browser_emulation": true,
+    "viewports": [
+      "320x740",
+      "390x844",
+      "1280x800"
+    ]
+  },
+  "automated": {
+    "command": "bash .loopwork/hooks/verify.sh",
+    "expected": 42,
+    "passed": 42,
+    "failed": 0,
+    "exit_code": 0,
+    "t01_regressions": 12,
+    "t02_and_keyboard_additions": 30,
+    "log": "verify.log",
+    "independent_exit_code": 0,
+    "independent_log": "independent-verify.log"
+  },
+  "supplementary": {
+    "large_text_language_viewports": {
+      "expected": 12,
+      "passed": 12,
+      "evidence": "visual-checks.json"
+    },
+    "recovery_title_corrupt_preferences_os_motion": {
+      "expected": 4,
+      "passed": 4,
+      "evidence": "recovery-checks.json"
+    }
+  },
+  "acceptance": [
+    {
+      "id": "F1.1",
+      "scope": "prototype",
+      "evidence": "Explicit language selection precedes exactly two visible account actions; both remain unconnected with localized status. No form, real OAuth or fake success."
+    },
+    {
+      "id": "F4.5",
+      "scope": "prototype",
+      "evidence": "Full respect statement visible on entry and in expanded help in all four experimental languages; no accent score or claim of real accent validation."
+    },
+    {
+      "id": "F13.1",
+      "scope": "prototype",
+      "evidence": "320/390/1280 widths; readable text and icons; all button targets >=44px; keyboard and touch emulation; large-text expanded visual review."
+    },
+    {
+      "id": "F13.2",
+      "scope": "prototype",
+      "evidence": "Large text increases heading, body and buttons by 20%; settings survive refresh; user and OS reduced motion work. Subtitle collapse belongs to the T05/T06 media surface."
+    },
+    {
+      "id": "F13.3",
+      "scope": "prototype",
+      "evidence": "zh-Hans/id/ja/en entry, account hints, help, disabled audio and browser title follow selection; language/display persist; read/write failures and malformed data retain usable flow with notice."
+    },
+    {
+      "id": "F15.3",
+      "scope": "prototype",
+      "evidence": "No reading, spelling, writing or exam course buttons/links in four-language entry. No unsolicited microphone, TTS, external HTTP or WebSocket use in 42 browser checks."
+    }
+  ],
+  "review_changes": [
+    "Successful preference writes clear a prior save failure while preserving read failure disclosure.",
+    "Browser title follows selected language."
+  ],
+  "probe_note": "The first supplementary recovery probe used an accessibility locator for an intentionally hidden empty status and failed to locate it. The temporary probe was corrected to assert exact empty DOM text. No frozen test or implementation was changed for that probe; the final supplementary run exited 0.",
+  "limits": [
+    "Experimental translations have no native-speaker review.",
+    "Desktop Chrome emulation is not physical iOS/Android/WeChat testing or screen-reader testing.",
+    "Real OAuth, OpenAI voice/video, learning effects and G1–G6 remain untested.",
+    "Supplementary exploratory checks are not new frozen regression tests; promote relevant checks in a future test-writing phase."
+  ],
+  "source_hashes": "source-sha256.json",
+  "independent_review": {
+    "agent": "t01_review",
+    "result": "pass, T02 prototype only",
+    "evidence": "review.md",
+    "outstanding_blockers": 0
+  }
+}

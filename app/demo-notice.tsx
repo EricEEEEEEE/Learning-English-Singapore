@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import type { EntryCopy } from './entry-copy';
 
-export default function DemoNotice() {
+export default function DemoNotice({ copy }: { copy: EntryCopy }) {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -18,7 +19,7 @@ export default function DemoNotice() {
           <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.6" />
           <path d="M12 11v6M12 7v1" stroke="currentColor" strokeWidth="1.6" />
         </svg>
-        {expanded ? '收起演示说明' : '查看演示说明'}
+        {expanded ? copy.notice.close : copy.notice.open}
         <span className="toggle-sign" aria-hidden="true">{expanded ? '−' : '+'}</span>
       </button>
       <section
@@ -28,9 +29,9 @@ export default function DemoNotice() {
         aria-labelledby="demo-explanation-title"
         hidden={!expanded}
       >
-        <h2 id="demo-explanation-title">演示说明</h2>
-        <p>这是本地流程演示。真实登录、语音和视频尚未接入，暂时不能开始正式练习。</p>
-        <p>你可以先了解练习方式。这里不会录音，也不会连接真实账号。</p>
+        <h2 id="demo-explanation-title">{copy.notice.title}</h2>
+        {copy.notice.paragraphs.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+        {expanded && <p>{copy.respect}</p>}
       </section>
     </div>
   );

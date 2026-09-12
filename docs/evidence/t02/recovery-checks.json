@@ -1,0 +1,11 @@
+{
+  "checks": [
+    "write failure is cleared only after a successful write; selected language persists",
+    "browser title follows Japanese, Indonesian and English selections",
+    "three malformed/unsupported preferences recover to explicit language selection with a read notice",
+    "OS reduced motion is respected without setting the local checkbox"
+  ],
+  "browser": "153.0.8010.36",
+  "pageErrors": [],
+  "emulation": true
+}

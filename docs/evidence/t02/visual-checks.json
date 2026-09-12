@@ -1,0 +1,126 @@
+{
+  "browser": "153.0.8010.36",
+  "emulation": true,
+  "cases": [
+    {
+      "code": "zh-Hans",
+      "width": 320,
+      "screenshot": "large-zh-Hans-320.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "id",
+      "width": 320,
+      "screenshot": "large-id-320.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "ja",
+      "width": 320,
+      "screenshot": "large-ja-320.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "en",
+      "width": 320,
+      "screenshot": "large-en-320.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "zh-Hans",
+      "width": 390,
+      "screenshot": "large-zh-Hans-390.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "id",
+      "width": 390,
+      "screenshot": "large-id-390.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "ja",
+      "width": 390,
+      "screenshot": "large-ja-390.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "en",
+      "width": 390,
+      "screenshot": "large-en-390.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "zh-Hans",
+      "width": 1280,
+      "screenshot": "large-zh-Hans-1280.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "id",
+      "width": 1280,
+      "screenshot": "large-id-1280.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "ja",
+      "width": 1280,
+      "screenshot": "large-ja-1280.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    },
+    {
+      "code": "en",
+      "width": 1280,
+      "screenshot": "large-en-1280.png",
+      "largeLayout": "pass",
+      "languageChangePreservesDisplay": "pass",
+      "keyboardFocus": "pass",
+      "externalRequests": 0,
+      "pageErrors": 0
+    }
+  ]
+}
