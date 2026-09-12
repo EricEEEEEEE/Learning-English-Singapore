@@ -1,0 +1,53 @@
+
+> test
+> playwright test --config playwright.config.mjs t02-language-login.spec.mjs --project=phone --grep language choice comes before either login option
+
+[WebServer] (node:20115) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:20116) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option (5.3s)
+
+
+  1) [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('button', { name: /^简体中文/ })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('button', { name: /^简体中文/ }) with timeout 5000ms
+      - waiting for getByRole('button', { name: /^简体中文/ })
+
+
+      67 | test('T02 / F1.1: language choice comes before either login option', async ({ page }) => {
+      68 |   for (const language of languages) {
+    > 69 |     await expect(page.getByRole('button', { name: new RegExp(`^${language.choice}`) })).toBeVisible();
+         |                                                                                         ^
+      70 |   }
+      71 |   await expect(page.getByRole('button', { name: /微信|WeChat|Google/ })).toHaveCount(0);
+      72 |   await expect(page.getByText(respectStatement, { exact: true })).toBeVisible();
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t02-language-login.spec.mjs:69:89
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/t02-language-login-T02-F1--f2717--before-either-login-option-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/t02-language-login-T02-F1--f2717--before-either-login-option-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/t02-language-login-T02-F1--f2717--before-either-login-option-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/t02-language-login-T02-F1--f2717--before-either-login-option-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option 

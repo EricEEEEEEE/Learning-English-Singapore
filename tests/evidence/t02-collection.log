@@ -1,0 +1,48 @@
+
+> list
+> playwright test --config playwright.config.mjs --list
+
+Listing tests:
+  [small-phone] › t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo
+  [small-phone] › t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets
+  [small-phone] › t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities
+  [small-phone] › t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate
+  [small-phone] › t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option
+  [small-phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help
+  [small-phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help
+  [small-phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help
+  [small-phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help
+  [small-phone] › t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference
+  [small-phone] › t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls
+  [small-phone] › t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation
+  [small-phone] › t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation
+  [small-phone] › t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation
+  [phone] › t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo
+  [phone] › t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets
+  [phone] › t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities
+  [phone] › t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate
+  [phone] › t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option
+  [phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help
+  [phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help
+  [phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help
+  [phone] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help
+  [phone] › t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference
+  [phone] › t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls
+  [phone] › t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation
+  [phone] › t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation
+  [phone] › t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation
+  [desktop] › t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo
+  [desktop] › t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets
+  [desktop] › t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities
+  [desktop] › t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate
+  [desktop] › t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option
+  [desktop] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help
+  [desktop] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help
+  [desktop] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help
+  [desktop] › t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help
+  [desktop] › t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference
+  [desktop] › t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls
+  [desktop] › t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation
+  [desktop] › t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation
+  [desktop] › t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation
+Total: 42 tests in 2 files

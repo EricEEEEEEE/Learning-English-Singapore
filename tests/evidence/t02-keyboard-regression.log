@@ -1,0 +1,20 @@
+
+> test
+> playwright test --config playwright.config.mjs t02-language-login.spec.mjs --grep T01 regression
+
+[WebServer] (node:14186) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:14187) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [small-phone] › e2e/t02-language-login.spec.mjs:156:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (461ms)
+(node:14207) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [phone] › e2e/t02-language-login.spec.mjs:156:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (451ms)
+(node:14221) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [desktop] › e2e/t02-language-login.spec.mjs:156:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation (450ms)
+
+  3 passed (4.2s)
