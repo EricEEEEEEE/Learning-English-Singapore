@@ -67,3 +67,6 @@
 - T41 红阶段：修正后 small-phone 7/7 真实失败 exit1；历史 English 辅助语言合同已迁移；独立只读审题通过。证据 tests/evidence/t41-red.md。
 - [audit] phase → implementing @ 2026-09-13T16:34:25+08:00
 - T41 绿阶段：7/7 交付对上；主 verify exit0（verify-20260913-163501.log），独立 verify 316/316 exit0（verify-20260913-163951.log）；判卷通过。韩语/Hindi 母语自然度与真实手机字形未验。
+- [存档] 1b55d9586e 存档: T41 修正辅助语言与品牌承诺
+- [audit] phase → test-writing @ 2026-09-13T16:47:50+08:00
+- B2 前置核对：A2实验预算/服务账号缺失；A3微信与Google主体、回调域名、测试环境缺失；A4语言组合已确认，但本地/教学/母语审查者及外部联系授权缺失；A5供应商数据处理与参与者同意缺失。T07–T11均不得开始真实调用，authorized_batch 保持 B1。
