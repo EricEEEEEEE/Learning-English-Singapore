@@ -1,0 +1,17 @@
+[
+  {
+    "name": "full confirmed content and support preferences retained without assessment",
+    "result": "fail",
+    "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ undefined\n- {\n-   content_band: 'L2',\n-   listening_status: 'unknown',\n-   speaking_status: 'unobserved',\n-   speed: 'natural',\n-   support: 'minimal'\n- }\n"
+  },
+  {
+    "name": "ask and repeat meanings produce distinct effects; repeat replays preceding question",
+    "result": "fail",
+    "message": "Expected \"actual\" to be strictly unequal to:\n\n'Thank you. What would you like to check?'"
+  },
+  {
+    "name": "late failure after terminal playback end leaves waiting intact",
+    "result": "fail",
+    "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n    automatic_hints: 0,\n+   awaiting_since_ms: null,\n-   awaiting_since_ms: 1000,\n    choices: [],\n+   current_utterance: null,\n-   current_utterance: {\n-     id: 'scenario-1/utterance-1',\n-     kind: 'opening',\n-     role_id: 'partner',\n-     text: 'Hello. How can I help you?'\n-   },\n    eligible_for_assessment: false,\n    environment: {\n      audible: true,\n      connected: true,\n      microphone: 'unrequested',\n...\n    mode: 'practice',\n+   phase: 'paused',\n-   phase: 'awaiting_user',\n    playback_started_at: null,\n    position: 0,\n    preferences: {\n      auto_hints: true,\n      speed: 'natural',\n"
+  }
+]

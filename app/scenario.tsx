@@ -1,19 +1,20 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { activeScenarioVersion, preparationParts, type ScenarioEvent, type ScenarioField, type ScenarioSession } from '../lib/scenario';
+import { activeScenarioVersion, preparationParts, type ScenarioEvent, type ScenarioField, type ScenarioSession, type ScenarioVersion } from '../lib/scenario';
 import { focusText, planContent, unknownFact } from '../lib/scenario-content';
 import type { EntryLanguage } from './entry-copy';
 import { entryCopy } from './entry-copy';
 import { scenarioCopy } from './scenario-copy';
+import { practiceCopy } from './practice-copy';
 import { choiceText } from './profile-copy';
 import { GuideIcon } from './guide-icons';
 
 type Props = { language: EntryLanguage; session: ScenarioSession; error: 'read' | 'save' | null;
-  onEvent: (event: ScenarioEvent) => void; onLanguage: () => void; onBack: () => void };
+  onEvent: (event: ScenarioEvent) => void; onLanguage: () => void; onBack: () => void; onPreview: (version: ScenarioVersion) => void };
 const fields: ScenarioField[] = ['who', 'where', 'goal', 'worry'];
 
-export default function Scenario({ language, session, error, onEvent, onLanguage, onBack }: Props) {
+export default function Scenario({ language, session, error, onEvent, onLanguage, onBack, onPreview }: Props) {
   const copy = scenarioCopy(language);
   const { editing, text } = session.form;
   const heading = useRef<HTMLHeadingElement>(null);
@@ -100,6 +101,7 @@ export default function Scenario({ language, session, error, onEvent, onLanguage
         <section aria-label={copy.steps}><h2>{copy.steps}</h2><ol>{displayedPlan?.steps.map((step, index) => <li key={index}>{step}</li>)}</ol></section>
         <section aria-label={copy.prompts}><h2>{copy.prompts}</h2><ul>{displayedPlan?.practice_prompts.map((prompt, index) => <li key={index}>{prompt}</li>)}</ul></section>
       </div>}
+      {stage === 'ready' && <button type="button" className="guide-primary practice-entry" onClick={() => onPreview(version)}>{practiceCopy(language).entry}</button>}
       <button type="button" className="guide-primary" onClick={() => edit('goal')}>{copy.editGoal}</button>
       <p className="scene-note">{copy.unchanged}</p>
     </>}

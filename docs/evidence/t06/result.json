@@ -1,0 +1,131 @@
+{
+  "task": "T06",
+  "status": "independent preflight passed; green registered, awaiting real Stop receipt",
+  "scope": "B1 offline listening/practice prototype and real experiment preparation only",
+  "red_archive": "348c581a251cb740cb4e3830ea4be1051a4bd472",
+  "green_archive": null,
+  "automated": {
+    "expected": 313,
+    "passed": 313,
+    "browser": 222,
+    "domain": 91,
+    "exit_code": 0,
+    "command": "bash .loopwork/hooks/verify.sh",
+    "log": "verify.log",
+    "original_log": ".loopwork/logs/verify-20260913-143642.log",
+    "independent_exit_code": 0,
+    "independent_expected": 313,
+    "independent_passed": 313,
+    "independent_log": "independent-verify.log",
+    "independent_original_log": ".loopwork/logs/verify-20260913-144058.log"
+  },
+  "supplementary": {
+    "domain": {
+      "expected": 3,
+      "passed": 3,
+      "exit_code": 0,
+      "evidence": "domain-review-green.json",
+      "red": "domain-review-red.json"
+    },
+    "browser": {
+      "expected": 15,
+      "passed": 15,
+      "exit_code": 0,
+      "evidence": "browser-review-green.json",
+      "errors": 0,
+      "media_calls": 0,
+      "widths": [
+        320,
+        390,
+        1280
+      ],
+      "languages": [
+        "zh-Hans",
+        "id",
+        "ja",
+        "en"
+      ],
+      "large_text": true
+    }
+  },
+  "failure_history": [
+    {
+      "evidence": "verify-first.log",
+      "passed": 310,
+      "expected": 313,
+      "cause": "visibility save overwrote corrupt bytes at reload; preserved first failure screenshots"
+    },
+    {
+      "evidence": "browser-review-first.json",
+      "passed": 13,
+      "expected": 14,
+      "cause": "supplemental selector string matched label rather than value; assertions unchanged; explicit values pass"
+    },
+    {
+      "evidence": "browser-review-speed-red.json",
+      "passed": 2,
+      "expected": 3,
+      "cause": "current speed summary stale after setting; display fixed with immutable scenario snapshot"
+    },
+    {
+      "evidence": "budget-arithmetic-before-rounding-review.json",
+      "cause": "Runway per-flow 6s rounding omitted; corrected X3 to 40 once/80 with retry"
+    }
+  ],
+  "visual": {
+    "captured": 24,
+    "root_inspected": [
+      "role-a-zh-Hans-320.png",
+      "role-b-zh-Hans-320.png",
+      "role-a-id-390.png",
+      "role-b-ja-320.png",
+      "role-a-en-1280.png"
+    ],
+    "observed": "two distinct adult SVG roles alternate active mouth/gesture with current line; readable wrapping; no observed clipping",
+    "independent_inspected": [
+      "role-a-id-320.png",
+      "role-b-ja-390.png",
+      "role-b-en-1280.png"
+    ]
+  },
+  "package": {
+    "entry": "../../experiments/b1/README.md",
+    "manual_contract_groups": 9,
+    "independent_verified": 9,
+    "planned_matrix_rows": 546,
+    "voice_rating_rows": 60,
+    "d06_rows": 17,
+    "actual_experiments": 0,
+    "participants": 0,
+    "approved_usd": 0,
+    "actual_usd": 0,
+    "arithmetic": "budget-arithmetic.json"
+  },
+  "source_sha256": {
+    "app/entry.tsx": "65ec7b9cf315f3d46c11376598991658b9fb517fea4b0fa85b360bec9dcd0f53",
+    "app/globals.css": "670ef795178dccb24ef71ace12d5778cba7638ca7d916c860099e81e8dfbf281",
+    "app/scenario.tsx": "0443d2e4cea3f2b3607ef6c75291fcef643196984baa0552f25131ed34833c20",
+    "app/practice.tsx": "b3a3862e92f3b17317af799ccc7fcc9d7c4e0cbb2e3e003d4fc9b77e0ae47a66",
+    "app/practice-copy.ts": "6703c642ccbe68e5218e677db4fea0f08438f7237a7718b08f3933b31ead113b",
+    "app/use-practice.ts": "d4b7e48c9826ca002dcbf595fc4ac8e509cc4d3a7dbb9b72432b59294f800946",
+    "lib/practice.ts": "2618f4ff6b84f3fa51bcbef435d465e6c466617ccef372b0b72cc520f1eab08b"
+  },
+  "limits": [
+    "desktop Chrome simulated viewports, not real phones",
+    "all audio/playback/wait events simulated; no media or OAuth",
+    "four languages not native/teaching reviewed",
+    "G1-G6 unmeasured",
+    "latest supplemental regressions not yet promoted into frozen suite; next authorized red phase",
+    "user hands-on batch acceptance pending"
+  ],
+  "independent_review": {
+    "agent": "t01_review",
+    "decision": "pass",
+    "remaining_blockers": 0,
+    "batch_expected": 6,
+    "batch_verified": 6,
+    "package_expected": 9,
+    "package_verified": 9,
+    "report": "review.md"
+  }
+}

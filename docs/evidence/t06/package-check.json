@@ -1,0 +1,32 @@
+{
+  "markdown_relative_links": "all resolve",
+  "matrix_rows": 546,
+  "counts": {
+    "X1": 240,
+    "X2": 60,
+    "X3": 120,
+    "X4": 120,
+    "X5": 6
+  },
+  "actual_experiments": 0,
+  "participants": 0,
+  "fees_usd": 0,
+  "matrix_ids_unique": true,
+  "x4_four_strata": 25,
+  "sha256": {
+    "sampling.md": "4b7feada43af9353022eb537679ac6b193070eef0affc377528b61793ebf6350",
+    "runs.csv": "7908d427c71858120dddac54fb49e5a6340ff832fed6b57763cb6dd1e13c4baa",
+    "budget.csv": "9209ee5508fa53c286323250a8ef4e5c29068138897188fff4c5201dd181300e",
+    "sources.md": "f8cb7f9dbe0317a3ace6ebb4ad0c544b28f1a090376d65b51fc48d95303b5501",
+    "data-consent.md": "9945fa61c53a1d7e1b2a83b5dfc7639558a6d90941891379324e50c8601cdcc0",
+    "d06.csv": "e1ab000e27b5739651ca5e9e2e97db6bb13fa725337ca86d86b6ffb036afd276",
+    "prerequisites.md": "75f22054541a8c33e905b0e1e6f1dc262bd166d75f26bdce6e25f37a648cc0ab",
+    "README.md": "a09ff2a9cf4c9cbde5f05d7d0ffde44b5cccd94b6fc41469ba8f9a83e31e97d0",
+    "matrix.csv": "88959ce19beb87642912aa9bf174fc7f767131b2efaa0e84cc6103abc137b357",
+    "voice-ratings.csv": "54498f9faf73a09dcd7f268a838c152f0b63713c34282d0c0533d8176386f158",
+    "budget.md": "e54afeb240dc33bcfa015d41517b9047e4dc3baf7850e680165c1c13308ea689",
+    "protocols.md": "3093c33fd89752c8021c7cec661fb609c666e95cbae7a40a550bd5802600f8cb",
+    "records.md": "67ad0c22d415ed75f6cce8b9b12ce4bed53a4b236f284b0a87ad1ebdc2a0e914"
+  },
+  "budget_correction": "per-flow Runway rounding, X3 max689.9984; model and fee limits unchanged"
+}

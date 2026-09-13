@@ -1,0 +1,14 @@
+[
+  {
+    "name": "full confirmed content and support preferences retained without assessment",
+    "result": "pass"
+  },
+  {
+    "name": "ask and repeat meanings produce distinct effects; repeat replays preceding question",
+    "result": "pass"
+  },
+  {
+    "name": "late failure after terminal playback end leaves waiting intact",
+    "result": "pass"
+  }
+]

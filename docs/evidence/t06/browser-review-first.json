@@ -1,0 +1,63 @@
+{
+  "results": [
+    {
+      "name": "empty stored practice bytes preserved through temporary preview",
+      "result": "pass"
+    },
+    {
+      "name": "A-B range 2..3 survives refresh, language change and reopening with matching sequence",
+      "result": "fail",
+      "message": "expect(locator).toHaveValue(expected) failed\n\nLocator:  getByRole('combobox', { name: '片段起点', exact: true })\nExpected: \"2\"\nReceived: \"1\"\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toHaveValue\" getByRole('combobox', { name: '片段起点', exact: true }) with timeout 5000ms\n  - waiting for getByRole('combobox', { name: '片段起点', exact: true })\n    14 × locator resolved to <select>…</select>\n       - unexpected value \"1\"\n"
+    },
+    {
+      "name": "zh-Hans/320: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "zh-Hans/390: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "zh-Hans/1280: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "id/320: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "id/390: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "id/1280: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "ja/320: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "ja/390: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "ja/1280: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "en/320: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "en/390: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    },
+    {
+      "name": "en/1280: large text, alternating roles, full help, environment recovery and choices",
+      "result": "pass"
+    }
+  ],
+  "errors": [],
+  "media": []
+}

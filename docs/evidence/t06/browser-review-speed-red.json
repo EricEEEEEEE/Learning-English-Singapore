@@ -1,0 +1,19 @@
+{
+  "results": [
+    {
+      "name": "empty stored practice bytes preserved through temporary preview",
+      "result": "pass"
+    },
+    {
+      "name": "A-B range 2..3 survives refresh, language change and reopening with matching sequence",
+      "result": "pass"
+    },
+    {
+      "name": "current speed summary agrees with control and persists without changing scenario snapshot",
+      "result": "fail",
+      "message": "expect(locator).toContainText(expected) failed\n\nLocator: getByRole('region', { name: '本次练习偏好', exact: true })\nExpected substring: \"自然速度\"\nReceived string:    \"本次练习偏好短句入门 · 慢一点 · 充分帮助这些是练习偏好，听力尚不能判断，口语尚未观察。\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toContainText\" getByRole('region', { name: '本次练习偏好', exact: true }) with timeout 5000ms\n  - waiting for getByRole('region', { name: '本次练习偏好', exact: true })\n    14 × locator resolved to <section aria-label=\"本次练习偏好\" class=\"scene-preferences\">…</section>\n       - unexpected value \"本次练习偏好短句入门 · 慢一点 · 充分帮助这些是练习偏好，听力尚不能判断，口语尚未观察。\"\n"
+    }
+  ],
+  "errors": [],
+  "media": []
+}

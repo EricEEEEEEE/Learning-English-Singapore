@@ -1,8 +1,8 @@
 {
   "task": "T05",
-  "status": "verified and independently reviewed; awaiting real green Stop receipt",
+  "status": "archived: real green Stop receipt verified",
   "red_archive": "7b396f1445957a84d1edfd46152d47eb089162a3",
-  "green_archive": null,
+  "green_archive": "6b62f7c1f39d58f145e5c03dce436c002c811110",
   "scope": "Approved B1 offline scenario confirmation and preparation prototype only",
   "environment": {
     "node": "v24.15.0",
@@ -136,7 +136,13 @@
     "B1 remains offline; no real arbitrary-task planner, English dialogue generation, audio/video output, ASR, OAuth, paid product APIs or publication.",
     "No physical phone, screen-reader, native-speaker, adult calibration or real-user study was performed.",
     "Ready artifacts are simulation metadata, not playable or pedagogically reviewed media. Provider cancellation, billing idempotency and fact correctness require later real validation.",
-    "Supplementary review regressions are outside the frozen test suite; promote the material parser, provenance and cross-language buffer fixes at the next T06 test-writing phase.",
     "All G1–G6 real-world gates remain untested by this task."
-  ]
+  ],
+  "regression_promotion": {
+    "task": "T06",
+    "red_archive": "348c581a251cb740cb4e3830ea4be1051a4bd472",
+    "domain": 11,
+    "browser": 9,
+    "result": "all 20 pass in red phase; frozen under tests/domain/t06-scenario-regressions.spec.mjs and tests/e2e/t06-preview.spec.mjs"
+  }
 }

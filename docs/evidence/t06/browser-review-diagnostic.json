@@ -1,0 +1,15 @@
+{
+  "results": [
+    {
+      "name": "empty stored practice bytes preserved through temporary preview",
+      "result": "pass"
+    },
+    {
+      "name": "A-B range 2..3 survives refresh, language change and reopening with matching sequence",
+      "result": "fail",
+      "message": "expect(locator).toHaveValue(expected) failed\n\nLocator:  getByRole('combobox', { name: '片段起点', exact: true })\nExpected: \"2\"\nReceived: \"1\"\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toHaveValue\" getByRole('combobox', { name: '片段起点', exact: true }) with timeout 5000ms\n  - waiting for getByRole('combobox', { name: '片段起点', exact: true })\n    14 × locator resolved to <select>…</select>\n       - unexpected value \"1\"\n"
+    }
+  ],
+  "errors": [],
+  "media": []
+}

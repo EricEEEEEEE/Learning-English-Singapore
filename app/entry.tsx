@@ -5,6 +5,8 @@ import DemoNotice from './demo-notice';
 import Onboarding from './onboarding';
 import LearningProfilePanel from './learning-profile';
 import Scenario from './scenario';
+import Practice from './practice';
+import { usePractice } from './use-practice';
 import { scenarioCopy } from './scenario-copy';
 import { useScenario } from './use-scenario';
 import { useStudySettings } from './use-study-settings';
@@ -66,6 +68,8 @@ export default function Entry() {
   const profile = useMemo(() => onboarding ? profileFromOnboarding(onboarding, onboarding.createdAt) : null, [onboarding]);
   const study = useStudySettings(profile);
   const scene = useScenario();
+  const practice = usePractice(scene.session);
+  const showPractice = practice.open && practice.session !== null && !showChoices;
   const showScene = scene.open && scene.session !== null && !showChoices;
 
   useEffect(() => {
@@ -176,10 +180,16 @@ export default function Entry() {
         <span className="demo-label">{copy.demo}</span>
       </header>
 
-      {showScene && scene.session ? (
+      {showPractice && practice.session ? (
+        <main className="guide-main">
+          <Practice language={language} session={practice.session} error={practice.error} onEvent={practice.act}
+            onBack={practice.close} onLanguage={() => setChoosingLanguage(true)} onEndPlayback={practice.finishPlayback} onWait={practice.wait} />
+          <aside className="guide-utilities" aria-label={copy.settings}>{utilities}</aside>
+        </main>
+      ) : showScene && scene.session ? (
         <main className="guide-main">
           <Scenario language={language} session={scene.session} error={scene.error} onEvent={scene.act}
-            onLanguage={() => setChoosingLanguage(true)} onBack={scene.close} />
+            onLanguage={() => setChoosingLanguage(true)} onBack={scene.close} onPreview={practice.enter} />
           <aside className="guide-utilities" aria-label={copy.settings}>{utilities}</aside>
         </main>
       ) : showGuide && onboarding ? (

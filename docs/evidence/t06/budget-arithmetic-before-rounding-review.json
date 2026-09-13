@@ -1,0 +1,13 @@
+{
+  "x2_max": "22.5744",
+  "x3_known_max": "689.1984",
+  "x4_runway_max": "693.1136",
+  "x4_ltx_max": "2787.5136",
+  "image_max": "63.70",
+  "infra_pool": "128.50",
+  "proposed_runway_total": 2150,
+  "approved_usd": 0,
+  "actual_usd": 0,
+  "unknown_costs_not_zero": true,
+  "rows": 14
+}
