@@ -7,7 +7,7 @@
   "round_count": 8,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "bcdf52552aaa7028fa82690bd0d68d76dd0a68eb",
+  "last_round_commit": "915fe6023115e021cf640231177f55d130b4bb45",
   "milestones": [
     "T01"
   ],
@@ -15,18 +15,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-13T19:29:21+08:00",
+  "last_session": "2026-09-13T19:37:04+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 238519,
-  "blocks_seen": 364,
+  "audit_bytes": 241609,
+  "blocks_seen": 375,
   "red_commit_pending": false,
   "acceptance_status": "b1_user_accepted_t41_verified",
   "batch_preflight": "blocked_external_conditions",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: B1用户验收收口与B2条件对账"
+    "kind": "red",
+    "msg": "存档: T42 五种辅助语言实验矩阵红考题"
   }
 }
