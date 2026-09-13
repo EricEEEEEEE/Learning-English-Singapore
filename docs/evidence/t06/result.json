@@ -1,9 +1,9 @@
 {
   "task": "T06",
-  "status": "independent preflight passed; green registered, awaiting real Stop receipt",
+  "status": "archived: real green Stop receipt verified",
   "scope": "B1 offline listening/practice prototype and real experiment preparation only",
   "red_archive": "348c581a251cb740cb4e3830ea4be1051a4bd472",
-  "green_archive": null,
+  "green_archive": "9c1fd65e2455df14fbf5e27a38968cf73cf4eec4",
   "automated": {
     "expected": 313,
     "passed": 313,

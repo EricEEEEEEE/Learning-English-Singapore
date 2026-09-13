@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "4",
-  "phase": "implementing",
+  "stage": "5",
+  "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
-  "round_count": 5,
+  "round_count": 6,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "348c581a251cb740cb4e3830ea4be1051a4bd472",
+  "last_round_commit": "9c1fd65e2455df14fbf5e27a38968cf73cf4eec4",
   "milestones": [
     "T01"
   ],
@@ -15,15 +15,17 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-13T14:45:48+08:00",
+  "last_session": "2026-09-13T14:51:15+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 147858,
-  "blocks_seen": 311,
-  "red_commit_pending": true,
+  "audit_bytes": 180447,
+  "blocks_seen": 313,
+  "red_commit_pending": false,
+  "acceptance_status": "awaiting_user_feedback",
+  "batch_preflight": "passed",
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T06 预览听与练的完整路径并看懂真实实验方案"
+    "kind": "note",
+    "msg": "存档: B1六项真实绿档对账与Stage5验收交接"
   }
 }

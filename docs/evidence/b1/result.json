@@ -1,0 +1,32 @@
+{
+  "batch": "B1",
+  "stage": 5,
+  "delivery_expected": 6,
+  "delivery_verified": 6,
+  "green_archives": {
+    "T01": "05e3a17e8c21addd8e54d95b8542af71d5985380",
+    "T02": "64c8ad4baa6a89d6bd4617a02665ecc789932272",
+    "T03": "2a1749086d613d96fc0f5b37d1760c64b270e83e",
+    "T04": "40e374e438995e1b13b28931c6b041afdf799237",
+    "T05": "6b62f7c1f39d58f145e5c03dce436c002c811110",
+    "T06": "9c1fd65e2455df14fbf5e27a38968cf73cf4eec4"
+  },
+  "independent_review": {
+    "decision": "pass",
+    "agent": "t01_review",
+    "report": "../t06/review.md",
+    "verify_exit_code": 0,
+    "tests_passed": 313,
+    "tests_expected": 313,
+    "experiment_contract_verified": 9,
+    "experiment_contract_expected": 9
+  },
+  "hands_on_acceptance": "awaiting_user_feedback",
+  "acceptance_sheet": "../../b1-acceptance.md",
+  "preview_url": "http://127.0.0.1:3000",
+  "preview_server_session": 47399,
+  "batch_note": "registered this turn; receipt/status supplied by Stop and state.last_round_commit, no self-referential commit hash",
+  "real_capabilities": "G1-G6 unmeasured",
+  "authorized_next_batch": false,
+  "actual_product_api_cost_usd": 0
+}
