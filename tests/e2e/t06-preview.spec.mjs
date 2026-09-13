@@ -180,12 +180,11 @@ test('T06: disconnect, retry and exit keep the same scenario and never leave a f
 const locales = [
   { code:'id', entry:'Pratinjau mendengar dan berlatih', title:'Pahami dahulu, lalu coba berbicara', practice:'Saya mau berlatih', start:'Mulai mendengar (demo)', pause:'Berhenti sebentar', paused:'Dijeda' },
   { code:'ja', entry:'聞く・話す流れをプレビュー', title:'まず聞いてから、話してみる', practice:'自分で練習する', start:'聞き始める（デモ）', pause:'いったん止める', paused:'一時停止中' },
-  { code:'en', entry:'Preview listening and practice', title:'Listen first, then try speaking', practice:'Let me practise', start:'Start listening (demo)', pause:'Pause for a moment', paused:'Paused' },
 ];
 for (const locale of locales) test(`T06: ${locale.code} keeps roles, purpose and localized help through practice and reload`, async ({ page }) => {
   await scene(page);
   await tap(page,'更换语言');
-  await page.getByRole('button', { name: new RegExp(`^${locale.code==='id'?'Bahasa Indonesia':locale.code==='ja'?'日本語':'English'}`) }).tap();
+  await page.getByRole('button', { name: new RegExp(`^${locale.code==='id'?'Bahasa Indonesia':'日本語'}`) }).tap();
   await tap(page,locale.entry);
   await expect(page.getByRole('heading', { name: locale.title, exact:true })).toBeVisible();
   await tap(page,locale.practice); await tap(page,locale.start); await tap(page,locale.pause);
@@ -220,8 +219,8 @@ async function customDraft(page) {
 test('T06 regression: unsubmitted description survives language switch and reload without confirming', async ({ page }) => {
   await customDraft(page);
   await page.getByRole('textbox', { name:'想练的事',exact:true }).fill('希望确认邻居的维修时间');
-  await tap(page,'更换语言'); await page.getByRole('button', { name:/^English/ }).tap();
-  await expect(page.getByRole('textbox', { name:'What you want to practise',exact:true })).toHaveValue('希望确认邻居的维修时间');
+  await tap(page,'更换语言'); await page.getByRole('button', { name:/^Bahasa Indonesia/ }).tap();
+  await expect(page.getByRole('textbox', { name:'Hal yang ingin dilatih',exact:true })).toHaveValue('希望确认邻居的维修时间');
   await page.reload();
   await expect(page.getByRole('textbox')).toHaveValue('希望确认邻居的维修时间');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('le-sg-scenario-v1')).versions.length)).toBe(0);
@@ -231,8 +230,8 @@ test('T06 regression: unfinished goal edit survives language switch and reload w
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('le-sg-scenario-v1')).versions);
   await tap(page,'修改目的');
   await page.getByRole('textbox', { name:'希望办成什么',exact:true }).fill('改为询问新的检查时间');
-  await tap(page,'更换语言'); await page.getByRole('button', { name:/^English/ }).tap();
-  await expect(page.getByRole('textbox', { name:'What you want to accomplish',exact:true })).toHaveValue('改为询问新的检查时间');
+  await tap(page,'更换语言'); await page.getByRole('button', { name:/^Bahasa Indonesia/ }).tap();
+  await expect(page.getByRole('textbox', { name:'Hal yang ingin dicapai',exact:true })).toHaveValue('改为询问新的检查时间');
   await page.reload();
   await expect(page.getByRole('textbox')).toHaveValue('改为询问新的检查时间');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('le-sg-scenario-v1')).versions)).toEqual(before);
@@ -243,9 +242,9 @@ test('T06 regression: translated instructions preserve the custom goal and every
   await detail(page,'演示准备控制');
   for (const name of ['模拟对话就绪','模拟声音和画面就绪','模拟检查通过']) await tap(page,name);
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('le-sg-scenario-v1')).versions);
-  await tap(page,'更换语言'); await page.getByRole('button', { name:/^English/ }).tap();
-  const steps = page.getByRole('region', { name:'Example steps',exact:true });
-  await expect(steps).toContainText('start by explaining');
+  await tap(page,'更换语言'); await page.getByRole('button', { name:/^Bahasa Indonesia/ }).tap();
+  const steps = page.getByRole('region', { name:'Contoh langkah',exact:true });
+  await expect(steps).toContainText('sampaikan maksud');
   await expect(steps).toContainText('确认维修地点');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('le-sg-scenario-v1')).versions)).toEqual(before);
 });

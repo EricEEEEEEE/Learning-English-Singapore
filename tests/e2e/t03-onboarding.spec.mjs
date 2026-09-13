@@ -198,7 +198,6 @@ const languages = [
   { code: 'zh-Hans', choice: '简体中文', entry: '预览逐题引导', article: '当前问题', nearZero: '几乎不会英语', pause: '稍后继续', resume: '继续逐题引导', unknown: '不知道', help: '帮我理解', region: '理解帮助', audio: '听释义', optional: '继续了解（可选）', speaking: '说英语尚未了解' },
   { code: 'id', choice: 'Bahasa Indonesia', entry: 'Pratinjau panduan bertahap', article: 'Pertanyaan saat ini', nearZero: 'Hampir belum bisa bahasa Inggris', pause: 'Lanjutkan nanti', resume: 'Lanjutkan panduan', unknown: 'Belum tahu', help: 'Bantu saya memahami', region: 'Bantuan pemahaman', audio: 'Dengarkan penjelasan', optional: 'Lanjutkan sedikit lagi (opsional)', speaking: 'Kemampuan berbicara belum diketahui' },
   { code: 'ja', choice: '日本語', entry: '質問の流れをプレビュー', article: '今の質問', nearZero: '英語はほとんどわからない', pause: 'あとで続ける', resume: '質問を再開する', unknown: 'わからない', help: '理解を助けて', region: '理解のサポート', audio: '意味を聞く', optional: 'もう少し続ける（任意）', speaking: '話す力はまだわかりません' },
-  { code: 'en', choice: 'English', entry: 'Preview the step-by-step guide', article: 'Current question', nearZero: 'Almost no English', pause: 'Continue later', resume: 'Resume the guide', unknown: 'Not sure', help: 'Help me understand', region: 'Understanding help', audio: 'Listen to the meaning', optional: 'Explore a little more (optional)', speaking: 'Speaking has not been observed' },
 ];
 for (const language of languages) {
   test(`T03 / F2.1,F13.1: ${language.code} starts, skips, pauses and resumes in the confirmed language`, async ({ page }) => {

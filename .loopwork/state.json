@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "5",
+  "stage": "4",
   "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 6,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "49d120d88b6458a58103845b2cf311ba33c39142",
+  "last_round_commit": "c9c3a40f18b7f1a28fb296fcb332f130a8397c46",
   "milestones": [
     "T01"
   ],
@@ -15,17 +15,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-13T14:53:53+08:00",
+  "last_session": "2026-09-13T16:10:53+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 183153,
-  "blocks_seen": 316,
+  "audit_bytes": 188447,
+  "blocks_seen": 340,
   "red_commit_pending": false,
-  "acceptance_status": "awaiting_user_feedback",
+  "acceptance_status": "feedback_in_progress",
   "batch_preflight": "passed",
+  "stop_blocks": 1,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: B1批末回执对账与验收台账修正"
+    "kind": "red",
+    "msg": "存档: T41 辅助语言与品牌承诺红考题"
   }
 }

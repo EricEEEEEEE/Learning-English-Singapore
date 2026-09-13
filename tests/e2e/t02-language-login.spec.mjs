@@ -16,11 +16,6 @@ const languages = [
     trial: /試験版|未審査/, unavailable: /未接続|準備中/, microphone: /マイク|録音/,
     accent: /自分のアクセント/, repair: /速度を落と.*もう一度.*別の言い方/,
     success: /ログイン成功|ログイン済み|アカウントを作成しました|学習履歴/ },
-  { code: 'en', choice: 'English', heading: 'Choose how to sign in', wechat: 'WeChat',
-    permissions: 'Permissions and privacy', audio: 'Listen to instructions', change: 'Change language',
-    trial: /experimental|not yet reviewed/i, unavailable: /not connected yet/i, microphone: /microphone|record/i,
-    accent: /your own accent/, repair: /slow down.*listen again.*different way/,
-    success: /sign-in successful|successfully signed in|you are signed in|account created|my learning history/i },
 ];
 
 const respectStatement = '英语有多种口音和方言，都值得尊重。这里帮助你熟悉新加坡英语及本地表达；你可以保留自己的口音。听不懂时，可以放慢、再听一次，也可以请对方换个说法。';

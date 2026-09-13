@@ -214,7 +214,6 @@ test('T05: chosen support is carried into the scene and raw HTML-like descriptio
 const languages = [
   { code: 'id', language: 'Bahasa Indonesia', guide: 'Pratinjau panduan bertahap', finish: 'Akhiri panduan', entry: 'Pilih hal yang ingin dilatih', own: 'Bukan ini, saya ingin berlatih…', description: 'Hal yang ingin dilatih', submit: 'Susun kartu konfirmasi', card: 'Konfirmasi situasi', confirm: 'Konfirmasi dan pratinjau persiapan', preparing: 'Sedang menyiapkan (demo alur)', cancel: 'Batalkan persiapan', cancelled: 'Persiapan dibatalkan', text: 'Saya ingin bertanya tentang waktu perbaikan lift' },
   { code: 'ja', language: '日本語', guide: '質問の流れをプレビュー', finish: '質問を終える', entry: '練習したいことを選ぶ', own: 'どれでもない、練習したいことは…', description: '練習したいこと', submit: '確認カードにまとめる', card: '場面を確認', confirm: '確認して準備をプレビュー', preparing: '準備中（流れのデモ）', cancel: '準備をキャンセル', cancelled: '準備をキャンセルしました', text: '管理窓口でエレベーター修理の時間を確認したい' },
-  { code: 'en', language: 'English', guide: 'Preview the step-by-step guide', finish: 'Finish the guide', entry: 'Choose what to practise', own: 'None of these, I want to practise…', description: 'What you want to practise', submit: 'Make a confirmation card', card: 'Confirm the situation', confirm: 'Confirm and preview preparation', preparing: 'Preparing (flow demo)', cancel: 'Cancel preparation', cancelled: 'Preparation cancelled', text: 'I want to ask the building desk about lift repair times' },
 ];
 for (const language of languages) {
   test(`T05: ${language.code} describes, confirms, reloads and cancels in the selected language`, async ({ page }) => {
@@ -244,13 +243,13 @@ test('T05: switching auxiliary language during preparation keeps the original go
   await page.getByRole('button', { name: '确认并预览准备', exact: true }).tap();
   await simulate(page, '模拟对话就绪');
   await page.getByRole('button', { name: '更换语言', exact: true }).tap();
-  await page.getByRole('button', { name: /^English/ }).tap();
-  await expect(page.getByRole('heading', { name: 'Preparing (flow demo)', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: /^Bahasa Indonesia/ }).tap();
+  await expect(page.getByRole('heading', { name: 'Sedang menyiapkan (demo alur)', exact: true })).toBeVisible();
   await expect(page.getByRole('main')).toContainText(goalA);
-  await expect(page.getByRole('main')).toContainText('Version 1');
+  await expect(page.getByRole('main')).toContainText('Versi 1');
   await page.reload();
   await expect(page.getByRole('main')).toContainText(goalA);
-  await expect(page.getByRole('main')).toContainText('Version 1');
+  await expect(page.getByRole('main')).toContainText('Versi 1');
 });
 
 test('T05: failed saves disclose temporary operation and corrupted records are not overwritten by a new draft', async ({ page }) => {

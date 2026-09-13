@@ -41,10 +41,6 @@ const languages = [
     region: '学習の出発点とサポート', listening: '今聞いてわかる内容', unknown: 'まだ判断できません', speaking: '話す力はまだわかりません',
     settings: '現在の練習設定', simpler: 'もっとやさしく', natural: 'もっと自然に', slower: 'もっとゆっくり', speed: '自然な速さ', fewer: 'ヒントを減らす', restore: 'おすすめに戻す',
     feedback: '評価の誤りを知らせる', flagged: '誤りを記録しました', short: '短い表現から始める', next: '一文で一つのこと', slow: 'ゆっくり', minimal: '少なめのヒント' },
-  { code: 'en', language: 'English', entry: 'Preview the step-by-step guide', finish: 'Finish the guide', change: 'Change language',
-    region: 'Starting point and support', listening: 'What you understand when listening', unknown: 'Not enough evidence yet', speaking: 'Speaking has not been observed',
-    settings: 'Current practice settings', simpler: 'Simpler', natural: 'More natural', slower: 'Slower', speed: 'Natural speed', fewer: 'Fewer hints', restore: 'Restore recommendation',
-    feedback: 'Flag incorrect feedback', flagged: 'Feedback flagged', short: 'Start with short phrases', next: 'One idea per sentence', slow: 'Slow', minimal: 'Fewer hints' },
 ];
 const cn = languages[0];
 const panel = (page, language = cn) => page.getByRole('region', { name: language.region, exact: true });
@@ -138,15 +134,15 @@ test('T04 / F2.5,F10.5: choice overrides survive language changes, reload and op
   await expect(settings(page)).toContainText(cn.next);
   await expect(settings(page)).toContainText(cn.minimal);
   await page.getByRole('button', { name: cn.change, exact: true }).tap();
-  const en = languages[3];
-  await page.getByRole('button', { name: /^English/ }).tap();
-  await expect(settings(page, en)).toContainText(en.next);
-  await expect(settings(page, en)).toContainText(en.minimal);
+  const id = languages[1];
+  await page.getByRole('button', { name: /^Bahasa Indonesia/ }).tap();
+  await expect(settings(page, id)).toContainText(id.next);
+  await expect(settings(page, id)).toContainText(id.minimal);
   await page.reload();
-  await expect(settings(page, en)).toContainText(en.next);
-  await panel(page, en).getByRole('button', { name: en.restore, exact: true }).tap();
-  await expect(settings(page, en)).toContainText(en.short);
-  await expect(panel(page, en)).toContainText(en.unknown);
+  await expect(settings(page, id)).toContainText(id.next);
+  await panel(page, id).getByRole('button', { name: id.restore, exact: true }).tap();
+  await expect(settings(page, id)).toContainText(id.short);
+  await expect(panel(page, id)).toContainText(id.unknown);
 });
 
 test('T04: large-text controls fit and keyboard actions change settings while ability stays unknown', async ({ page }, testInfo) => {

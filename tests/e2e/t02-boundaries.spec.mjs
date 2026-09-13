@@ -5,7 +5,6 @@ const languages = [
   ['zh-Hans', '简体中文', '显示设置', '大字', '减少动画', '权限说明', '更换语言', '查看演示说明', /在新加坡/],
   ['id', 'Bahasa Indonesia', 'Pengaturan tampilan', 'Teks besar', 'Kurangi animasi', 'Izin dan privasi', 'Ganti bahasa', 'Lihat penjelasan demo', /Di Singapura/],
   ['ja', '日本語', '表示設定', '大きな文字', '動きを減らす', '権限とプライバシー', '言語を変更', 'デモの説明を見る', /シンガポール/],
-  ['en', 'English', 'Display settings', 'Larger text', 'Reduce motion', 'Permissions and privacy', 'Change language', 'View demo explanation', /start by listening/],
 ];
 test.use({ hasTouch: true });
 test.beforeEach(async ({ page, context, baseURL }) => {
@@ -34,12 +33,12 @@ for (const [code, name, settings, large, reduced, permissions, change, explanati
       expect(box.height).toBeGreaterThanOrEqual(44);
     }
     await page.getByRole('button', { name: change, exact: true }).tap();
-    await page.getByRole('button', { name: /^English/ }).tap();
+    await page.getByRole('button', { name: /^Bahasa Indonesia/ }).tap();
     await page.reload();
-    await expect(page).toHaveTitle(/start by listening/);
-    await page.getByRole('button', { name: 'Display settings', exact: true }).tap();
-    await expect(page.getByRole('checkbox', { name: 'Larger text', exact: true })).toBeChecked();
-    await expect(page.getByRole('checkbox', { name: 'Reduce motion', exact: true })).toBeChecked();
+    await expect(page).toHaveTitle(/mulai dengan mendengar/i);
+    await page.getByRole('button', { name: 'Pengaturan tampilan', exact: true }).tap();
+    await expect(page.getByRole('checkbox', { name: 'Teks besar', exact: true })).toBeChecked();
+    await expect(page.getByRole('checkbox', { name: 'Kurangi animasi', exact: true })).toBeChecked();
   });
 }
 
