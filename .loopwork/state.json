@@ -7,7 +7,7 @@
   "round_count": 8,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "1b55d9586ec353c8adb3991bd0b7d5ecf000ef22",
+  "last_round_commit": "bcdf52552aaa7028fa82690bd0d68d76dd0a68eb",
   "milestones": [
     "T01"
   ],
@@ -15,18 +15,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-13T16:48:59+08:00",
+  "last_session": "2026-09-13T19:29:21+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 228240,
-  "blocks_seen": 359,
+  "audit_bytes": 238519,
+  "blocks_seen": 364,
   "red_commit_pending": false,
-  "acceptance_status": "t41_green_verified",
+  "acceptance_status": "b1_user_accepted_t41_verified",
   "batch_preflight": "blocked_external_conditions",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T41回执对账、规格同步与B2前置核对"
+    "msg": "存档: B1用户验收收口与B2条件对账"
   }
 }
