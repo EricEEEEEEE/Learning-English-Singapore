@@ -1,0 +1,26 @@
+
+> test
+> playwright test --config playwright.config.mjs e2e/t06-preview.spec.mjs --grep T06 regression:
+
+[WebServer] (node:31744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 9 tests using 1 worker
+
+(node:31745) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [small-phone] › e2e/t06-preview.spec.mjs:220:1 › T06 regression: unsubmitted description survives language switch and reload without confirming (714ms)
+  ✓  2 [small-phone] › e2e/t06-preview.spec.mjs:229:1 › T06 regression: unfinished goal edit survives language switch and reload while the confirmed version stays intact (928ms)
+  ✓  3 [small-phone] › e2e/t06-preview.spec.mjs:240:1 › T06 regression: translated instructions preserve the custom goal and every stored version (830ms)
+(node:31768) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [phone] › e2e/t06-preview.spec.mjs:220:1 › T06 regression: unsubmitted description survives language switch and reload without confirming (726ms)
+  ✓  5 [phone] › e2e/t06-preview.spec.mjs:229:1 › T06 regression: unfinished goal edit survives language switch and reload while the confirmed version stays intact (947ms)
+  ✓  6 [phone] › e2e/t06-preview.spec.mjs:240:1 › T06 regression: translated instructions preserve the custom goal and every stored version (847ms)
+(node:31787) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  7 [desktop] › e2e/t06-preview.spec.mjs:220:1 › T06 regression: unsubmitted description survives language switch and reload without confirming (699ms)
+  ✓  8 [desktop] › e2e/t06-preview.spec.mjs:229:1 › T06 regression: unfinished goal edit survives language switch and reload while the confirmed version stays intact (940ms)
+  ✓  9 [desktop] › e2e/t06-preview.spec.mjs:240:1 › T06 regression: translated instructions preserve the custom goal and every stored version (850ms)
+
+  9 passed (9.2s)

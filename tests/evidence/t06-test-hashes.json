@@ -1,0 +1,6 @@
+{
+  "tests/domain/t06-practice.spec.mjs": "cdbbc8cf4a86e6956e5b973b226dbc35125f26d0ecbdc36c4ad3977610ce9516",
+  "tests/domain/t06-scenario-regressions.spec.mjs": "5e87aad1bcaba3c5b2a762e48539124330f31cfef0a98ef57995b78aab08dd84",
+  "tests/e2e/t06-preview.spec.mjs": "abad47ddef91119ed32413e49df9e7040e5c63f001d4540029bfd8ae789fbb37",
+  "tests/evidence/t06-contract.md": "659457c21ca041f9429e8518b1f6da521f39bdd7171e21ca5324a5d41a5f942a"
+}

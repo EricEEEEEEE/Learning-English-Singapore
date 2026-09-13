@@ -1,0 +1,794 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t06-practice.spec.mjs
+
+[WebServer] (node:31252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 27 tests using 1 worker
+
+(node:31253) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [domain] › domain/t06-practice.spec.mjs:24:1 › T06: ready scenario yields two distinct roles and immutable demo material, never assessment or real media (1ms)
+(node:31254) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 [domain] › domain/t06-practice.spec.mjs:42:1 › T06: practice is available before completing a listen and the same partner opens only after a playback gesture (1ms)
+(node:31265) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   3 [domain] › domain/t06-practice.spec.mjs:59:1 › T06: neither response readiness, playback start nor elapsed wall time starts silence before the matching playback end (1ms)
+(node:31266) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   4 [domain] › domain/t06-practice.spec.mjs:77:1 › T06: each help waits for its own playback end, offers two meanings then returns to listening without a third nudge (1ms)
+(node:31267) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   5 [domain] › domain/t06-practice.spec.mjs:99:38 › T06: 10000ms patience preference persists and uses the exact playback-end boundary (1ms)
+(node:31269) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 [domain] › domain/t06-practice.spec.mjs:99:38 › T06: 15000ms patience preference persists and uses the exact playback-end boundary (1ms)
+(node:31271) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 [domain] › domain/t06-practice.spec.mjs:108:1 › T06: disabling proactive help persists, keeps AI opening and leaves manual help available (1ms)
+(node:31273) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 [domain] › domain/t06-practice.spec.mjs:123:54 › T06: think suppresses queued silence and resume requires a fresh partner playback (1ms)
+(node:31282) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 [domain] › domain/t06-practice.spec.mjs:123:54 › T06: speech-start suppresses queued silence and resume requires a fresh partner playback (1ms)
+(node:31284) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  10 [domain] › domain/t06-practice.spec.mjs:123:54 › T06: pause suppresses queued silence and resume requires a fresh partner playback (1ms)
+(node:31288) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"visible":false} blocks nudges and never marks a speaking failure (1ms)
+(node:31289) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"connected":false} blocks nudges and never marks a speaking failure (1ms)
+(node:31292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  13 [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"audible":false} blocks nudges and never marks a speaking failure (1ms)
+(node:31293) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  14 [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"microphone":"denied"} blocks nudges and never marks a speaking failure (1ms)
+(node:31294) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  15 [domain] › domain/t06-practice.spec.mjs:162:1 › T06: a choice or speech cancels a pending help response and stale utterance/version completion cannot reopen waiting (1ms)
+(node:31295) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  16 [domain] › domain/t06-practice.spec.mjs:185:1 › T06: interruption and playback failure clear the old queue and preserve fixed material (1ms)
+(node:31296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  17 [domain] › domain/t06-practice.spec.mjs:199:56 › T06: all looping, previous sentence and speed keep the same material and role voices (1ms)
+(node:31297) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  18 [domain] › domain/t06-practice.spec.mjs:199:56 › T06: chapter looping, previous sentence and speed keep the same material and role voices (1ms)
+(node:31298) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  19 [domain] › domain/t06-practice.spec.mjs:199:56 › T06: sentence looping, previous sentence and speed keep the same material and role voices (1ms)
+(node:31299) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  20 [domain] › domain/t06-practice.spec.mjs:199:56 › T06: ab looping, previous sentence and speed keep the same material and role voices (1ms)
+(node:31300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  21 [domain] › domain/t06-practice.spec.mjs:234:1 › T06: malformed or wrong-scenario records are rejected; reload keeps settings but never resumes an old wall-clock timer (1ms)
+(node:31301) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  22 [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range -1..1 is rejected without altering the playing material (1ms)
+(node:31302) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  23 [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 2..1 is rejected without altering the playing material (1ms)
+(node:31303) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  24 [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 0..999 is rejected without altering the playing material (1ms)
+(node:31304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  25 [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 0.5..2 is rejected without altering the playing material (1ms)
+(node:31305) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  26 [domain] › domain/t06-practice.spec.mjs:257:1 › T06: unstarted or repeated ended and an old failed event are ignored without resetting the clock or stopping newer speech (1ms)
+(node:31307) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  27 [domain] › domain/t06-practice.spec.mjs:273:1 › T06: a real second confirmed goal has distinct lesson identity and cannot restore the previous goal’s practice (1ms)
+
+
+  1) [domain] › domain/t06-practice.spec.mjs:24:1 › T06: ready scenario yields two distinct roles and immutable demo material, never assessment or real media 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:25:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-re-7df93-er-assessment-or-real-media-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-re-7df93-er-assessment-or-real-media-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-re-7df93-er-assessment-or-real-media-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [domain] › domain/t06-practice.spec.mjs:42:1 › T06: practice is available before completing a listen and the same partner opens only after a playback gesture 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:43:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-pr-42d99-ly-after-a-playback-gesture-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-pr-42d99-ly-after-a-playback-gesture-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-pr-42d99-ly-after-a-playback-gesture-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [domain] › domain/t06-practice.spec.mjs:59:1 › T06: neither response readiness, playback start nor elapsed wall time starts silence before the matching playback end 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:60:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-ne-f75df-e-the-matching-playback-end-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-ne-f75df-e-the-matching-playback-end-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-ne-f75df-e-the-matching-playback-end-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [domain] › domain/t06-practice.spec.mjs:77:1 › T06: each help waits for its own playback end, offers two meanings then returns to listening without a third nudge 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:78:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-ea-28886-ening-without-a-third-nudge-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-ea-28886-ening-without-a-third-nudge-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-ea-28886-ening-without-a-third-nudge-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [domain] › domain/t06-practice.spec.mjs:99:38 › T06: 10000ms patience preference persists and uses the exact playback-end boundary 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:100:51
+
+    Error Context: ../test-results/domain-t06-practice-T06-10-2e050-exact-playback-end-boundary-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-10-2e050-exact-playback-end-boundary-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-10-2e050-exact-playback-end-boundary-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [domain] › domain/t06-practice.spec.mjs:99:38 › T06: 15000ms patience preference persists and uses the exact playback-end boundary 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:100:51
+
+    Error Context: ../test-results/domain-t06-practice-T06-15-d3ba3-exact-playback-end-boundary-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-15-d3ba3-exact-playback-end-boundary-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-15-d3ba3-exact-playback-end-boundary-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [domain] › domain/t06-practice.spec.mjs:108:1 › T06: disabling proactive help persists, keeps AI opening and leaves manual help available 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:109:51
+
+    Error Context: ../test-results/domain-t06-practice-T06-di-5b68e-eaves-manual-help-available-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-di-5b68e-eaves-manual-help-available-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-di-5b68e-eaves-manual-help-available-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [domain] › domain/t06-practice.spec.mjs:123:54 › T06: think suppresses queued silence and resume requires a fresh partner playback 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:124:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-th-44a26-es-a-fresh-partner-playback-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-th-44a26-es-a-fresh-partner-playback-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-th-44a26-es-a-fresh-partner-playback-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [domain] › domain/t06-practice.spec.mjs:123:54 › T06: speech-start suppresses queued silence and resume requires a fresh partner playback 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:124:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-sp-e831a-es-a-fresh-partner-playback-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-sp-e831a-es-a-fresh-partner-playback-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-sp-e831a-es-a-fresh-partner-playback-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [domain] › domain/t06-practice.spec.mjs:123:54 › T06: pause suppresses queued silence and resume requires a fresh partner playback 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:124:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-pa-31aeb-es-a-fresh-partner-playback-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-pa-31aeb-es-a-fresh-partner-playback-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-pa-31aeb-es-a-fresh-partner-playback-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"visible":false} blocks nudges and never marks a speaking failure 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:140:44
+
+    Error Context: ../test-results/domain-t06-practice-T06-en-d31a7-er-marks-a-speaking-failure-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-en-d31a7-er-marks-a-speaking-failure-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-en-d31a7-er-marks-a-speaking-failure-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"connected":false} blocks nudges and never marks a speaking failure 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:140:44
+
+    Error Context: ../test-results/domain-t06-practice-T06-en-149e2-er-marks-a-speaking-failure-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-en-149e2-er-marks-a-speaking-failure-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-en-149e2-er-marks-a-speaking-failure-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"audible":false} blocks nudges and never marks a speaking failure 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:140:44
+
+    Error Context: ../test-results/domain-t06-practice-T06-en-9cb3f-er-marks-a-speaking-failure-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-en-9cb3f-er-marks-a-speaking-failure-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-en-9cb3f-er-marks-a-speaking-failure-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  14) [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"microphone":"denied"} blocks nudges and never marks a speaking failure 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:140:44
+
+    Error Context: ../test-results/domain-t06-practice-T06-en-13a26-er-marks-a-speaking-failure-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-en-13a26-er-marks-a-speaking-failure-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-en-13a26-er-marks-a-speaking-failure-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  15) [domain] › domain/t06-practice.spec.mjs:162:1 › T06: a choice or speech cancels a pending help response and stale utterance/version completion cannot reopen waiting 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:163:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-a--0805d-etion-cannot-reopen-waiting-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-a--0805d-etion-cannot-reopen-waiting-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-a--0805d-etion-cannot-reopen-waiting-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  16) [domain] › domain/t06-practice.spec.mjs:185:1 › T06: interruption and playback failure clear the old queue and preserve fixed material 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:186:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-in-d3d17-and-preserve-fixed-material-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-in-d3d17-and-preserve-fixed-material-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-in-d3d17-and-preserve-fixed-material-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  17) [domain] › domain/t06-practice.spec.mjs:199:56 › T06: all looping, previous sentence and speed keep the same material and role voices 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:200:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-al-1182e-me-material-and-role-voices-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-al-1182e-me-material-and-role-voices-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-al-1182e-me-material-and-role-voices-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  18) [domain] › domain/t06-practice.spec.mjs:199:56 › T06: chapter looping, previous sentence and speed keep the same material and role voices 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:200:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-ch-4fb82-me-material-and-role-voices-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-ch-4fb82-me-material-and-role-voices-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-ch-4fb82-me-material-and-role-voices-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  19) [domain] › domain/t06-practice.spec.mjs:199:56 › T06: sentence looping, previous sentence and speed keep the same material and role voices 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:200:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-se-99402-me-material-and-role-voices-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-se-99402-me-material-and-role-voices-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-se-99402-me-material-and-role-voices-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  20) [domain] › domain/t06-practice.spec.mjs:199:56 › T06: ab looping, previous sentence and speed keep the same material and role voices 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:200:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-ab-61fc3-me-material-and-role-voices-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-ab-61fc3-me-material-and-role-voices-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-ab-61fc3-me-material-and-role-voices-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  21) [domain] › domain/t06-practice.spec.mjs:234:1 › T06: malformed or wrong-scenario records are rejected; reload keeps settings but never resumes an old wall-clock timer 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:235:51
+
+    Error Context: ../test-results/domain-t06-practice-T06-ma-08fb7-mes-an-old-wall-clock-timer-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-ma-08fb7-mes-an-old-wall-clock-timer-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-ma-08fb7-mes-an-old-wall-clock-timer-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  22) [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range -1..1 is rejected without altering the playing material 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:251:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-in-b01cf-tering-the-playing-material-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-in-b01cf-tering-the-playing-material-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-in-b01cf-tering-the-playing-material-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  23) [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 2..1 is rejected without altering the playing material 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:251:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-in-bb6ce-tering-the-playing-material-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-in-bb6ce-tering-the-playing-material-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-in-bb6ce-tering-the-playing-material-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  24) [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 0..999 is rejected without altering the playing material 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:251:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-in-2824e-tering-the-playing-material-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-in-2824e-tering-the-playing-material-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-in-2824e-tering-the-playing-material-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  25) [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 0.5..2 is rejected without altering the playing material 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:251:42
+
+    Error Context: ../test-results/domain-t06-practice-T06-in-8a3d0-tering-the-playing-material-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-in-8a3d0-tering-the-playing-material-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-in-8a3d0-tering-the-playing-material-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  26) [domain] › domain/t06-practice.spec.mjs:257:1 › T06: unstarted or repeated ended and an old failed event are ignored without resetting the clock or stopping newer speech 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at session (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:15:47)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:258:40
+
+    Error Context: ../test-results/domain-t06-practice-T06-un-5464d-ck-or-stopping-newer-speech-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-un-5464d-ck-or-stopping-newer-speech-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-un-5464d-ck-or-stopping-newer-speech-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  27) [domain] › domain/t06-practice.spec.mjs:273:1 › T06: a real second confirmed goal has distinct lesson identity and cannot restore the previous goal’s practice 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/practice.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+      2 | import { applyScenarioEvent, createScenarioSession } from '../../lib/scenario.ts';
+    > 3 | const load = () => import('../../lib/practice.ts');
+        |                    ^
+      4 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      5 | function sceneState() {
+      6 |   let state = applyScenarioEvent(createScenarioSession(context), { type: 'choose-start', kind: 'school' });
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:3:20)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t06-practice.spec.mjs:274:22
+
+    Error Context: ../test-results/domain-t06-practice-T06-a--7ea10-he-previous-goal’s-practice-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t06-practice-T06-a--7ea10-he-previous-goal’s-practice-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t06-practice-T06-a--7ea10-he-previous-goal’s-practice-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  27 failed
+    [domain] › domain/t06-practice.spec.mjs:24:1 › T06: ready scenario yields two distinct roles and immutable demo material, never assessment or real media 
+    [domain] › domain/t06-practice.spec.mjs:42:1 › T06: practice is available before completing a listen and the same partner opens only after a playback gesture 
+    [domain] › domain/t06-practice.spec.mjs:59:1 › T06: neither response readiness, playback start nor elapsed wall time starts silence before the matching playback end 
+    [domain] › domain/t06-practice.spec.mjs:77:1 › T06: each help waits for its own playback end, offers two meanings then returns to listening without a third nudge 
+    [domain] › domain/t06-practice.spec.mjs:99:38 › T06: 10000ms patience preference persists and uses the exact playback-end boundary 
+    [domain] › domain/t06-practice.spec.mjs:99:38 › T06: 15000ms patience preference persists and uses the exact playback-end boundary 
+    [domain] › domain/t06-practice.spec.mjs:108:1 › T06: disabling proactive help persists, keeps AI opening and leaves manual help available 
+    [domain] › domain/t06-practice.spec.mjs:123:54 › T06: think suppresses queued silence and resume requires a fresh partner playback 
+    [domain] › domain/t06-practice.spec.mjs:123:54 › T06: speech-start suppresses queued silence and resume requires a fresh partner playback 
+    [domain] › domain/t06-practice.spec.mjs:123:54 › T06: pause suppresses queued silence and resume requires a fresh partner playback 
+    [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"visible":false} blocks nudges and never marks a speaking failure 
+    [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"connected":false} blocks nudges and never marks a speaking failure 
+    [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"audible":false} blocks nudges and never marks a speaking failure 
+    [domain] › domain/t06-practice.spec.mjs:139:3 › T06: environment {"microphone":"denied"} blocks nudges and never marks a speaking failure 
+    [domain] › domain/t06-practice.spec.mjs:162:1 › T06: a choice or speech cancels a pending help response and stale utterance/version completion cannot reopen waiting 
+    [domain] › domain/t06-practice.spec.mjs:185:1 › T06: interruption and playback failure clear the old queue and preserve fixed material 
+    [domain] › domain/t06-practice.spec.mjs:199:56 › T06: all looping, previous sentence and speed keep the same material and role voices 
+    [domain] › domain/t06-practice.spec.mjs:199:56 › T06: chapter looping, previous sentence and speed keep the same material and role voices 
+    [domain] › domain/t06-practice.spec.mjs:199:56 › T06: sentence looping, previous sentence and speed keep the same material and role voices 
+    [domain] › domain/t06-practice.spec.mjs:199:56 › T06: ab looping, previous sentence and speed keep the same material and role voices 
+    [domain] › domain/t06-practice.spec.mjs:234:1 › T06: malformed or wrong-scenario records are rejected; reload keeps settings but never resumes an old wall-clock timer 
+    [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range -1..1 is rejected without altering the playing material 
+    [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 2..1 is rejected without altering the playing material 
+    [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 0..999 is rejected without altering the playing material 
+    [domain] › domain/t06-practice.spec.mjs:250:59 › T06: invalid A-B range 0.5..2 is rejected without altering the playing material 
+    [domain] › domain/t06-practice.spec.mjs:257:1 › T06: unstarted or repeated ended and an old failed event are ignored without resetting the clock or stopping newer speech 
+    [domain] › domain/t06-practice.spec.mjs:273:1 › T06: a real second confirmed goal has distinct lesson identity and cannot restore the previous goal’s practice 

@@ -1,0 +1,88 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=phone e2e/t06-preview.spec.mjs --grep loop controls|actual version 1
+
+[WebServer] (node:31844) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:31845) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t06-preview.spec.mjs:74:1 › T06 / F6.3: loop controls, previous sentence and slow setting keep a stable lesson; pause does not imply real playback (20.1s)
+(node:31870) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [phone] › e2e/t06-preview.spec.mjs:253:1 › T06: actual version 1 to 2 and back restores each goal, fixed lesson, listening position and preferences after reload (20.1s)
+
+
+  1) [phone] › e2e/t06-preview.spec.mjs:74:1 › T06 / F6.3: loop controls, previous sentence and slow setting keep a stable lesson; pause does not imply real playback 
+
+    Test timeout of 20000ms exceeded.
+
+    Error: locator.tap: Test timeout of 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '预览听与练', exact: true })
+
+
+      24 | test.use({ hasTouch: true });
+      25 | test.beforeEach(async ({ page }) => { await page.goto('/'); });
+    > 26 | async function tap(page, name) { await page.getByRole('button', { name, exact: true }).tap(); }
+         |                                                                                        ^
+      27 | async function detail(page, label) {
+      28 |   const summary = page.getByText(label, { exact: true });
+      29 |   const parent = page.locator('details').filter({ has: summary });
+        at tap (/Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:26:88)
+        at preview (/Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:39:57)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:75:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t06-preview-T06-F6-3-l-2e471-oes-not-imply-real-playback-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t06-preview-T06-F6-3-l-2e471-oes-not-imply-real-playback-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t06-preview-T06-F6-3-l-2e471-oes-not-imply-real-playback-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t06-preview-T06-F6-3-l-2e471-oes-not-imply-real-playback-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [phone] › e2e/t06-preview.spec.mjs:253:1 › T06: actual version 1 to 2 and back restores each goal, fixed lesson, listening position and preferences after reload 
+
+    Test timeout of 20000ms exceeded.
+
+    Error: locator.tap: Test timeout of 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '预览听与练', exact: true })
+
+
+      24 | test.use({ hasTouch: true });
+      25 | test.beforeEach(async ({ page }) => { await page.goto('/'); });
+    > 26 | async function tap(page, name) { await page.getByRole('button', { name, exact: true }).tap(); }
+         |                                                                                        ^
+      27 | async function detail(page, label) {
+      28 |   const summary = page.getByText(label, { exact: true });
+      29 |   const parent = page.locator('details').filter({ has: summary });
+        at tap (/Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:26:88)
+        at preview (/Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:39:57)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:254:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t06-preview-T06-actual-2758e-nd-preferences-after-reload-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t06-preview-T06-actual-2758e-nd-preferences-after-reload-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t06-preview-T06-actual-2758e-nd-preferences-after-reload-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t06-preview-T06-actual-2758e-nd-preferences-after-reload-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [phone] › e2e/t06-preview.spec.mjs:74:1 › T06 / F6.3: loop controls, previous sentence and slow setting keep a stable lesson; pause does not imply real playback 
+    [phone] › e2e/t06-preview.spec.mjs:253:1 › T06: actual version 1 to 2 and back restores each goal, fixed lesson, listening position and preferences after reload 

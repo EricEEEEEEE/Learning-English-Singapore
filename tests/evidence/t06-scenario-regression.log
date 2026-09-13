@@ -1,0 +1,24 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t06-scenario-regressions.spec.mjs
+
+[WebServer] (node:21895) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 11 tests using 1 worker
+
+(node:21896) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as session.stage (1ms)
+  ✓   2 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as context.content_band (0ms)
+  ✓   3 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as context.speed (0ms)
+  ✓   4 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as context.support (0ms)
+  ✓   5 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as context.listening_status (0ms)
+  ✓   6 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as draft.origin (0ms)
+  ✓   7 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as draft.language (0ms)
+  ✓   8 [domain] › domain/t06-scenario-regressions.spec.mjs:5:3 › T06 regression: reject arrays posing as draft.grounding_status (0ms)
+  ✓   9 [domain] › domain/t06-scenario-regressions.spec.mjs:12:46 › T06 regression: edited seed who no longer claims specification provenance (1ms)
+  ✓  10 [domain] › domain/t06-scenario-regressions.spec.mjs:12:46 › T06 regression: edited seed where no longer claims specification provenance (0ms)
+  ✓  11 [domain] › domain/t06-scenario-regressions.spec.mjs:12:46 › T06 regression: edited seed worry no longer claims specification provenance (0ms)
+
+  11 passed (600ms)

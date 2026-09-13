@@ -1,0 +1,50 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=phone e2e/t06-preview.spec.mjs --grep T06 / F6.1,F7.1:
+
+[WebServer] (node:22050) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:22051) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t06-preview.spec.mjs:51:1 › T06 / F6.1,F7.1: full scene path shows two adult demo roles and the same partner opens when practice is chosen early (20.1s)
+
+
+  1) [phone] › e2e/t06-preview.spec.mjs:51:1 › T06 / F6.1,F7.1: full scene path shows two adult demo roles and the same partner opens when practice is chosen early 
+
+    Test timeout of 20000ms exceeded.
+
+    Error: locator.tap: Test timeout of 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '预览听与练', exact: true })
+
+
+      23 | test.use({ hasTouch: true });
+      24 | test.beforeEach(async ({ page }) => { await page.goto('/'); });
+    > 25 | async function tap(page, name) { await page.getByRole('button', { name, exact: true }).tap(); }
+         |                                                                                        ^
+      26 | async function detail(page, label) {
+      27 |   const summary = page.getByText(label, { exact: true });
+      28 |   const parent = page.locator('details').filter({ has: summary });
+        at tap (/Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:25:88)
+        at preview (/Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:38:57)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t06-preview.spec.mjs:52:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t06-preview-T06-F6-1-F-0214d-en-practice-is-chosen-early-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t06-preview-T06-F6-1-F-0214d-en-practice-is-chosen-early-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t06-preview-T06-F6-1-F-0214d-en-practice-is-chosen-early-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t06-preview-T06-F6-1-F-0214d-en-practice-is-chosen-early-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [phone] › e2e/t06-preview.spec.mjs:51:1 › T06 / F6.1,F7.1: full scene path shows two adult demo roles and the same partner opens when practice is chosen early 

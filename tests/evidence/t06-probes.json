@@ -1,0 +1,113 @@
+[
+  {
+    "name": "t06-practice-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t06-practice.spec.mjs"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t06-practice-red.log",
+    "archived_log": "tests/evidence/t06-practice-red.log"
+  },
+  {
+    "name": "t06-scenario-regression",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t06-scenario-regressions.spec.mjs"
+    ],
+    "exit_code": 0,
+    "log": ".loopwork/logs/t06-scenario-regression.log",
+    "archived_log": "tests/evidence/t06-scenario-regression.log"
+  },
+  {
+    "name": "t06-ui-regression",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "e2e/t06-preview.spec.mjs",
+      "--grep",
+      "T06 regression:"
+    ],
+    "exit_code": 0,
+    "log": ".loopwork/logs/t06-ui-regression.log",
+    "archived_log": "tests/evidence/t06-ui-regression.log"
+  },
+  {
+    "name": "t06-ui-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=phone",
+      "e2e/t06-preview.spec.mjs",
+      "--grep",
+      "T06 / F6.1,F7.1:"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t06-ui-red.log",
+    "archived_log": "tests/evidence/t06-ui-red.log"
+  },
+  {
+    "name": "t06-practice-red-reviewed",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t06-practice.spec.mjs"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t06-practice-red-reviewed.log",
+    "archived_log": "tests/evidence/t06-practice-red-reviewed.log"
+  },
+  {
+    "name": "t06-ui-regression-reviewed",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "e2e/t06-preview.spec.mjs",
+      "--grep",
+      "T06 regression:"
+    ],
+    "exit_code": 0,
+    "log": ".loopwork/logs/t06-ui-regression-reviewed.log",
+    "archived_log": "tests/evidence/t06-ui-regression-reviewed.log"
+  },
+  {
+    "name": "t06-ui-red-reviewed",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=phone",
+      "e2e/t06-preview.spec.mjs",
+      "--grep",
+      "loop controls|actual version 1"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t06-ui-red-reviewed.log",
+    "archived_log": "tests/evidence/t06-ui-red-reviewed.log"
+  }
+]
