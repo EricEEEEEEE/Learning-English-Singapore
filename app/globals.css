@@ -164,3 +164,47 @@ h1 span { display: block; }
   .profile-controls > div { grid-template-columns: minmax(0, 1fr); }
   .profile-settings dl > div { grid-template-columns: minmax(0, 1fr); gap: 0; }
 }
+
+.scenario { font-size: calc(16px * var(--text-scale)); line-height: 1.8; }
+.scenario h1:focus { outline: none; }
+.scenario h2, .scenario legend { font-size: calc(18px * var(--text-scale)); font-weight: 600; color: var(--ink); }
+.scenario .scenario-demo { border-left: 3px solid #86a18d; padding: 10px 14px; background: var(--surface); color: var(--ink); }
+.scene-starts, .scene-form, .scene-card, .scene-version { margin-top: 28px; }
+.scene-options { display: grid; gap: 12px; margin: 24px 0; }
+.scene-options button { display: flex; align-items: center; gap: 16px; text-align: start; min-height: 76px; min-width: 44px; padding: 16px 20px; font-size: inherit; border: 1px solid #b2c4b8; border-radius: 8px; background: white; color: var(--ink); }
+.scene-options button > span:last-child { margin-left: auto; }
+.scene-options button:hover { background: var(--surface); }
+.scene-number { font-size: calc(13px * var(--text-scale)); color: var(--muted); }
+.scene-form label { display: block; margin: 18px 0 8px; font-weight: 600; color: var(--ink); }
+.scene-form textarea { width: 100%; min-width: 0; min-height: 96px; max-width: 100%; resize: vertical; padding: 14px; border: 1px solid #9db6a8; border-radius: 8px; background: white; color: var(--ink); font: inherit; line-height: 1.8; }
+.scene-form textarea:focus-visible { outline: 3px solid #be7232; outline-offset: 3px; }
+.scene-form .guide-primary { margin-top: 20px; }
+.scene-privacy, .scene-source, .scene-note { font-size: calc(13px * var(--text-scale)); color: var(--muted); }
+.scene-privacy { margin-top: 10px; }
+.scene-card { padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.scene-card dl { margin: 14px 0; }
+.scene-card dl > div { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 16px; }
+.scene-card dt { color: var(--muted); font-size: calc(14px * var(--text-scale)); }
+.scene-card dd { color: var(--ink); margin: 4px 0; font-size: calc(17px * var(--text-scale)); }
+.scene-card .text-button { margin-top: 4px; }
+.scene-unknown { font-size: calc(14px * var(--text-scale)); border-left: 2px solid #86a18d; padding-left: 12px; }
+.scene-candidates { padding: 0; margin: 28px 0; min-width: 0; border: 0; }
+.scene-candidates p { font-size: calc(14px * var(--text-scale)); color: var(--muted); margin: 8px 0 16px; }
+.scene-candidates button, .scene-history button { display: block; width: 100%; min-width: 44px; min-height: 48px; padding: 12px 16px; margin-top: 10px; border: 1px solid #b2c4b8; border-radius: 8px; background: white; color: var(--accent); font-size: calc(15px * var(--text-scale)); line-height: 1.7; text-align: start; }
+.scene-candidates button[aria-pressed="true"], .scene-history button[aria-current="true"] { background: #e7f0e9; border-color: var(--accent); }
+.scene-version > p:first-child { font-size: calc(14px * var(--text-scale)); color: var(--muted); }
+.scene-version .scene-goal { font-size: calc(23px * var(--text-scale)); color: var(--ink); margin: 8px 0 16px; }
+.scene-version > p:last-child { font-size: calc(14px * var(--text-scale)); }
+.scene-preferences { background: var(--surface); padding: 18px; border-radius: 8px; margin-top: 24px; }
+.scene-preferences p { margin-top: 8px; font-size: calc(14px * var(--text-scale)); }
+.scene-progress { list-style: none; padding: 0; margin: 24px 0; }
+.scene-progress li { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.scene-progress li > span { flex-shrink: 0; border: 1px solid #b2c4b8; width: 32px; height: 32px; border-radius: 50%; text-align: center; }
+.scene-progress li[data-status="ready"] > span { color: white; background: var(--accent); }
+.scene-progress small { display: block; color: var(--muted); font-size: calc(13px * var(--text-scale)); }
+.scene-preview { margin: 28px 0; padding: 24px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.scene-preview section + section { margin-top: 24px; }
+.scene-preview ol, .scene-preview ul { padding-left: 24px; margin: 12px 0 0; }
+.scene-preview li { padding-left: 4px; margin-top: 14px; }
+.scene-note { margin-top: 12px; }
+.scene-history { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--line); }

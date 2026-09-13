@@ -4,6 +4,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import DemoNotice from './demo-notice';
 import Onboarding from './onboarding';
 import LearningProfilePanel from './learning-profile';
+import Scenario from './scenario';
+import { scenarioCopy } from './scenario-copy';
+import { useScenario } from './use-scenario';
 import { useStudySettings } from './use-study-settings';
 import { profileFromOnboarding } from '../lib/placement';
 import { guideCopy } from './guide-copy';
@@ -62,6 +65,8 @@ export default function Entry() {
   const guide = guideCopy(language);
   const profile = useMemo(() => onboarding ? profileFromOnboarding(onboarding, onboarding.createdAt) : null, [onboarding]);
   const study = useStudySettings(profile);
+  const scene = useScenario();
+  const showScene = scene.open && scene.session !== null && !showChoices;
 
   useEffect(() => {
     try {
@@ -171,12 +176,23 @@ export default function Entry() {
         <span className="demo-label">{copy.demo}</span>
       </header>
 
-      {showGuide && onboarding ? (
+      {showScene && scene.session ? (
+        <main className="guide-main">
+          <Scenario language={language} session={scene.session} error={scene.error} onEvent={scene.act}
+            onLanguage={() => setChoosingLanguage(true)} onBack={scene.close} />
+          <aside className="guide-utilities" aria-label={copy.settings}>{utilities}</aside>
+        </main>
+      ) : showGuide && onboarding ? (
         <main className="guide-main">
           <Onboarding language={language} session={onboarding} onEvent={guideEvent}
             onLanguage={() => setChoosingLanguage(true)} onLeave={() => setGuideOpen(false)}
-            profilePanel={profile && study.settings ? <LearningProfilePanel language={language} profile={profile}
-              settings={study.settings} error={study.error} onAction={study.act} /> : null} />
+            profilePanel={profile && study.settings ? <>
+              <LearningProfilePanel language={language} profile={profile}
+                settings={study.settings} error={study.error} onAction={study.act} />
+              <button type="button" className="guide-primary" onClick={() => {
+                if (study.settings) scene.enter({ ...study.settings.chosen, listening_status: profile.placement_status, speaking_status: 'unobserved' });
+              }}>{scenarioCopy(language).entry}</button>
+            </> : null} />
           <aside className="guide-utilities" aria-label={copy.settings}>{utilities}</aside>
         </main>
       ) : (

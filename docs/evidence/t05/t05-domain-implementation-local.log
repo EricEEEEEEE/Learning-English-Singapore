@@ -1,0 +1,28 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t05-scenario.spec.mjs
+
+[WebServer] (node:24623) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 15 tests using 1 worker
+
+(node:24624) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [domain] › domain/t05-scenario.spec.mjs:24:1 › T05: three seed categories and an unlisted goal all reach explicit confirmation, never real generation (97ms)
+  ✓   2 [domain] › domain/t05-scenario.spec.mjs:41:1 › T05: three demo candidates retain the user goal and selecting a different focus changes the planned interaction (3ms)
+  ✓   3 [domain] › domain/t05-scenario.spec.mjs:67:1 › T05: an empty description asks exactly one necessary question and preserves unknown facts (1ms)
+  ✓   4 [domain] › domain/t05-scenario.spec.mjs:83:1 › T05: confirmation creates a goal revision and simulation-only preparation tied to chosen learning support (1ms)
+  ✓   5 [domain] › domain/t05-scenario.spec.mjs:101:1 › T05: preparation is ordered and successful demo parts are idempotent (1ms)
+  ✓   6 [domain] › domain/t05-scenario.spec.mjs:121:1 › T05: media-only retry preserves completed dialogue and rejects late events from the previous attempt (1ms)
+  ✓   7 [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of dialogue resumes the failed part and keeps other completed assets (0ms)
+  ✓   8 [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of check resumes the failed part and keeps other completed assets (0ms)
+  ✓   9 [domain] › domain/t05-scenario.spec.mjs:160:1 › T05: cancellation is durable, keeps successful work and ignores all late completion events (1ms)
+  ✓  10 [domain] › domain/t05-scenario.spec.mjs:174:1 › T05: a revised goal changes dialogue steps and practice prompts, keeping the old version and its assets intact (1ms)
+  ✓  11 [domain] › domain/t05-scenario.spec.mjs:202:1 › T05: changing who/where/worry never silently confirms or invents institutional facts (1ms)
+  ✓  12 [domain] › domain/t05-scenario.spec.mjs:218:1 › T05: refresh preserves in-progress identity and malformed snapshots are rejected without silently replacing them (1ms)
+  ✓  13 [domain] › domain/t05-scenario.spec.mjs:228:1 › T05: changing the goal during preparation isolates the new request from old late completions (0ms)
+  ✓  14 [domain] › domain/t05-scenario.spec.mjs:244:1 › T05: branching from an older version allocates the next global revision without changing either saved version (0ms)
+  ✓  15 [domain] › domain/t05-scenario.spec.mjs:263:1 › T05: viewing a cancelled historical version never revives it or changes a newer preparing version (1ms)
+
+  15 passed (738ms)

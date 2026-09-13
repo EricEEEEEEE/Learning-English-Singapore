@@ -1,0 +1,20 @@
+{
+  "results": [
+    {
+      "name": "unsubmitted description survives language switch and refresh",
+      "result": "fail",
+      "message": "expect(locator).toHaveValue(expected) failed\n\nLocator:  getByRole('textbox', { name: 'What you want to practise', exact: true })\nExpected: \"希望确认邻居的维修时间\"\nReceived: \"\"\nTimeout:  5000ms\n\nCall log:\n  - Expect \"toHaveValue\" getByRole('textbox', { name: 'What you want to practise', exact: true }) with timeout 5000ms\n  - waiting for getByRole('textbox', { name: 'What you want to practise', exact: true })\n    14 × locator resolved to <textarea rows=\"4\" id=\"scene-description\"></textarea>\n       - unexpected value \"\"\n"
+    },
+    {
+      "name": "unsubmitted goal edit survives language switch and refresh without creating a version",
+      "result": "fail",
+      "message": "expect(locator).toHaveValue(expected) failed\n\nLocator: getByRole('textbox', { name: 'What you want to accomplish', exact: true })\nExpected: \"改为询问新的检查时间\"\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toHaveValue\" getByRole('textbox', { name: 'What you want to accomplish', exact: true }) with timeout 5000ms\n  - waiting for getByRole('textbox', { name: 'What you want to accomplish', exact: true })\n"
+    },
+    {
+      "name": "confirmed instructions follow auxiliary language without rewriting user goal or stored version",
+      "result": "fail",
+      "message": "expect(locator).toContainText(expected) failed\n\nLocator: getByRole('region', { name: 'Example steps', exact: true })\nExpected substring: \"start by explaining\"\nReceived string:    \"Example steps围绕「确认维修地点」，先说明自己想办的事。先说明来意：围绕「确认维修地点」提出一个请求，听对方回应后确认下一步。\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toContainText\" getByRole('region', { name: 'Example steps', exact: true }) with timeout 5000ms\n  - waiting for getByRole('region', { name: 'Example steps', exact: true })\n    14 × locator resolved to <section aria-label=\"Example steps\">…</section>\n       - unexpected value \"Example steps围绕「确认维修地点」，先说明自己想办的事。先说明来意：围绕「确认维修地点」提出一个请求，听对方回应后确认下一步。\"\n"
+    }
+  ],
+  "errors": []
+}

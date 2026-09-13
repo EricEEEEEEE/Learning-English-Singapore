@@ -1,0 +1,142 @@
+{
+  "task": "T05",
+  "status": "verified and independently reviewed; awaiting real green Stop receipt",
+  "red_archive": "7b396f1445957a84d1edfd46152d47eb089162a3",
+  "green_archive": null,
+  "scope": "Approved B1 offline scenario confirmation and preparation prototype only",
+  "environment": {
+    "node": "v24.15.0",
+    "npm": "11.12.1",
+    "python": "3.9.6",
+    "next": "16.3.5",
+    "react": "19.3.0",
+    "playwright": "1.63.0",
+    "browser": "local Chrome, headless, simulated touch viewports",
+    "widths": [
+      320,
+      390,
+      1280
+    ],
+    "languages": [
+      "zh-Hans",
+      "id",
+      "ja",
+      "en"
+    ]
+  },
+  "automated": {
+    "command": "bash .loopwork/hooks/verify.sh",
+    "expected": 233,
+    "passed": 233,
+    "failed": 0,
+    "browser": 180,
+    "domain": 53,
+    "exit_code": 0,
+    "log": "verify.log",
+    "independent_exit_code": 0,
+    "independent_log": "independent-verify.log",
+    "independent_expected": 233,
+    "independent_passed": 233
+  },
+  "supplementary": {
+    "domain": {
+      "command": "node docs/evidence/t05/domain-review.cjs",
+      "expected": 11,
+      "passed": 11,
+      "exit_code": 0,
+      "evidence": "domain-review-green.json",
+      "red_evidence": "domain-review-red.json"
+    },
+    "browser": {
+      "command": "node docs/evidence/t05/browser-review.cjs",
+      "expected": 15,
+      "passed": 15,
+      "exit_code": 0,
+      "evidence": "browser-review-green.json",
+      "log": "browser-review-green.log",
+      "red_evidence": "browser-review-red.json",
+      "composition": "3 cross-language fixes plus 4 languages × 3 widths with large text, confirmation, failed media retry, cancelled historical version and branch revision 3",
+      "external_requests_and_media_calls": 0
+    },
+    "screenshots": {
+      "captured": 24,
+      "visually_inspected": [
+        "large-confirm-zh-Hans-320.png",
+        "large-ready-en-320.png",
+        "large-confirm-ja-390.png",
+        "large-ready-id-1280.png",
+        "large-confirm-en-1280.png"
+      ],
+      "result": "No clipping, overlap or inaccessible visible buttons in inspected representative images. Automated bounds covered confirmation, ready and cancelled states across all 12 combinations.",
+      "independently_inspected": [
+        "large-confirm-id-320.png",
+        "large-ready-ja-320.png",
+        "large-ready-en-1280.png"
+      ]
+    }
+  },
+  "acceptance": [
+    {
+      "id": "F3.1",
+      "evidence": "Three distinct school/work/daily starts plus a separate custom goal entry, four-language text input; voice input visibly unavailable."
+    },
+    {
+      "id": "F3.2",
+      "evidence": "Explicit who/where/goal/worry confirmation, editable one field at a time; empty goal asks one necessary question and leaves other unknowns intact."
+    },
+    {
+      "id": "F3.3",
+      "evidence": "Changing goal updates actual step and practice-prompt list items; new confirmation creates an immutable revision while old content remains selectable."
+    },
+    {
+      "id": "F3.4",
+      "evidence": "Unlisted raw goals stay intact in clearly disclosed generic communication templates; focus changes the actual interaction instructions. Actual arbitrary-task generation remains untested and belongs to T14."
+    },
+    {
+      "id": "F3.5",
+      "evidence": "No real names, school/employer identifiers or medical records required; seed scenes are illustrative and edited details become user-provided."
+    },
+    {
+      "id": "F9.1",
+      "evidence": "Goal and chosen support are part of each version, one focus at a time; no required English answer or fixed correct sentence. Dynamic AI conversation remains untested."
+    },
+    {
+      "id": "F14.1",
+      "evidence": "Ordered dialogue/media/check demo states, explicit failure/cancel controls, no fabricated countdown; real_media_ready always false."
+    },
+    {
+      "id": "F14.2",
+      "evidence": "Reload restores goal, version, form buffer and preparation; only the failed part retries, preserving successful artifacts and rejecting old attempt/version events."
+    }
+  ],
+  "review_fixes": [
+    "Persisted unsubmitted description and editing buffers across language unmount and refresh without confirming or mutating saved versions.",
+    "Strict string enumeration checks reject malformed array-valued fields and preserve old storage bytes on read failure.",
+    "User edits to any substantive seed field clear seed provenance rather than claiming the new facts came from the specification.",
+    "Localize generic instruction rendering using the current auxiliary language while keeping user text and stored historical versions untouched."
+  ],
+  "verification_history": [
+    "Initial domain invocation hit sandbox EPERM on loopback; authorized local execution passed all 15 new scenario rules.",
+    "Initial full verify passed 233/233, but independent static review identified four defects; 11 domain and 3 browser supplementary checks reproduced them before fixes.",
+    "After fixes, typecheck exited 2 for a TypeScript union narrowing error; a subsequently started verify also exited 1 at typecheck. Fixed the branch expression; final main verify exited 0 with 233/233.",
+    "Final supplementary domain checks passed 11/11 and browser checks passed 15/15; owned local preview stopped normally.",
+    "Independent verify also exited 0 with 233/233; seven source hashes unchanged. Final independent review passed with no unresolved blockers."
+  ],
+  "independent_review": {
+    "agent": "t01_review",
+    "static_result": "four fixes re-reviewed, no static blockers",
+    "runtime_result": "233/233, exit 0",
+    "evidence": "review.md",
+    "result": "pass, T05 offline prototype only",
+    "unresolved_blockers": 0,
+    "supplementary_scripts_independently_rerun": false
+  },
+  "source_hashes": "source-sha256.json",
+  "limits": [
+    "B1 remains offline; no real arbitrary-task planner, English dialogue generation, audio/video output, ASR, OAuth, paid product APIs or publication.",
+    "No physical phone, screen-reader, native-speaker, adult calibration or real-user study was performed.",
+    "Ready artifacts are simulation metadata, not playable or pedagogically reviewed media. Provider cancellation, billing idempotency and fact correctness require later real validation.",
+    "Supplementary review regressions are outside the frozen test suite; promote the material parser, provenance and cross-language buffer fixes at the next T06 test-writing phase.",
+    "All G1–G6 real-world gates remain untested by this task."
+  ]
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "reject array masquerading as session.stage",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as context.content_band",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as context.speed",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as context.support",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as context.listening_status",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as draft.origin",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as draft.language",
+    "result": "pass"
+  },
+  {
+    "name": "reject array masquerading as draft.grounding_status",
+    "result": "pass"
+  },
+  {
+    "name": "edited seed who becomes user-provided",
+    "result": "pass"
+  },
+  {
+    "name": "edited seed where becomes user-provided",
+    "result": "pass"
+  },
+  {
+    "name": "edited seed worry becomes user-provided",
+    "result": "pass"
+  }
+]

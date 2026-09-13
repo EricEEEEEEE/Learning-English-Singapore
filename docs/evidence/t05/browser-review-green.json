@@ -1,0 +1,65 @@
+{
+  "results": [
+    {
+      "name": "unsubmitted description survives language switch and refresh",
+      "result": "pass"
+    },
+    {
+      "name": "unsubmitted goal edit survives language switch and refresh without creating a version",
+      "result": "pass"
+    },
+    {
+      "name": "confirmed instructions follow auxiliary language without rewriting user goal or stored version",
+      "result": "pass"
+    },
+    {
+      "name": "zh-Hans large 320: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "zh-Hans large 390: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "zh-Hans large 1280: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "id large 320: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "id large 390: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "id large 1280: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "ja large 320: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "ja large 390: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "ja large 1280: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "en large 320: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "en large 390: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    },
+    {
+      "name": "en large 1280: confirmation, partial retry, cancelled history and global branch",
+      "result": "pass"
+    }
+  ],
+  "errors": []
+}

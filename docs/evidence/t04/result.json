@@ -1,8 +1,8 @@
 {
   "task": "T04",
-  "status": "verified and independently reviewed; awaiting real green Stop receipt",
+  "status": "verified, independently reviewed and archived with a real Stop receipt",
   "red_archive": "53fdf9ac020c21f6fcdb87a72b266f8201f38352",
-  "green_archive": null,
+  "green_archive": "40e374e438995e1b13b28931c6b041afdf799237",
   "automated": {
     "command": "bash .loopwork/hooks/verify.sh",
     "expected": 167,
@@ -91,7 +91,7 @@
     "B1 app inputs remain simulation; observed fixtures are synthetic algorithm inputs, not real adult or audio measurements.",
     "Real voice identity, question wording difference, translation/content review, calibration and physical phones/screen readers remain untested.",
     "No paid product API, real OAuth, external publication or actual microphone/audio use.",
-    "Supplementary cumulative-support and actual Tab checks are not frozen tests; promote both during T05 test-writing.",
+    "Supplementary cumulative-support and actual Tab checks were promoted into frozen T05 tests; the original T04 evidence remains unchanged.",
     "Rule parser rejection does not prove stored bytes remain untouched; that claim relies on frozen browser cases and browser-review.json."
   ]
 }

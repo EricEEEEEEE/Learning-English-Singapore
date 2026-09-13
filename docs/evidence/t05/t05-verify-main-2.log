@@ -1,0 +1,12 @@
+[verify] tests/run.sh（超时上限 300s）
+[verify] ❌ 不通过 (exit 1) — 最后 20 行：
+[verify] tests/run.sh（超时上限 300s）
+
+> learning-english-singapore@0.1.0 typecheck
+> NEXT_TELEMETRY_DISABLED=1 next typegen && tsc --noEmit
+
+Generating route types...
+✓ Types generated successfully
+lib/scenario.ts(92,63): error TS2339: Property 'field' does not exist on type '{ type: "confirm" | "edit-goal" | "cancel" | "retry-failed" | "choose-another"; } | { type: "begin-edit"; field: ScenarioField; }'.
+  Property 'field' does not exist on type '{ type: "confirm" | "edit-goal" | "cancel" | "retry-failed" | "choose-another"; }'.
+lib/scenario.ts(94,103): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'ScenarioDraft'.

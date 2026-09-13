@@ -1,0 +1,57 @@
+[
+  {
+    "name": "reject array masquerading as session.stage",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as context.content_band",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as context.speed",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as context.support",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as context.listening_status",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as draft.origin",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as draft.language",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "reject array masquerading as draft.grounding_status",
+    "result": "fail",
+    "message": "Missing expected exception."
+  },
+  {
+    "name": "edited seed who becomes user-provided",
+    "result": "fail",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'spec-seed'\n- 'user-provided'\n"
+  },
+  {
+    "name": "edited seed where becomes user-provided",
+    "result": "fail",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'spec-seed'\n- 'user-provided'\n"
+  },
+  {
+    "name": "edited seed worry becomes user-provided",
+    "result": "fail",
+    "message": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'spec-seed'\n- 'user-provided'\n"
+  }
+]
