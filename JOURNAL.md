@@ -62,3 +62,4 @@
 - [audit] phase → test-writing @ 2026-09-13T14:49:30+08:00
 - T06真实绿档9c1fd65e2455df14fbf5e27a38968cf73cf4eec4已核实，B1六项绿档齐、round_count=6；进入Stage5验收。独立预检6/6、材料9/9、313/313全绿。本地127.0.0.1:3000已启动，验收单docs/b1-acceptance.md；用户亲自反馈尚未收到，真实G1–G6未测。
 - 批末状态落盘：本轮仅对账真实绿档、记录独立评审、启动验收预览并邀请具体反馈；登记note后正常收尾由Stop自动验档。不手动commit或调用stop_hook.py，不启用batch flag；当前Goal仍需用户验收反馈和真实note回执，未宣布本批闭环。
+- B1回执对账：49d120d88b真实note已核实；本轮用apply_patch修正tasks、验收单及B1证据中残留的待回执措辞，JSON/diff检查通过。预览session47399实际仍运行。上一轮完成真实note核验；当前Stage5唯一剩余验收条件为用户试用反馈，已发问题继续待答；不把方法约束更新当作验收通过。
