@@ -138,7 +138,7 @@ function contextValid(value: unknown): boolean {
     oneOf(value.support, ['full','guided','minimal']) && oneOf(value.listening_status, ['unknown','provisional','supported']) && value.speaking_status === 'unobserved';
 }
 function draftValid(value: unknown): value is ScenarioDraft {
-  if (!record(value) || !oneOf(value.origin, ['custom','school','work','daily']) || !oneOf(value.language, ['zh-Hans','id','ja','en']) ||
+  if (!record(value) || !oneOf(value.origin, ['custom','school','work','daily']) || !oneOf(value.language, ['zh-Hans','id','ja','ko','hi']) ||
     typeof value.goal !== 'string' || typeof value.description !== 'string' || !['who','where','worry'].every(field => value[field] === null || typeof value[field] === 'string') ||
     !oneOf(value.grounding_status, ['user-provided','spec-seed']) || !strings(value.source_refs) || !strings(value.unknown_facts) || !value.unknown_facts.length ||
     !focusIds.includes(value.candidate_id as ScenarioFocus) || !Array.isArray(value.candidates)) return false;
@@ -169,6 +169,11 @@ function versionValid(value: unknown): value is ScenarioVersion {
 export function readScenarioSession(raw: string | null): ScenarioSession | null {
   if (raw === null) return null;
   const value: unknown = JSON.parse(raw);
+  if (record(value)) {
+    const migrateDraftLanguage = (draft: unknown) => { if (record(draft) && draft.language === 'en') draft.language = 'zh-Hans'; };
+    migrateDraftLanguage(value.draft);
+    if (Array.isArray(value.versions)) value.versions.forEach(version => { if (record(version)) migrateDraftLanguage(version.draft); });
+  }
   if (!record(value) || value.schema !== 1 || !contextValid(value.learning_context) || !draftValid(value.draft) || !Array.isArray(value.versions) ||
     !value.versions.every(versionValid) || !oneOf(value.stage, ['choosing','describing','clarifying','confirming','preparing','partial','ready','cancelled'])) throw new Error('Invalid scenario record');
   if (!record(value.form) || typeof value.form.text !== 'string' || !(value.form.editing === null || oneOf(value.form.editing, ['who','where','goal','worry'])) ||

@@ -65,3 +65,5 @@
 - B1回执对账：49d120d88b真实note已核实；本轮用apply_patch修正tasks、验收单及B1证据中残留的待回执措辞，JSON/diff检查通过。预览session47399实际仍运行。上一轮完成真实note核验；当前Stage5唯一剩余验收条件为用户试用反馈，已发问题继续待答；不把方法约束更新当作验收通过。
 - T41 用户验收反馈已接单：辅助语言移除 English，新增 한국어与 हिन्दी；品牌加入‘帮你融入新加坡，相信自己可以做到。’；按完整当前流程与旧 en 偏好迁移验收。
 - T41 红阶段：修正后 small-phone 7/7 真实失败 exit1；历史 English 辅助语言合同已迁移；独立只读审题通过。证据 tests/evidence/t41-red.md。
+- [audit] phase → implementing @ 2026-09-13T16:34:25+08:00
+- T41 绿阶段：7/7 交付对上；主 verify exit0（verify-20260913-163501.log），独立 verify 316/316 exit0（verify-20260913-163951.log）；判卷通过。韩语/Hindi 母语自然度与真实手机字形未验。

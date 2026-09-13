@@ -3,7 +3,7 @@ import type { ContentBand } from '../lib/onboarding';
 import type { StudyChoice } from '../lib/placement';
 
 type Translation = readonly [string, string, string, string];
-const languageIndex: Record<EntryLanguage, number> = { 'zh-Hans': 0, id: 1, ja: 2, en: 3 };
+const languageIndex: Record<EntryLanguage, number> = { 'zh-Hans': 0, id: 1, ja: 2, ko: 3, hi: 3 };
 const labels = {
   region: ['学习起点与帮助', 'Titik awal dan bantuan', '学習の出発点とサポート', 'Starting point and support'],
   listening: ['目前能听懂的内容', 'Yang sudah dipahami saat mendengar', '今聞いてわかる内容', 'What you understand when listening'],
@@ -48,11 +48,23 @@ const supports: Record<StudyChoice['support'], Translation> = {
   guided: ['需要时给提示', 'Petunjuk saat diperlukan', '必要なときにヒント', 'Hints when needed'],
   minimal: ['较少提示', 'Lebih sedikit petunjuk', '少なめのヒント', 'Fewer hints'],
 };
+const extraLabels: Record<'ko'|'hi', Partial<Record<keyof typeof labels,string>>> = {
+  ko: { region:'학습 시작점과 도움', listening:'현재 알아들을 수 있는 내용', unknown:'아직 판단할 수 없음', provisional:'임시 듣기 시작점이며 나중에 조정할 수 있습니다', evidence:'독립 듣기 증거: {n}', demo:'데모 답변은 능력 증거가 아닙니다', recommendation:'추천 시작점', settings:'현재 연습 설정', content:'내용', speedLabel:'속도', supportLabel:'도움', contentGroup:'내용 시작점 선택', speedGroup:'속도 선택', helpGroup:'힌트 조정', simpler:'더 쉽게', natural:'더 자연스럽게', slower:'더 천천히', speed:'자연스러운 속도', fewer:'힌트 줄이기', restore:'추천으로 복원', feedback:'잘못된 피드백 신고', flagged:'피드백이 표시됨', feedbackHint:'이 표시는 듣기 판단을 바꾸지 않습니다.', choiceHint:'연습 방식 선택이며 능력 기록을 바꾸지 않습니다. 지금은 선호도만 저장합니다.', readError:'연습 설정을 읽을 수 없습니다. 변경은 임시이며 이전 기록은 유지됩니다.', saveError:'연습 설정을 저장할 수 없지만 계속할 수 있습니다.' },
+  hi: { region:'सीखने की शुरुआत और मदद', listening:'अभी सुनकर समझी जाने वाली सामग्री', unknown:'अभी तय नहीं किया जा सकता', provisional:'सुनने की अस्थायी शुरुआत, बाद में बदली जा सकती है', evidence:'स्वतंत्र सुनने के प्रमाण: {n}', demo:'डेमो उत्तर क्षमता का प्रमाण नहीं हैं', recommendation:'यहाँ से शुरू करने का सुझाव', settings:'मौजूदा अभ्यास सेटिंग', content:'सामग्री', speedLabel:'गति', supportLabel:'मदद', contentGroup:'सामग्री की शुरुआत चुनें', speedGroup:'गति चुनें', helpGroup:'संकेत बदलें', simpler:'और सरल', natural:'अधिक स्वाभाविक', slower:'और धीमा', speed:'स्वाभाविक गति', fewer:'कम संकेत', restore:'सुझाव वापस लाएँ', feedback:'गलत फ़ीडबैक बताएँ', flagged:'फ़ीडबैक चिह्नित', feedbackHint:'यह चिह्न सुनने के आकलन को नहीं बदलता।', choiceHint:'ये अभ्यास की पसंद हैं, क्षमता का रिकॉर्ड नहीं बदलता। अभी केवल पसंद सहेजी जाती है।', readError:'अभ्यास सेटिंग पढ़ी नहीं जा सकीं। बदलाव अस्थायी हैं और पुराना रिकॉर्ड सुरक्षित है।', saveError:'अभ्यास सेटिंग सहेजी नहीं जा सकीं; अभी जारी रख सकते हैं।' },
+};
+const extraBands: Record<'ko'|'hi',Record<ContentBand,string>> = {
+  ko:{L0:'짧은 문장으로 시작',L1:'한 문장에 한 가지',L2:'간단한 대화',L3:'변화에 대응하기',L4:'더 자연스러운 대화'},
+  hi:{L0:'छोटे वाक्यों से शुरू करें',L1:'एक वाक्य में एक बात',L2:'सरल बातचीत',L3:'बदलाव सँभालने का अभ्यास',L4:'अधिक स्वाभाविक बातचीत'},
+};
+const extraSpeeds={ko:{slow:'천천히',natural:'자연스러운 속도'},hi:{slow:'धीमा',natural:'स्वाभाविक गति'}};
+const extraSupports={ko:{full:'충분한 도움',guided:'필요할 때 힌트',minimal:'적은 힌트'},hi:{full:'पूरी मदद',guided:'ज़रूरत पर संकेत',minimal:'कम संकेत'}};
 export function profileCopy(language: EntryLanguage) {
-  return Object.fromEntries(Object.entries(labels).map(([key, value]) => [key, value[languageIndex[language]]])) as Record<keyof typeof labels, string>;
+  const base=Object.fromEntries(Object.entries(labels).map(([key, value]) => [key, value[languageIndex[language]]]));
+  return {...base,...(language==='ko'||language==='hi'?extraLabels[language]:{})} as Record<keyof typeof labels, string>;
 }
 export function choiceText(choice: StudyChoice, language: EntryLanguage) {
   const index = languageIndex[language];
+  if(language==='ko'||language==='hi') return {content:extraBands[language][choice.content_band],speed:extraSpeeds[language][choice.speed],support:extraSupports[language][choice.support]};
   return { content: bands[choice.content_band][index], speed: speeds[choice.speed][index], support: supports[choice.support][index] };
 }
-export function bandText(band: ContentBand, language: EntryLanguage) { return bands[band][languageIndex[language]]; }
+export function bandText(band: ContentBand, language: EntryLanguage) { return language==='ko'||language==='hi'?extraBands[language][band]:bands[band][languageIndex[language]]; }

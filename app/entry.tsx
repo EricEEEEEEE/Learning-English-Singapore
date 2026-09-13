@@ -25,6 +25,7 @@ function readPreferences(value: string | null): Preferences {
   const saved: unknown = JSON.parse(value);
   if (!saved || typeof saved !== 'object') throw new Error('Invalid preferences');
   const data = saved as Record<string, unknown>;
+  if (data.language === 'en') data.language = null;
   if (data.language !== null && !languageChoices.some(language => language.code === data.language)) {
     throw new Error('Invalid language');
   }
@@ -176,7 +177,7 @@ export default function Entry() {
     <div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
       <title>{`Learning English in Singapore · ${copy.title.join(' ')}`}</title>
       <header className="site-header">
-        <p className="wordmark" lang="en">Learning English<span>in Singapore</span></p>
+        <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan">帮你融入新加坡，相信自己可以做到。</p></div>
         <span className="demo-label">{copy.demo}</span>
       </header>
 
@@ -216,7 +217,7 @@ export default function Entry() {
 
         <div className="entry-panel">
           {showChoices ? (
-            <section aria-labelledby="entry-panel-title">
+            <section role="group" aria-labelledby="entry-panel-title">
               <Icon name="language" />
               <h2 id="entry-panel-title" ref={panelHeading} tabIndex={-1}>{copy.choose}</h2>
               <p className="panel-copy">{copy.chooseHint}</p>

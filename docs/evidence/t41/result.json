@@ -1,0 +1,19 @@
+{
+  "task": "T41",
+  "red_commit": "82b7e8577ed89a11c234bcbf2baa7e4463a8f076",
+  "requirements": 7,
+  "verified": 7,
+  "checks": {
+    "t41_browser": { "passed": 21, "failed": 0 },
+    "scenario_and_t41_targeted": { "passed": 47, "failed": 0 },
+    "full_verify_primary": { "exit_code": 0, "log": ".loopwork/logs/verify-20260913-163501.log" },
+    "full_verify_independent": { "passed": 316, "failed": 0, "exit_code": 0, "log": ".loopwork/logs/verify-20260913-163951.log" },
+    "korean_prompt_semantics": { "defined": 19, "unique": 19 },
+    "hindi_prompt_semantics": { "defined": 19, "unique": 19 }
+  },
+  "preview": "http://192.168.1.149:3002/",
+  "limits": [
+    "Korean and Hindi copy is explicitly experimental and has not had native-speaker review.",
+    "Real Android and iOS glyph rendering has not been verified."
+  ]
+}

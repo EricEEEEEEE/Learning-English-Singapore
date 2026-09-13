@@ -1,7 +1,7 @@
 import type { EntryLanguage } from './entry-copy';
 
 type Translation = readonly [string, string, string, string];
-const languageIndex: Record<EntryLanguage, number> = { 'zh-Hans': 0, id: 1, ja: 2, en: 3 };
+const languageIndex: Record<EntryLanguage, number> = { 'zh-Hans': 0, id: 1, ja: 2, ko: 3, hi: 3 };
 const controls = {
   entry: ['预览逐题引导', 'Pratinjau panduan bertahap', '質問の流れをプレビュー', 'Preview the step-by-step guide'],
   entryHint: ['无需账号，先看看流程。不会测量你的能力。', 'Lihat alurnya tanpa akun. Kemampuan Anda tidak diukur.', 'アカウントなしで流れを確認できます。能力は測定しません。', 'Explore without an account. This does not measure your ability.'],
@@ -49,6 +49,15 @@ const controls = {
   extra: ['换个说法，再看一次：', 'Dengan ungkapan lain, coba lagi: ', '別の言い方でもう一度：', 'Try a different wording: '],
 } satisfies Record<string, Translation>;
 
+const extraControls: Record<'ko' | 'hi', Partial<Record<keyof typeof controls, string>>> = {
+  ko: {
+    entry:'단계별 안내 미리보기', entryHint:'계정 없이 흐름을 살펴보세요. 능력을 측정하지 않습니다.', title:'한 단계씩, 시작점을 알아보세요', intro:'몰라도 괜찮고 언제든 멈출 수 있습니다. 현재는 선택 흐름만 미리 보며, 음성은 아직 연결되지 않았습니다.', article:'현재 질문', answerChoices:'답변 선택', preference:'선호도 알아보기', listening:'듣고 그림 고르기', progress:'{n} / 12번 질문', optionalProgress:'선택 질문 {n} / 4', unknown:'모르겠어요', skip:'이 질문 건너뛰기', back:'이전 질문으로', finish:'안내 끝내기', pause:'나중에 계속하기', paused:'일시 중지됨', pauseCopy:'잠시 쉬세요. 돌아오면 여기서 계속할 수 있습니다.', resume:'안내 계속하기', instructions:'사용 안내 듣기', audioQuestion:'질문 듣기', audioNotice:'음성은 아직 연결되지 않았습니다. 그림과 글은 흐름 예시이며 실제 듣기 문제가 아닙니다.', help:'이해를 도와주세요', helpTitle:'이해 도움', meaning:'뜻 듣기', helpCopy:'익숙한 언어의 설명과 그림 도움을 제공할 예정입니다. 음성과 내용 검토는 아직 준비 중입니다.', simulationControls:'재생 데모 제어', simulationCopy:'재생 이벤트만 시뮬레이션하며 소리나 실제 듣기 증거를 만들지 않습니다.', promptEnded:'질문 재생 종료 시뮬레이션', answerEnded:'전체 답변 재생 종료 시뮬레이션', playbackFailed:'재생 오류 시뮬레이션', replayCount:'다시 들은 횟수: {n}회(시뮬레이션)', answerShown:'답변 도움을 확인함(시뮬레이션)', deviceFailed:'재생 오류(시뮬레이션)', historyHint:'다시 듣기, 도움, 기기 문제는 답을 바꿔도 기록됩니다.', summary:'짧은 문장부터 천천히 시작하세요', starter:'우선 입문 단계에서 시작하며 언제든 조정할 수 있습니다', unknownResult:'듣기 수준은 아직 판단할 수 없습니다. 음성이 연결되지 않았고 데모 선택은 실제 이해의 증거가 아닙니다.', speaking:'말하기는 아직 확인되지 않았습니다', optional:'조금 더 알아보기(선택)', leave:'로그인으로 돌아가기', respect:'내 억양을 유지하고 내 속도로 하세요.', readError:'안내 진행 상황을 읽을 수 없습니다. 이번에는 미리 볼 수 있지만 선택은 저장되지 않습니다.', saveError:'안내 진행 상황을 저장할 수 없습니다. 이번에는 계속할 수 있습니다.', extra:'다른 표현으로 다시 보기: ',
+  },
+  hi: {
+    entry:'चरण-दर-चरण मार्गदर्शिका देखें', entryHint:'बिना अकाउंट के प्रक्रिया देखें। यह आपकी क्षमता नहीं मापता।', title:'एक-एक कदम से अपनी शुरुआत जानें', intro:'न जानना ठीक है और आप कभी भी रुक सकते हैं। यह केवल चुनाव की प्रक्रिया है; ऑडियो अभी जुड़ा नहीं है।', article:'मौजूदा सवाल', answerChoices:'उत्तर के विकल्प', preference:'आपकी पसंद', listening:'सुनें और चित्र चुनें', progress:'सवाल {n} / 12', optionalProgress:'वैकल्पिक सवाल {n} / 4', unknown:'पता नहीं', skip:'यह सवाल छोड़ें', back:'पिछले सवाल पर जाएँ', finish:'मार्गदर्शिका समाप्त करें', pause:'बाद में जारी रखें', paused:'रुका हुआ', pauseCopy:'थोड़ा आराम करें। लौटकर यहीं से जारी रख सकते हैं।', resume:'मार्गदर्शिका जारी रखें', instructions:'इस्तेमाल के निर्देश सुनें', audioQuestion:'सवाल सुनें', audioNotice:'ऑडियो अभी जुड़ा नहीं है। चित्र और टेक्स्ट केवल प्रक्रिया के नमूने हैं, असली सुनने का सवाल नहीं।', help:'समझने में मदद करें', helpTitle:'समझने की मदद', meaning:'अर्थ सुनें', helpCopy:'यहाँ परिचित भाषा में अर्थ और चित्र की मदद मिलेगी। ऑडियो और सामग्री की समीक्षा अभी तैयार नहीं है।', simulationControls:'प्लेबैक डेमो नियंत्रण', simulationCopy:'ये केवल प्लेबैक घटनाओं का डेमो हैं; आवाज़ या असली सुनने का प्रमाण नहीं बनता।', promptEnded:'सवाल का ऑडियो खत्म होने का डेमो', answerEnded:'पूरा उत्तर खत्म होने का डेमो', playbackFailed:'प्लेबैक खराब होने का डेमो', replayCount:'{n} बार फिर सुना (डेमो)', answerShown:'उत्तर की मदद देखी (डेमो)', deviceFailed:'प्लेबैक खराब (डेमो)', historyHint:'दोबारा सुनना, मदद और डिवाइस की समस्या उत्तर बदलने पर भी दर्ज रहती है।', summary:'छोटे वाक्यों से धीरे शुरू करें', starter:'अभी शुरुआती सामग्री से शुरू करें; कभी भी बदल सकते हैं', unknownResult:'सुनने का स्तर अभी तय नहीं हुआ: ऑडियो जुड़ा नहीं है और डेमो चुनाव असली समझ का प्रमाण नहीं है।', speaking:'बोलने की क्षमता अभी देखी नहीं गई', optional:'थोड़ा और जानें (वैकल्पिक)', leave:'साइन-इन पर लौटें', respect:'अपना उच्चारण रखें और अपनी गति से चलें।', readError:'मार्गदर्शिका की प्रगति पढ़ी नहीं जा सकी। अभी देख सकते हैं, लेकिन चुनाव सहेजे नहीं जाएँगे।', saveError:'मार्गदर्शिका की प्रगति सहेजी नहीं जा सकी। अभी जारी रख सकते हैं।', extra:'दूसरे तरीके से फिर देखें: ',
+  },
+};
+
 const prompts: Record<string, Translation> = {
   experience: ['平时听到英语，你更像哪一种？', 'Saat mendengar bahasa Inggris, mana yang paling sesuai dengan Anda?', '普段英語を聞くとき、どれに近いですか？', 'When you hear English, which feels closest?'],
   situation: ['最近最想应付哪种情境？', 'Situasi apa yang paling Anda butuhkan akhir-akhir ini?', '最近、どんな場面で使いたいですか？', 'Which situation matters most to you right now?'],
@@ -69,6 +78,19 @@ const prompts: Record<string, Translation> = {
   'natural-number': ['听完饮品订单，需要几杯？', 'Setelah mendengar pesanan minuman, berapa cangkir yang dibutuhkan?', '飲み物の注文を聞いて、何杯必要ですか？', 'After the drink order, how many cups are needed?'],
   'natural-direction': ['换一种问路说法，最后往哪走？', 'Dengan petunjuk arah yang berbeda, akhirnya harus ke mana?', '別の道案内の言い方で、最後はどちらへ進みますか？', 'With different directions, which way should you go?'],
   'natural-local': ['这段本地表达想请对方怎样说？', 'Ungkapan setempat ini meminta orang lain berbicara bagaimana?', 'この地域の表現は、相手にどう話してほしいという意味ですか？', 'What does this local expression ask the other person to do?'],
+};
+
+const extraPrompts: Record<'ko' | 'hi', Record<string, string>> = {
+  ko: {
+    experience:'평소 영어를 들을 때 어느 쪽에 가장 가깝나요?', situation:'요즘 가장 연습하고 싶은 상황은 무엇인가요?', voice:'지금 어떻게 참여하고 싶나요?', time:'보통 얼마 동안 연습하고 싶나요?', support:'막힐 때 어떤 도움을 받고 싶나요?',
+    'foundation-drink':'음료 가게에서 어떤 음료를 들었나요?', 'foundation-greeting':'만났을 때 어떤 뜻을 들었나요?', 'foundation-time':'선생님이 하루 중 언제라고 말했나요?', 'foundation-number':'직원이 몇 잔이라고 했나요?', 'foundation-action':'동료가 먼저 어떤 행동을 하라고 했나요?', 'foundation-place':'교실은 어디에 있나요?', 'foundation-direction':'역무원이 어느 방향을 가리켰나요?',
+    'natural-order':'업무 안내를 듣고 어떤 순서로 해야 하나요?', 'natural-plan':'두 사람의 말을 듣고 언제 만나기로 했나요?', 'natural-appointment':'방문자가 어떤 계획을 바꿨나요?', 'natural-response':'동료가 다른 표현으로 무엇을 말하려 하나요?', 'natural-number':'음료 주문을 들은 뒤 몇 잔이 필요한가요?', 'natural-direction':'다른 길 안내를 들은 뒤 어느 쪽으로 가야 하나요?', 'natural-local':'이 현지 표현은 상대에게 어떻게 말해 달라는 뜻인가요?',
+  },
+  hi: {
+    experience:'आम तौर पर अंग्रेज़ी सुनते समय आप किसके सबसे करीब हैं?', situation:'इन दिनों आप किस स्थिति का सबसे अधिक अभ्यास करना चाहते हैं?', voice:'अभी आप किस तरह भाग लेना चाहते हैं?', time:'आप आम तौर पर कितना समय देना चाहते हैं?', support:'अटकने पर आपको कैसी मदद चाहिए?',
+    'foundation-drink':'पेय की दुकान पर आपने कौन सा पेय सुना?', 'foundation-greeting':'मिलते समय आपने कौन सा अर्थ सुना?', 'foundation-time':'शिक्षक ने दिन का कौन सा समय कहा?', 'foundation-number':'दुकानदार ने कितने कप कहे?', 'foundation-action':'सहकर्मी ने पहले कौन सा काम करने को कहा?', 'foundation-place':'कक्षा कहाँ है?', 'foundation-direction':'स्टेशन कर्मचारी ने कौन सी दिशा बताई?',
+    'natural-order':'काम के निर्देश सुनने के बाद क्रम क्या है?', 'natural-plan':'दोनों की बात सुनकर वे कब मिलने पर सहमत हुए?', 'natural-appointment':'आगंतुक ने कौन सी योजना बदली?', 'natural-response':'सहकर्मी ने दूसरे तरीके से क्या कहना चाहा?', 'natural-number':'पेय का ऑर्डर सुनने के बाद कितने कप चाहिए?', 'natural-direction':'दूसरे तरीके से दिशा सुनने पर आखिर किस ओर जाना है?', 'natural-local':'यह स्थानीय अभिव्यक्ति सामने वाले से किस तरह बोलने को कहती है?',
+  },
 };
 
 const options: Record<string, Translation> = {
@@ -101,16 +123,23 @@ const options: Record<string, Translation> = {
   cannot: ['暂时做不了', 'Belum bisa dilakukan', '今はできない', 'Cannot do it yet'], repeat: ['再说一次', 'Ulangi sekali lagi', 'もう一度言う', 'Say it again'], ready: ['准备好了', 'Sudah siap', '準備ができた', 'Ready'], slow: ['说慢一点', 'Bicara lebih pelan', 'ゆっくり話す', 'Speak more slowly'], anotherWay: ['换个说法', 'Katakan dengan cara lain', '別の言い方にする', 'Say it another way'],
 };
 
+const extraOptions: Record<'ko' | 'hi', Record<string, string>> = {
+  ko: { new:'영어를 거의 못해요', words:'익숙한 단어 몇 개는 알아들어요', simple:'간단한 대화를 알아들어요', natural:'대부분 알아들어요', school:'학교와 선생님과의 대화', work:'직장에서의 대화', daily:'일상생활 서비스', own:'다른 일이 있어요', speak:'말해 보고 싶어요', quiet:'작게만 말할 수 있어요', listen:'지금은 듣기만 할래요', short:'몇 분', medium:'십여 분', long:'천천히, 서두르지 않기', show:'먼저 보여 주세요', twoChoices:'두 가지 선택을 주세요', wait:'잠시 기다려 주세요', coffee:'커피', water:'물', tea:'차', wave:'인사하기', enter:'들어가기', leave:'나가기', morning:'아침', noon:'정오', evening:'저녁', one:'한 잔', two:'두 잔', three:'세 잔', take:'물건 집기', here:'여기', upstairs:'위층', outside:'밖', left:'왼쪽', right:'오른쪽', straight:'직진', waitThenEnter:'기다린 뒤 들어가기', enterThenWait:'들어간 뒤 기다리기', afternoon:'오후', tomorrow:'내일', cancel:'예약 취소', move:'예약 시간 변경', confirm:'원래 시간 확인', cannot:'지금은 할 수 없음', repeat:'다시 말하기', ready:'준비됐어요', slow:'천천히 말하기', anotherWay:'다른 표현으로 말하기' },
+  hi: { new:'अंग्रेज़ी लगभग नहीं आती', words:'कुछ परिचित शब्द समझता/समझती हूँ', simple:'सरल बातचीत समझता/समझती हूँ', natural:'अधिकतर समझता/समझती हूँ', school:'स्कूल और शिक्षक से बातचीत', work:'काम की बातचीत', daily:'रोज़मर्रा की सेवाएँ', own:'कुछ और कहना है', speak:'बोलना चाहता/चाहती हूँ', quiet:'केवल धीमी आवाज़ में', listen:'अभी केवल सुनना है', short:'कुछ मिनट', medium:'लगभग दस मिनट', long:'आराम से, जल्दी नहीं', show:'पहले उदाहरण दिखाएँ', twoChoices:'दो विकल्प दें', wait:'थोड़ा रुकें', coffee:'कॉफ़ी', water:'पानी', tea:'चाय', wave:'नमस्ते कहना', enter:'अंदर जाएँ', leave:'बाहर जाएँ', morning:'सुबह', noon:'दोपहर', evening:'शाम', one:'एक कप', two:'दो कप', three:'तीन कप', take:'वस्तु उठाएँ', here:'यहाँ', upstairs:'ऊपर', outside:'बाहर', left:'बाएँ', right:'दाएँ', straight:'सीधे', waitThenEnter:'रुकें, फिर अंदर जाएँ', enterThenWait:'अंदर जाएँ, फिर रुकें', afternoon:'दोपहर बाद', tomorrow:'कल', cancel:'अपॉइंटमेंट रद्द करें', move:'समय बदलें', confirm:'मूल समय की पुष्टि करें', cannot:'अभी नहीं कर सकते', repeat:'फिर से कहें', ready:'तैयार', slow:'धीरे बोलें', anotherWay:'दूसरे तरीके से कहें' },
+};
+
 export function guideCopy(language: EntryLanguage) {
-  return Object.fromEntries(Object.entries(controls).map(([key, values]) => [key, values[languageIndex[language]]])) as Record<keyof typeof controls, string>;
+  const base = Object.fromEntries(Object.entries(controls).map(([key, values]) => [key, values[languageIndex[language]]]));
+  return { ...base, ...(language === 'ko' || language === 'hi' ? extraControls[language] : {}) } as Record<keyof typeof controls, string>;
 }
 export function questionText(key: string, language: EntryLanguage): string {
   const optional = key.startsWith('extra-');
   const base = optional ? key.slice(6) : key;
-  return (optional ? guideCopy(language).extra : '') + prompts[base][languageIndex[language]];
+  const translated = language === 'ko' || language === 'hi' ? extraPrompts[language][base] : prompts[base][languageIndex[language]];
+  return (optional ? guideCopy(language).extra : '') + translated;
 }
 export function optionText(id: string, language: EntryLanguage): string {
-  return options[id][languageIndex[language]];
+  return language === 'ko' || language === 'hi' ? extraOptions[language][id] : options[id][languageIndex[language]];
 }
 export function withNumber(text: string, number: number): string {
   return text.replace('{n}', String(number));

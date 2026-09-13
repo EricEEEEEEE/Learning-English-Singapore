@@ -1,16 +1,22 @@
-export type ScenarioLanguage = 'zh-Hans' | 'id' | 'ja' | 'en';
+export type ScenarioLanguage = 'zh-Hans' | 'id' | 'ja' | 'ko' | 'hi';
 export type ScenarioOrigin = 'school' | 'work' | 'daily' | 'custom';
 export type ScenarioFocus = 'purpose' | 'detail' | 'repair';
 type Translation = readonly [string, string, string, string];
-const indices: Record<ScenarioLanguage, number> = { 'zh-Hans': 0, id: 1, ja: 2, en: 3 };
+const indices: Record<ScenarioLanguage, number> = { 'zh-Hans': 0, id: 1, ja: 2, ko: 3, hi: 3 };
 export const focusIds: ScenarioFocus[] = ['purpose', 'detail', 'repair'];
 const focuses: Record<ScenarioFocus, Translation> = {
   purpose: ['先说明来意', 'Sampaikan tujuan dahulu', 'まず用件を伝える', 'Start with your purpose'],
   detail: ['多问一个细节', 'Tanyakan satu detail lagi', 'もう一つ詳しく聞く', 'Ask one more detail'],
   repair: ['听不清时求助', 'Minta bantuan saat kurang jelas', '聞き取れないときに頼む', 'Ask for help when unclear'],
 };
-export function focusText(focus: ScenarioFocus, language: ScenarioLanguage) { return focuses[focus][indices[language]]; }
+const extraFocus: Record<'ko'|'hi',Record<ScenarioFocus,string>>={
+  ko:{purpose:'먼저 목적 말하기',detail:'세부 사항 하나 더 묻기',repair:'잘 들리지 않을 때 도움 요청'},
+  hi:{purpose:'पहले अपना उद्देश्य बताएँ',detail:'एक और जानकारी पूछें',repair:'समझ न आए तो मदद माँगें'},
+};
+export function focusText(focus: ScenarioFocus, language: ScenarioLanguage) { return language==='ko'||language==='hi'?extraFocus[language][focus]:focuses[focus][indices[language]]; }
 export function unknownFact(language: ScenarioLanguage) {
+  if(language==='ko') return '실제 일정은 아직 확인되지 않았습니다';
+  if(language==='hi') return 'असली व्यवस्था की अभी पुष्टि नहीं हुई है';
   return ['具体安排尚未核实', 'Pengaturan sebenarnya belum diperiksa', '実際の予定や手順は未確認です', 'The actual arrangements have not been verified'][indices[language]];
 }
 const seeds: Record<Exclude<ScenarioOrigin, 'custom'>, { goal: Translation; who: Translation; where: Translation; worry: Translation; source: string }> = {
@@ -31,6 +37,16 @@ const seeds: Record<Exclude<ScenarioOrigin, 'custom'>, { goal: Translation; who:
   },
 };
 export function seedContent(origin: Exclude<ScenarioOrigin, 'custom'>, language: ScenarioLanguage) {
+  if(language==='ko') return {...{
+    school:{goal:'선생님께 수업 상황 하나를 묻고 다음 단계를 확인하기',who:'선생님',where:'약속한 만남 장소',worry:'선생님의 설명을 놓칠까 걱정됨'},
+    work:{goal:'동료에게 일을 천천히 설명해 달라고 하고 첫 단계를 확인하기',who:'동료',where:'직장',worry:'순서를 놓칠까 걱정됨'},
+    daily:{goal:'직원에게 음료 선호를 말하고 매장 이용인지 포장인지 확인하기',who:'직원',where:'음료 가게',worry:'직원의 확인을 놓칠까 걱정됨'},
+  }[origin],source:seeds[origin].source};
+  if(language==='hi') return {...{
+    school:{goal:'शिक्षक से कक्षा की एक बात पूछें और अगला कदम तय करें',who:'शिक्षक',where:'तय मुलाकात की जगह',worry:'शिक्षक की बात समझ न पाना'},
+    work:{goal:'सहकर्मी से काम धीरे समझाने और पहला कदम तय करने को कहें',who:'सहकर्मी',where:'कार्यस्थल',worry:'कदमों का क्रम न समझ पाना'},
+    daily:{goal:'दुकानदार को पेय की पसंद बताएँ और यहीं पीना या पैक कराना तय करें',who:'दुकानदार',where:'पेय की दुकान',worry:'दुकानदार की पुष्टि न समझ पाना'},
+  }[origin],source:seeds[origin].source};
   const seed = seeds[origin], index = indices[language];
   return { goal: seed.goal[index], who: seed.who[index], where: seed.where[index], worry: seed.worry[index], source: seed.source };
 }
@@ -38,6 +54,8 @@ export function seedContent(origin: Exclude<ScenarioOrigin, 'custom'>, language:
 // These are generic communication templates, never inferred institutional facts or generated dialogue.
 export function planContent(goal: string, focus: ScenarioFocus, language: ScenarioLanguage) {
   const title = focusText(focus, language);
+  if(language==='ko') return {focus:title,steps:[`「${goal}」에 대해 먼저 하고 싶은 일을 말합니다.`,`${title}: 한 가지 요청을 하고 답을 들은 뒤 다음 단계를 확인합니다.`],practice_prompts:[`${title}: 상대에게 가장 필요한 도움 한 가지를 생각해 보세요.`,'모르는 내용은 그대로 둘 수 있습니다. 도움을 요청하거나 목적을 바꿀 수 있습니다.']};
+  if(language==='hi') return {focus:title,steps:[`“${goal}” के बारे में पहले बताएँ कि आप क्या करना चाहते हैं।`,`${title}: एक अनुरोध करें, उत्तर सुनें और अगला कदम तय करें।`],practice_prompts:[`${title}: सामने वाले से मिलने वाली सबसे ज़रूरी एक मदद सोचें।`,'अनजान जानकारी को अनजान रहने दें। मदद माँगें या लक्ष्य बदलें।']};
   const index = indices[language];
   const opening: Translation = [`围绕「${goal}」，先说明自己想办的事。`, `Untuk “${goal}”, sampaikan maksud Anda dahulu.`, `「${goal}」について、自分の用件をまず伝えます。`, `For “${goal}”, start by explaining what you want to do.`];
   const actions: Record<ScenarioFocus, Translation> = {
