@@ -1,0 +1,20 @@
+
+> test
+> playwright test --config playwright.config.mjs e2e/t05-scenario.spec.mjs --grep T05 regression: actual Tab traversal
+
+[WebServer] (node:42535) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:42536) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [small-phone] › e2e/t05-scenario.spec.mjs:279:1 › T05 regression: actual Tab traversal reaches profile controls before Enter and Space actions (532ms)
+(node:42553) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [phone] › e2e/t05-scenario.spec.mjs:279:1 › T05 regression: actual Tab traversal reaches profile controls before Enter and Space actions (516ms)
+(node:42567) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [desktop] › e2e/t05-scenario.spec.mjs:279:1 › T05 regression: actual Tab traversal reaches profile controls before Enter and Space actions (514ms)
+
+  3 passed (4.2s)

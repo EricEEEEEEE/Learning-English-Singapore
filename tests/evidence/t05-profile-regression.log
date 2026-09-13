@@ -1,0 +1,16 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t05-profile-regressions.spec.mjs
+
+[WebServer] (node:42494) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 3 tests using 1 worker
+
+(node:42495) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [domain] › domain/t05-profile-regressions.spec.mjs:4:3 › T05 regression: after-choice preserves cumulative support and the independent first-choice snapshot (98ms)
+  ✓  2 [domain] › domain/t05-profile-regressions.spec.mjs:4:3 › T05 regression: before-choice preserves cumulative support and the independent first-choice snapshot (1ms)
+  ✓  3 [domain] › domain/t05-profile-regressions.spec.mjs:4:3 › T05 regression: late-first-playback preserves cumulative support and the independent first-choice snapshot (1ms)
+
+  3 passed (674ms)

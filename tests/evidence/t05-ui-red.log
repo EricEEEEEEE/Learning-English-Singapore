@@ -1,0 +1,49 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=phone e2e/t05-scenario.spec.mjs --grep T05 / F3.1: 家校沟通
+
+[WebServer] (node:42619) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:42620) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 家校沟通 is one of three starts, with a separate unlisted-goal path (20.1s)
+
+
+  1) [phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 家校沟通 is one of three starts, with a separate unlisted-goal path 
+
+    Test timeout of 20000ms exceeded.
+
+    Error: locator.tap: Test timeout of 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '选择要练的事', exact: true })
+
+
+      46 | async function enter(page) {
+      47 |   await profile(page);
+    > 48 |   await page.getByRole('button', { name: '选择要练的事', exact: true }).tap();
+         |                                                                   ^
+      49 |   await expect(page.getByRole('heading', { name: '你想练什么事？', exact: true })).toBeVisible();
+      50 | }
+      51 | async function custom(page, text = goalA) {
+        at enter (/Users/eric/projects/Learning English  Singapore/tests/e2e/t05-scenario.spec.mjs:48:67)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t05-scenario.spec.mjs:81:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t05-scenario-T05-F3-1--c75fc-separate-unlisted-goal-path-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t05-scenario-T05-F3-1--c75fc-separate-unlisted-goal-path-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t05-scenario-T05-F3-1--c75fc-separate-unlisted-goal-path-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t05-scenario-T05-F3-1--c75fc-separate-unlisted-goal-path-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 家校沟通 is one of three starts, with a separate unlisted-goal path 

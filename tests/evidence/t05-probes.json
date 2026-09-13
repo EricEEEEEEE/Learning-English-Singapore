@@ -1,0 +1,99 @@
+[
+  {
+    "name": "t05-domain-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t05-scenario.spec.mjs"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t05-domain-red.log",
+    "archived_log": "tests/evidence/t05-domain-red.log"
+  },
+  {
+    "name": "t05-profile-regression",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t05-profile-regressions.spec.mjs"
+    ],
+    "exit_code": 0,
+    "log": ".loopwork/logs/t05-profile-regression.log",
+    "archived_log": "tests/evidence/t05-profile-regression.log"
+  },
+  {
+    "name": "t05-tab-regression",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "e2e/t05-scenario.spec.mjs",
+      "--grep",
+      "T05 regression: actual Tab traversal"
+    ],
+    "exit_code": 0,
+    "log": ".loopwork/logs/t05-tab-regression.log",
+    "archived_log": "tests/evidence/t05-tab-regression.log"
+  },
+  {
+    "name": "t05-ui-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=phone",
+      "e2e/t05-scenario.spec.mjs",
+      "--grep",
+      "T05 / F3.1: 家校沟通"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t05-ui-red.log",
+    "archived_log": "tests/evidence/t05-ui-red.log"
+  },
+  {
+    "name": "t05-domain-red-reviewed",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=domain",
+      "domain/t05-scenario.spec.mjs",
+      "--grep",
+      "branching from an older|viewing a cancelled historical"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t05-domain-red-reviewed.log",
+    "archived_log": "tests/evidence/t05-domain-red-reviewed.log"
+  },
+  {
+    "name": "t05-candidate-red",
+    "command": [
+      "npm",
+      "--prefix",
+      "tests",
+      "test",
+      "--",
+      "--project=phone",
+      "e2e/t05-scenario.spec.mjs",
+      "--grep",
+      "selecting a non-default candidate"
+    ],
+    "exit_code": 1,
+    "log": ".loopwork/logs/t05-candidate-red.log",
+    "archived_log": "tests/evidence/t05-candidate-red.log"
+  }
+]

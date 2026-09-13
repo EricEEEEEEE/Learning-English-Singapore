@@ -1,0 +1,50 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=phone e2e/t05-scenario.spec.mjs --grep selecting a non-default candidate
+
+[WebServer] (node:48741) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 1 test using 1 worker
+
+(node:48742) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [phone] › e2e/t05-scenario.spec.mjs:299:1 › T05: selecting a non-default candidate changes the rendered steps and practice prompts while retaining the user goal (20.1s)
+
+
+  1) [phone] › e2e/t05-scenario.spec.mjs:299:1 › T05: selecting a non-default candidate changes the rendered steps and practice prompts while retaining the user goal 
+
+    Test timeout of 20000ms exceeded.
+
+    Error: locator.tap: Test timeout of 20000ms exceeded.
+    Call log:
+      - waiting for getByRole('button', { name: '选择要练的事', exact: true })
+
+
+      46 | async function enter(page) {
+      47 |   await profile(page);
+    > 48 |   await page.getByRole('button', { name: '选择要练的事', exact: true }).tap();
+         |                                                                   ^
+      49 |   await expect(page.getByRole('heading', { name: '你想练什么事？', exact: true })).toBeVisible();
+      50 | }
+      51 | async function custom(page, text = goalA) {
+        at enter (/Users/eric/projects/Learning English  Singapore/tests/e2e/t05-scenario.spec.mjs:48:67)
+        at custom (/Users/eric/projects/Learning English  Singapore/tests/e2e/t05-scenario.spec.mjs:52:3)
+        at /Users/eric/projects/Learning English  Singapore/tests/e2e/t05-scenario.spec.mjs:300:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ../test-results/e2e-t05-scenario-T05-selec-5febf-ile-retaining-the-user-goal-phone/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ../test-results/e2e-t05-scenario-T05-selec-5febf-ile-retaining-the-user-goal-phone/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/e2e-t05-scenario-T05-selec-5febf-ile-retaining-the-user-goal-phone/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/e2e-t05-scenario-T05-selec-5febf-ile-retaining-the-user-goal-phone/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [phone] › e2e/t05-scenario.spec.mjs:299:1 › T05: selecting a non-default candidate changes the rendered steps and practice prompts while retaining the user goal 

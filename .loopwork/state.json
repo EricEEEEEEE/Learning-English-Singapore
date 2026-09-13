@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
-  "round_count": 3,
+  "round_count": 4,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "53fdf9ac020c21f6fcdb87a72b266f8201f38352",
+  "last_round_commit": "40e374e438995e1b13b28931c6b041afdf799237",
   "milestones": [
     "T01"
   ],
@@ -15,15 +15,15 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-12T12:33:45+08:00",
+  "last_session": "2026-09-13T13:41:02+08:00",
   "authorized_batch": "B1",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 85158,
-  "blocks_seen": 204,
-  "red_commit_pending": true,
+  "audit_bytes": 102720,
+  "blocks_seen": 230,
+  "red_commit_pending": false,
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T04 看到有依据的听力起点与可调整的帮助"
+    "kind": "red",
+    "msg": "存档: T05 红考题"
   }
 }

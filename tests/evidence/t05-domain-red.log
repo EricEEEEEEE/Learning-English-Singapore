@@ -1,0 +1,375 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t05-scenario.spec.mjs
+
+[WebServer] (node:42428) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 13 tests using 1 worker
+
+(node:42429) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   1 [domain] › domain/t05-scenario.spec.mjs:24:1 › T05: three seed categories and an unlisted goal all reach explicit confirmation, never real generation (1ms)
+(node:42430) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   2 [domain] › domain/t05-scenario.spec.mjs:41:1 › T05: three demo candidates retain the user goal and selecting a different focus changes the planned interaction (1ms)
+(node:42431) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   3 [domain] › domain/t05-scenario.spec.mjs:67:1 › T05: an empty description asks exactly one necessary question and preserves unknown facts (1ms)
+(node:42433) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   4 [domain] › domain/t05-scenario.spec.mjs:83:1 › T05: confirmation creates a goal revision and simulation-only preparation tied to chosen learning support (1ms)
+(node:42434) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   5 [domain] › domain/t05-scenario.spec.mjs:101:1 › T05: preparation is ordered and successful demo parts are idempotent (1ms)
+(node:42435) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   6 [domain] › domain/t05-scenario.spec.mjs:121:1 › T05: media-only retry preserves completed dialogue and rejects late events from the previous attempt (1ms)
+(node:42436) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   7 [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of dialogue resumes the failed part and keeps other completed assets (1ms)
+(node:42438) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   8 [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of check resumes the failed part and keeps other completed assets (1ms)
+(node:42441) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 [domain] › domain/t05-scenario.spec.mjs:160:1 › T05: cancellation is durable, keeps successful work and ignores all late completion events (1ms)
+(node:42442) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  10 [domain] › domain/t05-scenario.spec.mjs:174:1 › T05: a revised goal changes dialogue steps and practice prompts, keeping the old version and its assets intact (1ms)
+(node:42444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  11 [domain] › domain/t05-scenario.spec.mjs:202:1 › T05: changing who/where/worry never silently confirms or invents institutional facts (1ms)
+(node:42445) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  12 [domain] › domain/t05-scenario.spec.mjs:218:1 › T05: refresh preserves in-progress identity and malformed snapshots are rejected without silently replacing them (1ms)
+(node:42446) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  13 [domain] › domain/t05-scenario.spec.mjs:228:1 › T05: changing the goal during preparation isolates the new request from old late completions (1ms)
+
+
+  1) [domain] › domain/t05-scenario.spec.mjs:24:1 › T05: three seed categories and an unlisted goal all reach explicit confirmation, never real generation 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:25:22
+
+    Error Context: ../test-results/domain-t05-scenario-T05-th-20d08-ation-never-real-generation-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-th-20d08-ation-never-real-generation-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-th-20d08-ation-never-real-generation-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [domain] › domain/t05-scenario.spec.mjs:41:1 › T05: three demo candidates retain the user goal and selecting a different focus changes the planned interaction 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:42:43
+
+    Error Context: ../test-results/domain-t05-scenario-T05-th-5a2af-ges-the-planned-interaction-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-th-5a2af-ges-the-planned-interaction-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-th-5a2af-ges-the-planned-interaction-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [domain] › domain/t05-scenario.spec.mjs:67:1 › T05: an empty description asks exactly one necessary question and preserves unknown facts 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:68:26
+
+    Error Context: ../test-results/domain-t05-scenario-T05-an-e113c-and-preserves-unknown-facts-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-an-e113c-and-preserves-unknown-facts-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-an-e113c-and-preserves-unknown-facts-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [domain] › domain/t05-scenario.spec.mjs:83:1 › T05: confirmation creates a goal revision and simulation-only preparation tied to chosen learning support 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:84:46
+
+    Error Context: ../test-results/domain-t05-scenario-T05-co-35a07--to-chosen-learning-support-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-co-35a07--to-chosen-learning-support-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-co-35a07--to-chosen-learning-support-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [domain] › domain/t05-scenario.spec.mjs:101:1 › T05: preparation is ordered and successful demo parts are idempotent 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:102:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-pr-fa169-l-demo-parts-are-idempotent-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-pr-fa169-l-demo-parts-are-idempotent-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-pr-fa169-l-demo-parts-are-idempotent-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [domain] › domain/t05-scenario.spec.mjs:121:1 › T05: media-only retry preserves completed dialogue and rejects late events from the previous attempt 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:122:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-me-c8f25-s-from-the-previous-attempt-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-me-c8f25-s-from-the-previous-attempt-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-me-c8f25-s-from-the-previous-attempt-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of dialogue resumes the failed part and keeps other completed assets 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:147:47
+
+    Error Context: ../test-results/domain-t05-scenario-T05-re-11930-eeps-other-completed-assets-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-re-11930-eeps-other-completed-assets-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-re-11930-eeps-other-completed-assets-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  8) [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of check resumes the failed part and keeps other completed assets 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:147:47
+
+    Error Context: ../test-results/domain-t05-scenario-T05-re-4b36a-eeps-other-completed-assets-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-re-4b36a-eeps-other-completed-assets-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-re-4b36a-eeps-other-completed-assets-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  9) [domain] › domain/t05-scenario.spec.mjs:160:1 › T05: cancellation is durable, keeps successful work and ignores all late completion events 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:161:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-ca-53205--all-late-completion-events-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-ca-53205--all-late-completion-events-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-ca-53205--all-late-completion-events-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  10) [domain] › domain/t05-scenario.spec.mjs:174:1 › T05: a revised goal changes dialogue steps and practice prompts, keeping the old version and its assets intact 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:175:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-a--9090f-rsion-and-its-assets-intact-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-a--9090f-rsion-and-its-assets-intact-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-a--9090f-rsion-and-its-assets-intact-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  11) [domain] › domain/t05-scenario.spec.mjs:202:1 › T05: changing who/where/worry never silently confirms or invents institutional facts 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:203:43
+
+    Error Context: ../test-results/domain-t05-scenario-T05-ch-1609a-invents-institutional-facts-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-ch-1609a-invents-institutional-facts-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-ch-1609a-invents-institutional-facts-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  12) [domain] › domain/t05-scenario.spec.mjs:218:1 › T05: refresh preserves in-progress identity and malformed snapshots are rejected without silently replacing them 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:219:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-re-036cf-out-silently-replacing-them-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-re-036cf-out-silently-replacing-them-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-re-036cf-out-silently-replacing-them-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13) [domain] › domain/t05-scenario.spec.mjs:228:1 › T05: changing the goal during preparation isolates the new request from old late completions 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:229:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-ch-d2c6f-t-from-old-late-completions-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-ch-d2c6f-t-from-old-late-completions-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-ch-d2c6f-t-from-old-late-completions-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  13 failed
+    [domain] › domain/t05-scenario.spec.mjs:24:1 › T05: three seed categories and an unlisted goal all reach explicit confirmation, never real generation 
+    [domain] › domain/t05-scenario.spec.mjs:41:1 › T05: three demo candidates retain the user goal and selecting a different focus changes the planned interaction 
+    [domain] › domain/t05-scenario.spec.mjs:67:1 › T05: an empty description asks exactly one necessary question and preserves unknown facts 
+    [domain] › domain/t05-scenario.spec.mjs:83:1 › T05: confirmation creates a goal revision and simulation-only preparation tied to chosen learning support 
+    [domain] › domain/t05-scenario.spec.mjs:101:1 › T05: preparation is ordered and successful demo parts are idempotent 
+    [domain] › domain/t05-scenario.spec.mjs:121:1 › T05: media-only retry preserves completed dialogue and rejects late events from the previous attempt 
+    [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of dialogue resumes the failed part and keeps other completed assets 
+    [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of check resumes the failed part and keeps other completed assets 
+    [domain] › domain/t05-scenario.spec.mjs:160:1 › T05: cancellation is durable, keeps successful work and ignores all late completion events 
+    [domain] › domain/t05-scenario.spec.mjs:174:1 › T05: a revised goal changes dialogue steps and practice prompts, keeping the old version and its assets intact 
+    [domain] › domain/t05-scenario.spec.mjs:202:1 › T05: changing who/where/worry never silently confirms or invents institutional facts 
+    [domain] › domain/t05-scenario.spec.mjs:218:1 › T05: refresh preserves in-progress identity and malformed snapshots are rejected without silently replacing them 
+    [domain] › domain/t05-scenario.spec.mjs:228:1 › T05: changing the goal during preparation isolates the new request from old late completions 

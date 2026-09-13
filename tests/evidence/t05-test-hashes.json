@@ -1,0 +1,6 @@
+{
+  "tests/domain/t05-scenario.spec.mjs": "aff6bacb4c5cad634b91aed9e76b22853f30a339f130e45e1facf6d192bd7bc7",
+  "tests/domain/t05-profile-regressions.spec.mjs": "49d5e9032b5ec6d19690fd07debdf42ae09c37ed48cb22b435a848fe51490d0b",
+  "tests/e2e/t05-scenario.spec.mjs": "f58c7bac1fcb2fe88de9e58663cb8396941b2ca9a8ee5506c37e4839ea9aa7e2",
+  "tests/evidence/t05-contract.md": "e851c30784de065ad356ce80f09529e61b6c9e835af0de9ea4dfa576ebbd4b50"
+}

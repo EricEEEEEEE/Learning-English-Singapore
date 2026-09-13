@@ -1,0 +1,239 @@
+
+> list
+> playwright test --config playwright.config.mjs --list
+
+Listing tests:
+  [small-phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo
+  [small-phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets
+  [small-phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities
+  [small-phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate
+  [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change
+  [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change
+  [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change
+  [small-phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change
+  [small-phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds
+  [small-phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option
+  [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help
+  [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help
+  [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help
+  [small-phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help
+  [small-phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference
+  [small-phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls
+  [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation
+  [small-phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation
+  [small-phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation
+  [small-phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone
+  [small-phone] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown
+  [small-phone] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap
+  [small-phone] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice
+  [small-phone] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh
+  [small-phone] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure
+  [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language
+  [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language
+  [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language
+  [small-phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language
+  [small-phone] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice
+  [small-phone] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh
+  [small-phone] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow
+  [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support
+  [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support
+  [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support
+  [small-phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support
+  [small-phone] › e2e/t04-profile.spec.mjs:112:1 › T04: all simulated listening choices stay unknown and disclose zero independent observations
+  [small-phone] › e2e/t04-profile.spec.mjs:131:1 › T04 / F2.5,F10.5: choice overrides survive language changes, reload and optional answers; restore is explicit
+  [small-phone] › e2e/t04-profile.spec.mjs:152:1 › T04: large-text controls fit and keyboard actions change settings while ability stays unknown
+  [small-phone] › e2e/t04-profile.spec.mjs:169:1 › T04: failed preference saves are visible, recover without reload and keep current choices usable
+  [small-phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes
+  [small-phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes
+  [small-phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes
+  [small-phone] › e2e/t04-profile.spec.mjs:217:1 › T04: malformed saved study settings remain untouched while temporary adjustments work
+  [small-phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 家校沟通 is one of three starts, with a separate unlisted-goal path
+  [small-phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 工作沟通 is one of three starts, with a separate unlisted-goal path
+  [small-phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 生活服务 is one of three starts, with a separate unlisted-goal path
+  [small-phone] › e2e/t05-scenario.spec.mjs:95:1 › T05 / F3.2,F3.4,F3.5: an unlisted goal stays verbatim, unknown facts stay unknown and only one missing detail is asked
+  [small-phone] › e2e/t05-scenario.spec.mjs:113:1 › T05: confirmation can edit each fact without starting preparation or inventing missing details
+  [small-phone] › e2e/t05-scenario.spec.mjs:126:1 › T05 / F14.1,F14.2: preparation refreshes in place and a media retry keeps the same completed dialogue
+  [small-phone] › e2e/t05-scenario.spec.mjs:150:1 › T05: cancel and reload keep a cancelled task; another goal can then start a new revision
+  [small-phone] › e2e/t05-scenario.spec.mjs:167:1 › T05 / F3.3,F9.1: a new goal changes both planned steps and practice prompts, while the old version stays selectable
+  [small-phone] › e2e/t05-scenario.spec.mjs:194:1 › T05: chosen support is carried into the scene and raw HTML-like descriptions stay inert text
+  [small-phone] › e2e/t05-scenario.spec.mjs:220:3 › T05: id describes, confirms, reloads and cancels in the selected language
+  [small-phone] › e2e/t05-scenario.spec.mjs:220:3 › T05: ja describes, confirms, reloads and cancels in the selected language
+  [small-phone] › e2e/t05-scenario.spec.mjs:220:3 › T05: en describes, confirms, reloads and cancels in the selected language
+  [small-phone] › e2e/t05-scenario.spec.mjs:242:1 › T05: switching auxiliary language during preparation keeps the original goal and version
+  [small-phone] › e2e/t05-scenario.spec.mjs:256:1 › T05: failed saves disclose temporary operation and corrupted records are not overwritten by a new draft
+  [small-phone] › e2e/t05-scenario.spec.mjs:279:1 › T05 regression: actual Tab traversal reaches profile controls before Enter and Space actions
+  [small-phone] › e2e/t05-scenario.spec.mjs:299:1 › T05: selecting a non-default candidate changes the rendered steps and practice prompts while retaining the user goal
+  [phone] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo
+  [phone] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets
+  [phone] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities
+  [phone] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate
+  [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change
+  [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change
+  [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change
+  [phone] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change
+  [phone] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds
+  [phone] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option
+  [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help
+  [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help
+  [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help
+  [phone] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help
+  [phone] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference
+  [phone] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls
+  [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation
+  [phone] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation
+  [phone] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation
+  [phone] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone
+  [phone] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown
+  [phone] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap
+  [phone] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice
+  [phone] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh
+  [phone] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure
+  [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language
+  [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language
+  [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language
+  [phone] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language
+  [phone] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice
+  [phone] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh
+  [phone] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow
+  [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support
+  [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support
+  [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support
+  [phone] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support
+  [phone] › e2e/t04-profile.spec.mjs:112:1 › T04: all simulated listening choices stay unknown and disclose zero independent observations
+  [phone] › e2e/t04-profile.spec.mjs:131:1 › T04 / F2.5,F10.5: choice overrides survive language changes, reload and optional answers; restore is explicit
+  [phone] › e2e/t04-profile.spec.mjs:152:1 › T04: large-text controls fit and keyboard actions change settings while ability stays unknown
+  [phone] › e2e/t04-profile.spec.mjs:169:1 › T04: failed preference saves are visible, recover without reload and keep current choices usable
+  [phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes
+  [phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes
+  [phone] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes
+  [phone] › e2e/t04-profile.spec.mjs:217:1 › T04: malformed saved study settings remain untouched while temporary adjustments work
+  [phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 家校沟通 is one of three starts, with a separate unlisted-goal path
+  [phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 工作沟通 is one of three starts, with a separate unlisted-goal path
+  [phone] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 生活服务 is one of three starts, with a separate unlisted-goal path
+  [phone] › e2e/t05-scenario.spec.mjs:95:1 › T05 / F3.2,F3.4,F3.5: an unlisted goal stays verbatim, unknown facts stay unknown and only one missing detail is asked
+  [phone] › e2e/t05-scenario.spec.mjs:113:1 › T05: confirmation can edit each fact without starting preparation or inventing missing details
+  [phone] › e2e/t05-scenario.spec.mjs:126:1 › T05 / F14.1,F14.2: preparation refreshes in place and a media retry keeps the same completed dialogue
+  [phone] › e2e/t05-scenario.spec.mjs:150:1 › T05: cancel and reload keep a cancelled task; another goal can then start a new revision
+  [phone] › e2e/t05-scenario.spec.mjs:167:1 › T05 / F3.3,F9.1: a new goal changes both planned steps and practice prompts, while the old version stays selectable
+  [phone] › e2e/t05-scenario.spec.mjs:194:1 › T05: chosen support is carried into the scene and raw HTML-like descriptions stay inert text
+  [phone] › e2e/t05-scenario.spec.mjs:220:3 › T05: id describes, confirms, reloads and cancels in the selected language
+  [phone] › e2e/t05-scenario.spec.mjs:220:3 › T05: ja describes, confirms, reloads and cancels in the selected language
+  [phone] › e2e/t05-scenario.spec.mjs:220:3 › T05: en describes, confirms, reloads and cancels in the selected language
+  [phone] › e2e/t05-scenario.spec.mjs:242:1 › T05: switching auxiliary language during preparation keeps the original goal and version
+  [phone] › e2e/t05-scenario.spec.mjs:256:1 › T05: failed saves disclose temporary operation and corrupted records are not overwritten by a new draft
+  [phone] › e2e/t05-scenario.spec.mjs:279:1 › T05 regression: actual Tab traversal reaches profile controls before Enter and Space actions
+  [phone] › e2e/t05-scenario.spec.mjs:299:1 › T05: selecting a non-default candidate changes the rendered steps and practice prompts while retaining the user goal
+  [desktop] › e2e/t01-local-entry.spec.mjs:48:1 › T01: a meaningful local entry identifies the product and discloses the demo
+  [desktop] › e2e/t01-local-entry.spec.mjs:59:1 › T01 / F13.1: content fits the viewport and controls have usable touch targets
+  [desktop] › e2e/t01-local-entry.spec.mjs:78:1 › T01: demo explanation responds to keyboard and touch without claiming real capabilities
+  [desktop] › e2e/t01-local-entry.spec.mjs:97:1 › T01 / F15.1: opening the prototype requires no reward, social or account gate
+  [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: zh-Hans expanded large text fits and survives a language change
+  [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: id expanded large text fits and survives a language change
+  [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: ja expanded large text fits and survives a language change
+  [desktop] › e2e/t02-boundaries.spec.mjs:20:3 › T02 boundary: en expanded large text fits and survives a language change
+  [desktop] › e2e/t02-boundaries.spec.mjs:46:1 › T02 boundary: a temporary write failure clears after a later save succeeds
+  [desktop] › e2e/t02-language-login.spec.mjs:67:1 › T02 / F1.1: language choice comes before either login option
+  [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: zh-Hans persists through both unconnected login attempts and help
+  [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: id persists through both unconnected login attempts and help
+  [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: ja persists through both unconnected login attempts and help
+  [desktop] › e2e/t02-language-login.spec.mjs:76:3 › T02 / F1.1,F4.5,F13.3: en persists through both unconnected login attempts and help
+  [desktop] › e2e/t02-language-login.spec.mjs:116:1 › T02 / F13.3: changing the selected language replaces and persists the preference
+  [desktop] › e2e/t02-language-login.spec.mjs:127:1 › T02 / F13.1,F13.2: larger text and reduced motion persist without clipping mobile controls
+  [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage getItem keeps selection usable and explains the limitation
+  [desktop] › e2e/t02-language-login.spec.mjs:160:3 › T02: blocked storage setItem keeps selection usable and explains the limitation
+  [desktop] › e2e/t02-language-login.spec.mjs:173:1 › T01 regression: actual Tab, Space, Enter and tap operate the demo explanation
+  [desktop] › e2e/t03-onboarding.spec.mjs:61:1 › T03 / F2.1,F13.1: separate demo entry starts one accessible question without login or microphone
+  [desktop] › e2e/t03-onboarding.spec.mjs:92:1 › T03 / F2.2,F2.3: twelve core items stay one-at-a-time and all unknown remains unknown
+  [desktop] › e2e/t03-onboarding.spec.mjs:125:1 › T03: optional refinement is separate, stops at four, and cannot be restarted to exceed its cap
+  [desktop] › e2e/t03-onboarding.spec.mjs:140:1 › T03: pause and reload resume the exact question and an earlier choice
+  [desktop] › e2e/t03-onboarding.spec.mjs:155:1 › T03 / F5.2: simulated replay and answer support survive back, changed choice and refresh
+  [desktop] › e2e/t03-onboarding.spec.mjs:186:1 › T03: skipping and ending immediately never require twelve answers or classify silence as failure
+  [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: zh-Hans starts, skips, pauses and resumes in the confirmed language
+  [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: id starts, skips, pauses and resumes in the confirmed language
+  [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: ja starts, skips, pauses and resumes in the confirmed language
+  [desktop] › e2e/t03-onboarding.spec.mjs:204:3 › T03 / F2.1,F13.1: en starts, skips, pauses and resumes in the confirmed language
+  [desktop] › e2e/t03-onboarding.spec.mjs:233:1 › T03: changing auxiliary language during a question preserves the same place and prior choice
+  [desktop] › e2e/t03-onboarding.spec.mjs:246:1 › T03: a simulated playback failure remains a device state after skip, back and refresh
+  [desktop] › e2e/t03-onboarding.spec.mjs:261:1 › T03: failed local progress saves disclose the limitation without blocking the current flow
+  [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: zh-Hans separates unknown listening, unobserved speaking and adjustable support
+  [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: id separates unknown listening, unobserved speaking and adjustable support
+  [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: ja separates unknown listening, unobserved speaking and adjustable support
+  [desktop] › e2e/t04-profile.spec.mjs:74:3 › T04 / F2.3,F2.4: en separates unknown listening, unobserved speaking and adjustable support
+  [desktop] › e2e/t04-profile.spec.mjs:112:1 › T04: all simulated listening choices stay unknown and disclose zero independent observations
+  [desktop] › e2e/t04-profile.spec.mjs:131:1 › T04 / F2.5,F10.5: choice overrides survive language changes, reload and optional answers; restore is explicit
+  [desktop] › e2e/t04-profile.spec.mjs:152:1 › T04: large-text controls fit and keyboard actions change settings while ability stays unknown
+  [desktop] › e2e/t04-profile.spec.mjs:169:1 › T04: failed preference saves are visible, recover without reload and keep current choices usable
+  [desktop] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding invalid-json survives a temporary preview without overwritten bytes
+  [desktop] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding null survives a temporary preview without overwritten bytes
+  [desktop] › e2e/t04-profile.spec.mjs:190:3 › T04 regression: damaged onboarding unsupported-record survives a temporary preview without overwritten bytes
+  [desktop] › e2e/t04-profile.spec.mjs:217:1 › T04: malformed saved study settings remain untouched while temporary adjustments work
+  [desktop] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 家校沟通 is one of three starts, with a separate unlisted-goal path
+  [desktop] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 工作沟通 is one of three starts, with a separate unlisted-goal path
+  [desktop] › e2e/t05-scenario.spec.mjs:80:3 › T05 / F3.1: 生活服务 is one of three starts, with a separate unlisted-goal path
+  [desktop] › e2e/t05-scenario.spec.mjs:95:1 › T05 / F3.2,F3.4,F3.5: an unlisted goal stays verbatim, unknown facts stay unknown and only one missing detail is asked
+  [desktop] › e2e/t05-scenario.spec.mjs:113:1 › T05: confirmation can edit each fact without starting preparation or inventing missing details
+  [desktop] › e2e/t05-scenario.spec.mjs:126:1 › T05 / F14.1,F14.2: preparation refreshes in place and a media retry keeps the same completed dialogue
+  [desktop] › e2e/t05-scenario.spec.mjs:150:1 › T05: cancel and reload keep a cancelled task; another goal can then start a new revision
+  [desktop] › e2e/t05-scenario.spec.mjs:167:1 › T05 / F3.3,F9.1: a new goal changes both planned steps and practice prompts, while the old version stays selectable
+  [desktop] › e2e/t05-scenario.spec.mjs:194:1 › T05: chosen support is carried into the scene and raw HTML-like descriptions stay inert text
+  [desktop] › e2e/t05-scenario.spec.mjs:220:3 › T05: id describes, confirms, reloads and cancels in the selected language
+  [desktop] › e2e/t05-scenario.spec.mjs:220:3 › T05: ja describes, confirms, reloads and cancels in the selected language
+  [desktop] › e2e/t05-scenario.spec.mjs:220:3 › T05: en describes, confirms, reloads and cancels in the selected language
+  [desktop] › e2e/t05-scenario.spec.mjs:242:1 › T05: switching auxiliary language during preparation keeps the original goal and version
+  [desktop] › e2e/t05-scenario.spec.mjs:256:1 › T05: failed saves disclose temporary operation and corrupted records are not overwritten by a new draft
+  [desktop] › e2e/t05-scenario.spec.mjs:279:1 › T05 regression: actual Tab traversal reaches profile controls before Enter and Space actions
+  [desktop] › e2e/t05-scenario.spec.mjs:299:1 › T05: selecting a non-default candidate changes the rendered steps and practice prompts while retaining the user goal
+  [domain] › domain/t03-onboarding-state.spec.mjs:18:1 › T03: core and optional paths have separate hard caps and unique question identities
+  [domain] › domain/t03-onboarding-state.spec.mjs:48:3 › T03: first answer, replay and full-answer history survive back and changed answers (help first=true)
+  [domain] › domain/t03-onboarding-state.spec.mjs:48:3 › T03: first answer, replay and full-answer history survive back and changed answers (help first=false)
+  [domain] › domain/t03-onboarding-state.spec.mjs:85:1 › T03: failed playback, unknown and skipped responses stay separate and never become played answers
+  [domain] › domain/t03-onboarding-state.spec.mjs:107:1 › T03: pause/finish ignore late question events and an early finish does not force the minimum core length
+  [domain] › domain/t03-onboarding-state.spec.mjs:125:1 › T03: changing self-report changes content identities without erasing earlier support evidence
+  [domain] › domain/t04-placement.spec.mjs:33:1 › T04: empty, all skipped and all unknown remain unknown, never measured L0
+  [domain] › domain/t04-placement.spec.mjs:40:1 › T04: a lucky isolated L4 answer cannot bypass prerequisites or create speaking evidence
+  [domain] › domain/t04-placement.spec.mjs:49:1 › T04: L0 needs two attempted playable basic tasks still needing answer demonstration
+  [domain] › domain/t04-placement.spec.mjs:58:1 › T04: two L1 topics suffice without L0 evidence; replays preserve independent success
+  [domain] › domain/t04-placement.spec.mjs:70:1 › T04: two questions in one topic and many tags are not two independent topics
+  [domain] › domain/t04-placement.spec.mjs:77:1 › T04: duplicate identity and changed topic labels cannot double-count or overwrite the first response
+  [domain] › domain/t04-placement.spec.mjs:98:3 › T04: answer-before excludes answers from the valid denominator and higher-band success
+  [domain] › domain/t04-placement.spec.mjs:98:3 › T04: translation-before excludes answers from the valid denominator and higher-band success
+  [domain] › domain/t04-placement.spec.mjs:98:3 › T04: device-failure excludes answers from the valid denominator and higher-band success
+  [domain] › domain/t04-placement.spec.mjs:98:3 › T04: no-playback excludes answers from the valid denominator and higher-band success
+  [domain] › domain/t04-placement.spec.mjs:98:3 › T04: simulation excludes answers from the valid denominator and higher-band success
+  [domain] › domain/t04-placement.spec.mjs:98:3 › T04: unreviewed excludes answers from the valid denominator and higher-band success
+  [domain] › domain/t04-placement.spec.mjs:109:1 › T04: help after the first independent answer cannot erase it; a corrected later answer cannot manufacture it
+  [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L2 requires every preceding band, not only two successes at its own band
+  [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L3 requires every preceding band, not only two successes at its own band
+  [domain] › domain/t04-placement.spec.mjs:117:3 › T04: L4 requires every preceding band, not only two successes at its own band
+  [domain] › domain/t04-placement.spec.mjs:131:1 › T04: L4 needs two different reviewed local voices across two topics, without requiring four cross-product samples
+  [domain] › domain/t04-placement.spec.mjs:148:1 › T04: same task conflict requests one differently worded follow-up and keeps L2 unconfirmed
+  [domain] › domain/t04-placement.spec.mjs:155:1 › T04: unresolved conflict overrides two otherwise sufficient successes at the same band
+  [domain] › domain/t04-placement.spec.mjs:171:3 › T04: incorrect follow-up leaves conflicting L2 unconfirmed and falls back to supported L1
+  [domain] › domain/t04-placement.spec.mjs:171:3 › T04: skipped follow-up leaves conflicting L2 unconfirmed and falls back to supported L1
+  [domain] › domain/t04-placement.spec.mjs:171:3 › T04: unknown follow-up leaves conflicting L2 unconfirmed and falls back to supported L1
+  [domain] › domain/t04-placement.spec.mjs:180:1 › T04: successful follow-up resolves only with a second topic and reduces confidence
+  [domain] › domain/t04-placement.spec.mjs:192:1 › T04: a second follow-up for the same task cannot wash out a failed first follow-up
+  [domain] › domain/t04-placement.spec.mjs:201:1 › T04: all optional work shares the four-question budget and ending never forces another question
+  [domain] › domain/t04-placement.spec.mjs:225:1 › T04: number and intent observations stay separate; no local familiarity without reviewed local success
+  [domain] › domain/t04-placement.spec.mjs:235:1 › T04: completed onboarding remains unknown even after every simulated prompt and selected answer
+  [domain] › domain/t04-placement.spec.mjs:254:1 › T04: study adjustments and feedback are reversible preferences, never altered ability evidence
+  [domain] › domain/t04-placement.spec.mjs:287:1 › T04: new evidence updates the recommendation without clearing user choices; restore uses the new recommendation
+  [domain] › domain/t05-profile-regressions.spec.mjs:4:3 › T05 regression: after-choice preserves cumulative support and the independent first-choice snapshot
+  [domain] › domain/t05-profile-regressions.spec.mjs:4:3 › T05 regression: before-choice preserves cumulative support and the independent first-choice snapshot
+  [domain] › domain/t05-profile-regressions.spec.mjs:4:3 › T05 regression: late-first-playback preserves cumulative support and the independent first-choice snapshot
+  [domain] › domain/t05-scenario.spec.mjs:24:1 › T05: three seed categories and an unlisted goal all reach explicit confirmation, never real generation
+  [domain] › domain/t05-scenario.spec.mjs:41:1 › T05: three demo candidates retain the user goal and selecting a different focus changes the planned interaction
+  [domain] › domain/t05-scenario.spec.mjs:67:1 › T05: an empty description asks exactly one necessary question and preserves unknown facts
+  [domain] › domain/t05-scenario.spec.mjs:83:1 › T05: confirmation creates a goal revision and simulation-only preparation tied to chosen learning support
+  [domain] › domain/t05-scenario.spec.mjs:101:1 › T05: preparation is ordered and successful demo parts are idempotent
+  [domain] › domain/t05-scenario.spec.mjs:121:1 › T05: media-only retry preserves completed dialogue and rejects late events from the previous attempt
+  [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of dialogue resumes the failed part and keeps other completed assets
+  [domain] › domain/t05-scenario.spec.mjs:146:3 › T05: retry of check resumes the failed part and keeps other completed assets
+  [domain] › domain/t05-scenario.spec.mjs:160:1 › T05: cancellation is durable, keeps successful work and ignores all late completion events
+  [domain] › domain/t05-scenario.spec.mjs:174:1 › T05: a revised goal changes dialogue steps and practice prompts, keeping the old version and its assets intact
+  [domain] › domain/t05-scenario.spec.mjs:202:1 › T05: changing who/where/worry never silently confirms or invents institutional facts
+  [domain] › domain/t05-scenario.spec.mjs:218:1 › T05: refresh preserves in-progress identity and malformed snapshots are rejected without silently replacing them
+  [domain] › domain/t05-scenario.spec.mjs:228:1 › T05: changing the goal during preparation isolates the new request from old late completions
+  [domain] › domain/t05-scenario.spec.mjs:244:1 › T05: branching from an older version allocates the next global revision without changing either saved version
+  [domain] › domain/t05-scenario.spec.mjs:263:1 › T05: viewing a cancelled historical version never revives it or changes a newer preparing version
+Total: 233 tests in 10 files

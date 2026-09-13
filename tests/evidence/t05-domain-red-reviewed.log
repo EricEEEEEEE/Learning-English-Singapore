@@ -1,0 +1,68 @@
+
+> test
+> playwright test --config playwright.config.mjs --project=domain domain/t05-scenario.spec.mjs --grep branching from an older|viewing a cancelled historical
+
+[WebServer] (node:48699) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:48700) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  1 [domain] › domain/t05-scenario.spec.mjs:244:1 › T05: branching from an older version allocates the next global revision without changing either saved version (1ms)
+(node:48701) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [domain] › domain/t05-scenario.spec.mjs:263:1 › T05: viewing a cancelled historical version never revives it or changes a newer preparing version (1ms)
+
+
+  1) [domain] › domain/t05-scenario.spec.mjs:244:1 › T05: branching from an older version allocates the next global revision without changing either saved version 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:245:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-br-cce26-anging-either-saved-version-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-br-cce26-anging-either-saved-version-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-br-cce26-anging-either-saved-version-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [domain] › domain/t05-scenario.spec.mjs:263:1 › T05: viewing a cancelled historical version never revives it or changes a newer preparing version 
+
+    Error: Cannot find module '/Users/eric/projects/Learning English  Singapore/lib/scenario.ts' imported from /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs
+
+      1 | import { test, expect } from '@playwright/test';
+    > 2 | const load = () => import('../../lib/scenario.ts');
+        |                    ^
+      3 | const context = { content_band: 'L1', speed: 'slow', support: 'minimal', listening_status: 'unknown', speaking_status: 'unobserved' };
+      4 | const customGoal = '陪邻居和物业确认电梯检修时间';
+      5 | const nextGoal = '和物业确认楼梯照明损坏如何报修';
+        at load (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:2:20)
+        at draft (/Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:7:22)
+        at /Users/eric/projects/Learning English  Singapore/tests/domain/t05-scenario.spec.mjs:264:45
+
+    Error Context: ../test-results/domain-t05-scenario-T05-vi-737e7-s-a-newer-preparing-version-domain/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/domain-t05-scenario-T05-vi-737e7-s-a-newer-preparing-version-domain/trace.zip
+    Usage:
+
+        npx playwright show-trace ../test-results/domain-t05-scenario-T05-vi-737e7-s-a-newer-preparing-version-domain/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [domain] › domain/t05-scenario.spec.mjs:244:1 › T05: branching from an older version allocates the next global revision without changing either saved version 
+    [domain] › domain/t05-scenario.spec.mjs:263:1 › T05: viewing a cancelled historical version never revives it or changes a newer preparing version 
