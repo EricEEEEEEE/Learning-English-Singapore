@@ -68,7 +68,7 @@ test('T02 / F1.1: language choice comes before either login option', async ({ pa
 });
 
 for (const language of languages) {
-  test(`T02 / F1.1,F4.5,F13.3: ${language.code} persists through both unconnected login attempts and help`, async ({ page }, testInfo) => {
+  test(`T02 / F1.1,F4.5,F13.3: ${language.code} persists through both login choices and help`, async ({ page, baseURL }, testInfo) => {
     await page.getByRole('button', { name: new RegExp(`^${language.choice}`) }).tap();
     await expect(page.locator('html')).toHaveAttribute('lang', language.code);
     await expect(page.getByRole('heading', { name: language.heading, exact: true })).toBeVisible();
@@ -76,15 +76,16 @@ for (const language of languages) {
     const accounts = page.getByRole('group', { name: language.heading, exact: true });
     await expect(accounts.locator('button, a')).toHaveCount(2);
     const wechat = accounts.getByRole('button', { name: new RegExp(language.wechat) });
-    const google = accounts.getByRole('button', { name: /Google/ });
+    const google = accounts.getByRole('link', { name: /Google/ });
     await expect(wechat).toBeVisible();
     await expect(google).toBeVisible();
-    for (const provider of [wechat, google]) {
-      await provider.tap();
-      await expect(page.getByRole('status')).toContainText(language.unavailable);
-      await expect(page.getByRole('heading', { name: language.heading, exact: true })).toBeVisible();
-      expect(await page.locator('body').innerText()).not.toMatch(language.success);
-    }
+    await wechat.tap();
+    await expect(page.getByRole('status')).toContainText(language.unavailable);
+    await expect(page.getByRole('heading', { name: language.heading, exact: true })).toBeVisible();
+    expect(await page.locator('body').innerText()).not.toMatch(language.success);
+    const googleHref = new URL(await google.getAttribute('href'), baseURL);
+    expect(googleHref.pathname).toBe('/api/auth/google/start');
+    expect(googleHref.searchParams.get('language')).toBe(language.code);
     await page.getByRole('button', { name: language.permissions, exact: true }).tap();
     const permissions = page.getByRole('region', { name: language.permissions, exact: true });
     await expect(permissions).toBeVisible();
@@ -124,7 +125,7 @@ test('T02 / F13.1,F13.2: larger text and reduced motion persist without clipping
   const heading = page.getByRole('heading', { name: '选择登录方式', exact: true });
   const initialSize = await heading.evaluate(element => parseFloat(getComputedStyle(element).fontSize));
   const bodyCopy = page.getByRole('main').locator('p:visible').first();
-  const provider = page.getByRole('button', { name: /Google/ });
+  const provider = page.getByRole('link', { name: /Google/ });
   const initialBodySize = await bodyCopy.evaluate(element => parseFloat(getComputedStyle(element).fontSize));
   const initialButtonSize = await provider.evaluate(element => parseFloat(getComputedStyle(element).fontSize));
   await page.getByRole('button', { name: '显示设置', exact: true }).tap();
@@ -161,7 +162,9 @@ for (const method of ['getItem', 'setItem']) {
     await expect(page.getByRole('heading', { name: '选择登录方式', exact: true })).toBeVisible();
     await expect(page.getByRole('status')).toContainText(/无法(保存|读取).*本次/);
     await expect(page.getByRole('button', { name: /微信/ })).toBeEnabled();
-    await expect(page.getByRole('button', { name: /Google/ })).toBeEnabled();
+    const google = page.getByRole('link', { name: /Google/ });
+    await expect(google).toBeEnabled();
+    await expect(google).toHaveAttribute('href', /\/api\/auth\/google\/start/);
   });
 }
 

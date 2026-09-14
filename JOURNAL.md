@@ -78,3 +78,4 @@
 - T42回执对账：真实绿档1164bf18c1已与HEAD和状态核实，当前8/42。B1及验收反馈闭环；B2 T07–T12只剩A2–A5外部条件，仓库无OAuth环境文件或登录实现，不能伪造真实G1–G4。
 - [audit] phase → test-writing @ 2026-09-14T14:37:30+08:00
 - B2 Google-first恢复：用户选择Google-first并授权免费测试OAuth与受限HTTPS环境。计划拆为T43先验证Google、T07后收口微信+Google；Google Cloud已有登录项目但无OAuth Client，Vercel CLI未登录，OAuth Client最终创建须即时确认，付费额度仍为0。
+- T43红阶段：最终Domain 17/17与small-phone 12/12真实失败exit1；考题覆盖Google code+PKCE、真实GET/route、加密交易cookie生命周期、默认RS256验签、随机state/nonce/verifier、五语言回调、WebView外部接续与不冒充微信/G1。独立只读终审通过；未创建OAuth Client、未发布、未接密钥。
