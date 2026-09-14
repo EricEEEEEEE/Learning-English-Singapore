@@ -1,0 +1,120 @@
+{
+  "task": "T43",
+  "recorded_at": "2026-09-14T20:14:00+08:00",
+  "scope": "Google-first Preview verification",
+  "environment": {
+    "hosting": "Vercel Preview with Standard Protection",
+    "stable_alias": "https://learning-english-singapore-preview-ericeeeeeee.vercel.app",
+    "oauth_audience": "External / Testing",
+    "production_updated": false
+  },
+  "configuration": {
+    "authorized_origin_verified": true,
+    "authorized_redirect_verified": true,
+    "preview_environment_names_verified": [
+      "GOOGLE_CLIENT_ID",
+      "GOOGLE_CLIENT_SECRET",
+      "AUTH_SESSION_SECRET",
+      "APP_ORIGIN"
+    ],
+    "secret_values_recorded": false
+  },
+  "real_browser": {
+    "device": "Desktop Chrome",
+    "provider": "Google",
+    "languages_passed": ["zh-Hans", "id", "ja", "ko", "hi"],
+    "checks": [
+      "Google account chooser completed",
+      "provider callback returned to the stable alias",
+      "server session endpoint confirmed authentication before success UI",
+      "success text matched the selected auxiliary language",
+      "callback query parameters were removed from the address bar"
+    ]
+  },
+  "attempts": [
+    {
+      "plan_id": "X1-271",
+      "case": "same-device",
+      "language": "zh-Hans",
+      "device": "desktop-Chrome",
+      "expected": "real Google authorization returns to the same browser, server session is authenticated, and callback parameters are removed",
+      "actual": "passed; localized success appeared only after server session validation; final path was /",
+      "evidence_ref": "this file / real_browser",
+      "raw_callback_persisted": false
+    },
+    {
+      "plan_id": "X1-277",
+      "case": "same-device",
+      "language": "id",
+      "device": "desktop-Chrome",
+      "expected": "real Google authorization returns to the same browser, server session is authenticated, and callback parameters are removed",
+      "actual": "passed; localized success appeared only after server session validation; final path was /",
+      "evidence_ref": "this file / real_browser",
+      "raw_callback_persisted": false
+    },
+    {
+      "plan_id": "X1-283",
+      "case": "same-device",
+      "language": "ja",
+      "device": "desktop-Chrome",
+      "expected": "real Google authorization returns to the same browser, server session is authenticated, and callback parameters are removed",
+      "actual": "passed; localized success appeared only after server session validation; final path was /",
+      "evidence_ref": "this file / real_browser",
+      "raw_callback_persisted": false
+    },
+    {
+      "plan_id": "X1-289",
+      "case": "same-device",
+      "language": "ko",
+      "device": "desktop-Chrome",
+      "expected": "real Google authorization returns to the same browser, server session is authenticated, and callback parameters are removed",
+      "actual": "passed; localized success appeared only after server session validation; final path was /",
+      "evidence_ref": "this file / real_browser",
+      "raw_callback_persisted": false
+    },
+    {
+      "plan_id": "X1-295",
+      "case": "same-device",
+      "language": "hi",
+      "device": "desktop-Chrome",
+      "expected": "real Google authorization returns to the same browser, server session is authenticated, and callback parameters are removed",
+      "actual": "passed; localized success appeared only after server session validation; final path was /",
+      "evidence_ref": "this file / real_browser",
+      "raw_callback_persisted": false
+    },
+    {
+      "plan_id": "X1-274",
+      "case": "invalid-state",
+      "language": "zh-Hans",
+      "device": "desktop-Chrome",
+      "expected": "forged state is rejected, transaction state is cleared, and no session is created",
+      "actual": "passed; HTTP 302 to invalid_transaction, clearing cookie emitted, subsequent anonymous session authenticated=false",
+      "evidence_ref": "this file / remote_negative_path",
+      "raw_callback_persisted": false
+    }
+  ],
+  "remote_negative_path": {
+    "case": "invalid-state",
+    "request_used_real_credentials": false,
+    "callback_status": 302,
+    "result": "invalid_transaction",
+    "transaction_cookie_cleared": true,
+    "authenticated_after_attempt": false
+  },
+  "automated_security_coverage": [
+    "cancelled authorization clears transaction state and creates no session",
+    "invalid state is rejected before token exchange",
+    "normal callback replay is rejected before a second exchange",
+    "raw replay depends on Google's one-time-code rejection and creates no second session",
+    "token exchange network failure creates no session",
+    "ID token signature, issuer, audience, azp, nonce, expiry and verified email are checked",
+    "embedded WeChat browser receives system-browser continuation guidance"
+  ],
+  "remaining_real_device_evidence": [
+    "one physical phone must complete same-device Google authorization",
+    "iPhone Safari, Android Chrome and embedded-browser matrix rows remain untested",
+    "cancel-retry, duplicate-callback, network-failure and external-browser rows remain planned unless a real environment is exercised"
+  ],
+  "identity_data_recorded": false,
+  "oauth_codes_tokens_states_cookies_recorded": false
+}

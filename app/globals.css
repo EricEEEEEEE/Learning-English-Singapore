@@ -51,12 +51,12 @@ h1 span { display: block; }
 .entry-panel h2:focus { outline: none; }
 .panel-copy { color: var(--muted); font-size: calc(15px * var(--text-scale)); line-height: 1.8; margin-top: 10px; }
 .language-choices, .account-choices { display: grid; gap: 10px; margin-top: 24px; }
-.language-choices button, .account-choices button { width: 100%; min-width: 44px; min-height: 64px; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border: 1px solid #b2c4b8; border-radius: 8px; background: var(--background); color: var(--ink); font-size: calc(17px * var(--text-scale)); text-align: start; transition: background-color .16s; }
-.language-choices button:hover, .account-choices button:hover { background: var(--surface); }
+.language-choices button, .account-choices button, .account-choices a { width: 100%; min-width: 44px; min-height: 64px; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border: 1px solid #b2c4b8; border-radius: 8px; background: var(--background); color: var(--ink); font-size: calc(17px * var(--text-scale)); text-align: start; line-height: 1.5; text-decoration: none; transition: background-color .16s; }
+.language-choices button:hover, .account-choices button:hover, .account-choices a:hover { background: var(--surface); }
 .language-choices button > span:first-child { flex: 1; min-width: 0; }
 .language-choices strong { font-weight: 550; }
 .language-choices small, .audio-unavailable small { display: block; margin-top: 5px; color: var(--muted); font-size: calc(12px * var(--text-scale)); line-height: 1.5; }
-.account-choices button { flex-wrap: wrap; }
+.account-choices button, .account-choices a { flex-wrap: wrap; }
 .account-choices small { margin-left: auto; font-size: calc(12px * var(--text-scale)); color: var(--muted); }
 .provider-letter { width: 24px; text-align: center; font-size: calc(23px * var(--text-scale)); font-weight: 600; }
 .text-button { min-width: 44px; min-height: 48px; max-width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--accent); padding: 10px 0; font-size: calc(14px * var(--text-scale)); text-align: start; line-height: 1.6; }

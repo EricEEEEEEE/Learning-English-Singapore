@@ -16,6 +16,7 @@ import { applyOnboardingEvent, createOnboardingSession, readOnboardingSession, t
 import { entryCopy, languageChoices, type EntryLanguage } from './entry-copy';
 
 type Preferences = { language: EntryLanguage | null; largeText: boolean; reducedMotion: boolean };
+type AuthNotice = { language: EntryLanguage; reason: string } | null;
 const defaultPreferences: Preferences = { language: null, largeText: false, reducedMotion: false };
 const storageKey = 'le-sg-entry-preferences-v1';
 const guideStorageKey = 'le-sg-onboarding-v1';
@@ -59,6 +60,8 @@ export default function Entry() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [storageError, setStorageError] = useState<'read' | 'save' | null>(null);
   const [providerNotice, setProviderNotice] = useState(false);
+  const [authNotice, setAuthNotice] = useState<AuthNotice>(null);
+  const [embeddedBrowser, setEmbeddedBrowser] = useState(false);
   const panelHeading = useRef<HTMLHeadingElement>(null);
   const focusPanel = useRef(false);
   const language = preferences.language ?? 'zh-Hans';
@@ -74,11 +77,40 @@ export default function Entry() {
   const showScene = scene.open && scene.session !== null && !showChoices;
 
   useEffect(() => {
+    let restoredPreferences = defaultPreferences;
     try {
-      setPreferences(readPreferences(localStorage.getItem(storageKey)));
+      restoredPreferences = readPreferences(localStorage.getItem(storageKey));
     } catch {
       setStorageError('read');
     }
+    const url = new URL(window.location.href);
+    const authReason = url.searchParams.get('auth');
+    const callbackLanguage = url.searchParams.get('language');
+    const validCallbackLanguage = languageChoices.find(choice => choice.code === callbackLanguage)?.code ?? null;
+    if (authReason && validCallbackLanguage) {
+      restoredPreferences = { ...restoredPreferences, language: validCallbackLanguage };
+      if (authReason === 'success') {
+        void fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' })
+          .then(async response => response.ok ? response.json() as Promise<{ authenticated?: boolean }> : { authenticated: false })
+          .then(session => setAuthNotice({ language: validCallbackLanguage, reason: session.authenticated === true ? 'success' : 'verification_failed' }))
+          .catch(() => setAuthNotice({ language: validCallbackLanguage, reason: 'verification_failed' }));
+      } else {
+        setAuthNotice({ language: validCallbackLanguage, reason: authReason });
+      }
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(restoredPreferences));
+      } catch {
+        setStorageError('save');
+      }
+    }
+    setPreferences(restoredPreferences);
+    if (authReason || callbackLanguage || url.searchParams.has('returnTo')) {
+      url.searchParams.delete('auth');
+      url.searchParams.delete('language');
+      url.searchParams.delete('returnTo');
+      window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    }
+    setEmbeddedBrowser(/MicroMessenger|; wv\)/i.test(window.navigator.userAgent));
     try {
       const restored = readOnboardingSession(localStorage.getItem(guideStorageKey));
       onboardingRef.current = restored;
@@ -114,6 +146,7 @@ export default function Entry() {
     savePreferences({ ...preferences, language: next });
     setChoosingLanguage(false);
     setProviderNotice(false);
+    setAuthNotice(null);
     setPermissionsOpen(false);
   }
 
@@ -167,6 +200,7 @@ export default function Entry() {
           </section>
           <div role="status" aria-live="polite" className="entry-status">
             {providerNotice && <p>{copy.providerNotice}</p>}
+            {authNotice && <p>{authNotice.reason === 'webview' ? entryCopy[authNotice.language].webViewNotice : (entryCopy[authNotice.language].authNotice[authNotice.reason] ?? entryCopy[authNotice.language].authNotice.failed)}</p>}
             {storageError && <p>{storageError === 'read' ? copy.readError : copy.saveError}</p>}
             {guideStorageError && <p>{guideStorageError === 'read' ? guide.readError : guide.saveError}</p>}
           </div>
@@ -242,14 +276,22 @@ export default function Entry() {
                     {copy.wechat}
                     <small>{copy.unavailable}</small>
                   </button>
-                  <button type="button" onClick={() => setProviderNotice(true)}>
-                    <span className="provider-letter" aria-hidden="true">G</span>
-                    Google
-                    <small>{copy.unavailable}</small>
-                  </button>
+                  {embeddedBrowser ? (
+                    <button type="button" onClick={() => { setProviderNotice(false); setAuthNotice({ language, reason: 'webview' }); }}>
+                      <span className="provider-letter" aria-hidden="true">G</span>
+                      Google
+                      <small>{copy.googleReady}</small>
+                    </button>
+                  ) : (
+                    <a href={`/api/auth/google/start?language=${encodeURIComponent(language)}&returnTo=%2F`}>
+                      <span className="provider-letter" aria-hidden="true">G</span>
+                      Google
+                      <small>{copy.googleReady}</small>
+                    </a>
+                  )}
                 </div>
               </section>
-              <button type="button" className="text-button" onClick={() => { focusPanel.current = true; setChoosingLanguage(true); setProviderNotice(false); }}>
+              <button type="button" className="text-button" onClick={() => { focusPanel.current = true; setChoosingLanguage(true); setProviderNotice(false); setAuthNotice(null); }}>
                 <Icon name="language" />{copy.change}
               </button>
               <div className="guide-entry">

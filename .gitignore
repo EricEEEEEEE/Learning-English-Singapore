@@ -6,6 +6,7 @@
 *.key
 node_modules/
 .next/
+.vercel/
 __pycache__/
 *.tsbuildinfo
 .DS_Store
