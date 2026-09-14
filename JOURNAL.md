@@ -76,3 +76,5 @@
 - T42绿阶段：X1扩为五语言300格，五语言各60；X2–X5字段不变。修复混合CRLF/LF后统一为607行LF，消除planned回车解析分裂；定向3/3、全量319/319（verify-20260913-194714.log）通过，冻结范围干净，独立判卷通过。真实OAuth与参与者实验未执行。
 - [存档] 1164bf18c1 存档: T42 让真实登录实验材料覆盖当前五种辅助语言
 - T42回执对账：真实绿档1164bf18c1已与HEAD和状态核实，当前8/42。B1及验收反馈闭环；B2 T07–T12只剩A2–A5外部条件，仓库无OAuth环境文件或登录实现，不能伪造真实G1–G4。
+- [audit] phase → test-writing @ 2026-09-14T14:37:30+08:00
+- B2 Google-first恢复：用户选择Google-first并授权免费测试OAuth与受限HTTPS环境。计划拆为T43先验证Google、T07后收口微信+Google；Google Cloud已有登录项目但无OAuth Client，Vercel CLI未登录，OAuth Client最终创建须即时确认，付费额度仍为0。
