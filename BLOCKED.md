@@ -16,7 +16,7 @@
 ## B02 · 后续真实实验条件（T06已整理，尚未落实）
 
 - A2：付费服务账号、精确权限及数字额度未批准；建议预算及未知费用见 `docs/experiments/b1/budget.md`，批准/实际均USD 0。
-- A3：用户已选择Google-first，并授权免费的测试OAuth与受限HTTPS测试环境。Google Auth Platform已建立External/Testing应用与Web OAuth Client；Vercel Preview已配置Google Client、服务端session密钥及稳定受保护域名，密钥仅在托管环境。Desktop Chrome已用真实Google完成简体中文、印尼语、日语、韩语、Hindi五种辅助语言同机授权；页面仅在服务端session确认后显示本地化成功并清理回调参数。匿名远端伪造state被302收口为`invalid_transaction`，交易cookie被清除，随后session仍为未登录。T43仍不得存绿：尚缺至少一部真实手机同机授权，以及iPhone/Android/WebView各格真实记录；取消、重放、网络失败及WebView引导已有自动化考题，但未冒充真实设备证据。OAuth Client目前有两个enabled secrets，Vercel使用后创建的secret；停用未使用的旧secret属于删除/安全动作，需用户另行明确确认。微信开放平台主体、权限与移动同机接续继续未落实；生产环境未更新。
+- A3：用户已选择Google-first，并授权免费的测试OAuth与受限HTTPS测试环境。Google Auth Platform已建立External/Testing应用与Web OAuth Client；Vercel Preview已配置Google Client、服务端session密钥及稳定受保护域名，密钥仅在托管环境。Desktop Chrome已用真实Google完成简体中文、印尼语、日语、韩语、Hindi五种辅助语言同机授权。用户首次真机尝试时，脱敏Vercel日志确认`start 302 → callback 302 → session 200`，但页面仍停在登录选择；根因是前端成功分支只显示提示而未进入问答。修复候选已部署到同一Preview别名，真实Desktop Chrome复测确认session成立后清理回调参数并自动进入第1/12题。T43仍不得存绿：修复后真机复测及设备/浏览器信息尚未取得，iPhone/Android/WebView各格仍缺真实记录；取消、重放、网络失败及WebView引导已有自动化考题，但未冒充真实设备证据。OAuth Client目前有两个enabled secrets，Vercel使用后创建的secret；停用未使用的旧secret属于删除/安全动作，需用户另行明确确认。微信开放平台主体、权限与移动同机接续继续未落实；生产环境未更新。
 - A4：辅助语言组合已确认为简体中文／印尼语／日语／韩语／Hindi，English 只作学习目标；具名本地/教学/各母语审查者、研究主持、联系人/报酬和外部联系授权仍未落实。
 - A5：实际供应商数据端点、订阅/录存/日志/地区/删除、真人声音及参与者分项同意未核实；M0最小D06须T09/T10取得真实证明，T11前引用通过记录。
 - 建议：按实验包X1–X5分项落实，每次有具体环境、最大费用和数据证据再执行；未知不自动选替代产品。完整清单 `docs/experiments/b1/prerequisites.md`。

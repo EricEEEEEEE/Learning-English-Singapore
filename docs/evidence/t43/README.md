@@ -8,6 +8,7 @@
 - Vercel Preview启用Standard Protection；生产环境未更新。
 - Desktop Chrome在五种辅助语言中分别完成真实Google授权。每次都返回同一Preview别名，前端等待服务端session确认后才显示对应语言的成功文案，随后地址栏回到`/`。
 - 远端匿名请求用伪造state与伪造code访问callback，返回302并跳到`auth=invalid_transaction`；响应清除交易cookie，后续匿名session仍为`authenticated:false`。
+- 首次真机尝试的脱敏日志显示start、callback和session均到达服务端，但旧前端仍回到登录选择。修复后，同一受保护Preview已用真实Desktop Chrome复测：服务端session确认后自动进入第1/12题，回调参数被清理。真机仍须在修复版本重测。
 
 `docs/experiments/b1/matrix.csv`是不可覆盖的预注册计划，全部X1行继续保持`未测/planned`。本次实际执行的5个Desktop Chrome同机路径与1个Desktop Chrome无效state路径在本目录的`result.json.attempts`中按plan ID逐条记录expected、actual与证据引用，不把自动化或桌面模拟冒充真机证据。原始callback不持久化，因为它含一次性code/state/cookie；只保留脱敏后的状态码、结果、cookie清除与session判定。
 
@@ -18,5 +19,6 @@
 ## 尚未满足的T43退出条件
 
 - 至少一部真实手机完成同机Google授权并保留脱敏结果。
+- 修复后真机重测需记录设备系统与系统浏览器；首次失败不能替代通过证据。
 - iPhone Safari、Android Chrome、iPhone/Android WeChat等实际环境仍须逐格执行；没有真实设备的格子继续保持`planned`。
 - OAuth Client有一个未使用的旧secret；当前Preview使用后创建的secret。停用旧secret需要单独批准。

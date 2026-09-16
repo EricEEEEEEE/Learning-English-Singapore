@@ -52,6 +52,7 @@ export default function Entry() {
   const [ready, setReady] = useState(false);
   const [onboarding, setOnboarding] = useState<OnboardingSession | null>(null);
   const onboardingRef = useRef<OnboardingSession | null>(null);
+  const callbackRef = useRef<{ reason: string | null; language: EntryLanguage | null; shouldClean: boolean } | null>(null);
   const guideReadFailed = useRef(false);
   const [guideOpen, setGuideOpen] = useState(false);
   const [guideStorageError, setGuideStorageError] = useState<'read' | 'save' | null>(null);
@@ -61,6 +62,7 @@ export default function Entry() {
   const [storageError, setStorageError] = useState<'read' | 'save' | null>(null);
   const [providerNotice, setProviderNotice] = useState(false);
   const [authNotice, setAuthNotice] = useState<AuthNotice>(null);
+  const [authPending, setAuthPending] = useState(false);
   const [embeddedBrowser, setEmbeddedBrowser] = useState(false);
   const panelHeading = useRef<HTMLHeadingElement>(null);
   const focusPanel = useRef(false);
@@ -77,6 +79,8 @@ export default function Entry() {
   const showScene = scene.open && scene.session !== null && !showChoices;
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
     let restoredPreferences = defaultPreferences;
     try {
       restoredPreferences = readPreferences(localStorage.getItem(storageKey));
@@ -84,16 +88,38 @@ export default function Entry() {
       setStorageError('read');
     }
     const url = new URL(window.location.href);
-    const authReason = url.searchParams.get('auth');
-    const callbackLanguage = url.searchParams.get('language');
-    const validCallbackLanguage = languageChoices.find(choice => choice.code === callbackLanguage)?.code ?? null;
+    if (!callbackRef.current) {
+      const callbackLanguage = url.searchParams.get('language');
+      callbackRef.current = {
+        reason: url.searchParams.get('auth'),
+        language: languageChoices.find(choice => choice.code === callbackLanguage)?.code ?? null,
+        shouldClean: url.searchParams.has('auth') || url.searchParams.has('language') || url.searchParams.has('returnTo'),
+      };
+    }
+    const { reason: authReason, language: validCallbackLanguage, shouldClean } = callbackRef.current;
     if (authReason && validCallbackLanguage) {
       restoredPreferences = { ...restoredPreferences, language: validCallbackLanguage };
       if (authReason === 'success') {
-        void fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store' })
+        setAuthPending(true);
+        void fetch('/api/auth/session', { credentials: 'same-origin', cache: 'no-store', signal: controller.signal })
           .then(async response => response.ok ? response.json() as Promise<{ authenticated?: boolean }> : { authenticated: false })
-          .then(session => setAuthNotice({ language: validCallbackLanguage, reason: session.authenticated === true ? 'success' : 'verification_failed' }))
-          .catch(() => setAuthNotice({ language: validCallbackLanguage, reason: 'verification_failed' }));
+          .then(session => {
+            if (!active) return;
+            const authenticated = session.authenticated === true;
+            setAuthNotice({ language: validCallbackLanguage, reason: authenticated ? 'success' : 'verification_failed' });
+            if (authenticated) {
+              if (!onboardingRef.current) saveOnboarding(createOnboardingSession());
+              setGuideOpen(true);
+            } else {
+              setGuideOpen(false);
+            }
+          })
+          .catch(error => {
+            if (!active || error instanceof DOMException && error.name === 'AbortError') return;
+            setAuthNotice({ language: validCallbackLanguage, reason: 'verification_failed' });
+            setGuideOpen(false);
+          })
+          .finally(() => { if (active) setAuthPending(false); });
       } else {
         setAuthNotice({ language: validCallbackLanguage, reason: authReason });
       }
@@ -104,7 +130,7 @@ export default function Entry() {
       }
     }
     setPreferences(restoredPreferences);
-    if (authReason || callbackLanguage || url.searchParams.has('returnTo')) {
+    if (shouldClean) {
       url.searchParams.delete('auth');
       url.searchParams.delete('language');
       url.searchParams.delete('returnTo');
@@ -115,12 +141,16 @@ export default function Entry() {
       const restored = readOnboardingSession(localStorage.getItem(guideStorageKey));
       onboardingRef.current = restored;
       setOnboarding(restored);
-      setGuideOpen(restored !== null);
+      setGuideOpen(authReason ? false : restored !== null);
     } catch {
       guideReadFailed.current = true;
       setGuideStorageError('read');
     }
     setReady(true);
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, []);
 
   useEffect(() => {
@@ -282,6 +312,12 @@ export default function Entry() {
                       Google
                       <small>{copy.googleReady}</small>
                     </button>
+                  ) : authPending ? (
+                    <button type="button" disabled>
+                      <span className="provider-letter" aria-hidden="true">G</span>
+                      Google
+                      <small>{copy.googleReady}</small>
+                    </button>
                   ) : (
                     <a href={`/api/auth/google/start?language=${encodeURIComponent(language)}&returnTo=%2F`}>
                       <span className="provider-letter" aria-hidden="true">G</span>
@@ -295,7 +331,7 @@ export default function Entry() {
                 <Icon name="language" />{copy.change}
               </button>
               <div className="guide-entry">
-                <button type="button" className="guide-primary" onClick={openGuide}><Icon name="account" />{guide.entry}</button>
+                <button type="button" className="guide-primary" disabled={authPending} onClick={openGuide}><Icon name="account" />{guide.entry}</button>
                 <p>{guide.entryHint}</p>
               </div>
             </>

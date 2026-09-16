@@ -101,6 +101,20 @@
     "transaction_cookie_cleared": true,
     "authenticated_after_attempt": false
   },
+  "post_login_transition_fix": {
+    "trigger": "physical-phone user returned to the login-choice screen after Google authorization",
+    "sanitized_server_sequence": [
+      "GET /api/auth/google/start -> 302",
+      "GET /api/auth/google/callback -> 302",
+      "GET /api/auth/session -> 200"
+    ],
+    "root_cause": "the verified-success branch displayed a notice but did not open onboarding",
+    "preview_fix_deployed": true,
+    "desktop_real_google_recheck": "passed; callback parameters removed and onboarding question 1 of 12 rendered",
+    "strict_mode_and_stale_result_guard_review": "passed",
+    "physical_phone_recheck": "pending",
+    "full_verify_after_fix": "environment timeout; typecheck and production build passed, T43 domain security tests 17/17 passed"
+  },
   "automated_security_coverage": [
     "cancelled authorization clears transaction state and creates no session",
     "invalid state is rejected before token exchange",
