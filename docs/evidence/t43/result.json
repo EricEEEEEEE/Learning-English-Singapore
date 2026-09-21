@@ -1,6 +1,6 @@
 {
   "task": "T43",
-  "recorded_at": "2026-09-21T14:00:00+08:00",
+  "recorded_at": "2026-09-21T14:11:00+08:00",
   "scope": "Google-first Preview verification",
   "environment": {
     "hosting": "Vercel Preview with Standard Protection",
@@ -142,7 +142,17 @@
     "desktop_extended_flow_recheck": "passed on 2026-09-21; the authenticated Chrome session continued through onboarding, a user-provided scenario, preparation recovery and the listening/practice preview entry",
     "strict_mode_and_stale_result_guard_review": "passed",
     "physical_phone_recheck": "passed on iPhone Safari; iOS version was not reported",
-    "full_verify_after_fix": "typecheck and production build passed; T43 domain security tests 17/17 passed; after stale Playwright, Chrome and port-3210 processes were removed, the 2026-09-21 full run started 372 tests but Chrome's first local document load took 37.2 seconds after the page had rendered and failed the frozen 20-second timeout; the second test took 19.2 seconds; the run was stopped and is not counted as green"
+    "full_verify_after_fix": "passed on 2026-09-21 with Playwright 1.63.0 pinned Chromium revision 1243; typecheck, production build and all 373 automated tests passed under the unchanged 20-second per-test timeout; log .loopwork/logs/verify-20260921-140711.log"
+  },
+  "automated_verification": {
+    "playwright_version": "1.63.0",
+    "browser": "Playwright-pinned Chromium",
+    "browser_revision": "1243",
+    "system_chrome_channel_used": false,
+    "per_test_timeout_ms": 20000,
+    "result": "373/373 passed",
+    "exit_code": 0,
+    "log": ".loopwork/logs/verify-20260921-140711.log"
   },
   "automated_security_coverage": [
     "cancelled authorization clears transaction state and creates no session",

@@ -98,13 +98,15 @@
 
 ## B2 · M0实测：验证最大未知（7项）
 
-- [ ] T43 · 在同一手机完成真实 Google 登录〔考题: F1.1,F1.2,F1.3,F1.4,F1.5,F13.3,F13.4〕〔人类团队约8–16小时 / AI协作约5–10小时〕
+- [x] T43 · 在同一手机完成真实 Google 登录〔考题: F1.1,F1.2,F1.3,F1.4,F1.5,F13.3,F13.4〕〔人类团队约8–16小时 / AI协作约5–10小时〕
 
   **依赖**：T02、T06。**外部条件**：用户已选择 Google-first，并授权免费的测试 OAuth 与受限 HTTPS 测试环境；OAuth Client 的最终创建按即时确认执行，密钥只进入托管环境，不进仓库、日志或对话。
 
   **交付**：在手机系统浏览器与电脑接入 Google OIDC Authorization Code + PKCE；保留辅助语言与返回目的；服务端校验state、nonce、一次性code及ID token，取消、重复回调、失效state和网络失败保持未登录。嵌入式浏览器只引导到系统浏览器，不宣称WebView内可登录。
 
   **验证／证据**：Google入口的五语言×五环境×六路径逐格记录；至少一部真实手机完成同机授权，保留脱敏回调证据。客户端传来的邮箱或昵称不能直接建会话；同一回调不可重放，失败后可安全重试。只证明Google-first，不冒充微信入口或完整G1已经通过。
+
+  **本轮证据**：真实External/Testing OAuth与受保护Preview已接通；Desktop Chrome五种辅助语言同机授权、匿名invalid-state拒绝均通过。修复登录成功后只显示提示的回跳问题，并在实体iPhone Safari完成`X1-091`同机Google授权，继续通过引导、用户自述场景及“预览听与练”入口。取消、state、nonce、PKCE、一次性code、ID token验签、重放、网络失败和WebView引导由自动化覆盖。完整验证改用Playwright 1.63.0固定Chromium revision 1243，在未改20秒超时下`373/373`、exit 0（`.loopwork/logs/verify-20260921-140711.log`）。证据见`docs/evidence/t43/`；Android及其余真实设备格继续为planned，不冒充已测，微信入口留给T07。
 
 - [ ] T07 · 在同一手机完成微信与Google双入口登录〔考题: F1.1,F1.2,F1.3,F1.4,F1.5,F13.3,F13.4〕〔人类团队约12–24小时 / AI协作约8–16小时〕
 

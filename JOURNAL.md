@@ -93,3 +93,5 @@
 - T43固定Chromium实现被实时围栏拦截：目标tests/playwright.config.mjs属于测试基础设施，但路径规则在implementing阶段锁定整个tests目录。拟议实现仅删除channel:'chrome'，不改20秒超时、断言或考题；红档804a068已独立落地。按围栏提示等待用户明确授权该单文件基础设施例外。
 - [audit] phase → test-writing @ 2026-09-21T14:03:15+08:00
 - T43 固定Chromium接线红态：用户明确授权仅调整 tests/playwright.config.mjs 的运行环境接线，不改20秒超时、业务断言或考题。因强制围栏无 implementing 单文件例外，本轮在 test-writing 将配置接到尚不存在的根目录 playwright-runtime.mjs；定向命令真实 exit1（ERR_MODULE_NOT_FOUND）。待红存档回执后在 implementing 新增运行器并跑定向与完整 verify。
+- [audit] phase → implementing @ 2026-09-21T14:04:00+08:00
+- T43 ✅ 固定Chromium实现：红档c2070f0ed3已核实。新增根目录playwright-runtime.mjs，Playwright config继续冻结在红档，仅由实现模块提供browserName=chromium与serviceWorkers=block。定向合同1/1通过；首次全量因本机缺Playwright 1.63.0所需revision 1243而112/373，通过官方install补齐固定浏览器后完整verify exit0、373/373（.loopwork/logs/verify-20260921-140711.log），20秒超时未改。实体iPhone Safari X1-091与真实Google链此前已过；T43勾选，Android/其余设备格仍planned，微信留T07。
