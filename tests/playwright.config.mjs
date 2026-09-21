@@ -1,5 +1,6 @@
 import { defineConfig } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
+import runtime from '../playwright-runtime.mjs';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 
@@ -13,9 +14,7 @@ export default defineConfig({
   timeout: 20_000,
   use: {
     baseURL: 'http://127.0.0.1:3210',
-    browserName: 'chromium',
-    channel: 'chrome',
-    serviceWorkers: 'block',
+    ...runtime,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },

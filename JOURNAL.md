@@ -89,3 +89,7 @@
 - T43完整verify环境复核：清理遗留Playwright、无头Chrome及3210监听后重跑372项；首屏已渲染但load耗时37.2秒触发冻结20秒失败，第二项19.2秒，故停止且不记绿。中断后已精确终止本轮PID69291/69311/70031。该环境墙已重复出现，按Loopwork不再绕；T43真机X1-091已过，但待完整verify exit0才可绿档。
 - [audit] phase → test-writing @ 2026-09-21T13:59:36+08:00
 - T43验证环境红考题：新增1项domain合同，要求372项可重复回归使用Playwright 1.63配套的固定Chromium，不跟随系统Chrome 153滚动升级；当前config.use.channel=chrome，考题1/1按预期exit1。未改20秒超时、业务断言或实现。
+- [audit] phase → implementing @ 2026-09-21T14:00:24+08:00
+- T43固定Chromium实现被实时围栏拦截：目标tests/playwright.config.mjs属于测试基础设施，但路径规则在implementing阶段锁定整个tests目录。拟议实现仅删除channel:'chrome'，不改20秒超时、断言或考题；红档804a068已独立落地。按围栏提示等待用户明确授权该单文件基础设施例外。
+- [audit] phase → test-writing @ 2026-09-21T14:03:15+08:00
+- T43 固定Chromium接线红态：用户明确授权仅调整 tests/playwright.config.mjs 的运行环境接线，不改20秒超时、业务断言或考题。因强制围栏无 implementing 单文件例外，本轮在 test-writing 将配置接到尚不存在的根目录 playwright-runtime.mjs；定向命令真实 exit1（ERR_MODULE_NOT_FOUND）。待红存档回执后在 implementing 新增运行器并跑定向与完整 verify。
