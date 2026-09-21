@@ -87,3 +87,5 @@
 - T43桌面扩展复测：用户当前真实Desktop Chrome登录会话继续完成引导、自述场景、失败步骤恢复并出现‘预览听与练’入口；浏览器仍显示Google登录成功。此证据已写docs/evidence/t43，不冒充物理手机。完整verify真实启动372项，但首个本地文档已渲染仍超过冻结20秒load等待，环境失败未记绿；typecheck/build及既有T43 domain17/17边界保持。
 - T43真机复测已确认：用户明确本次修复版完整测试使用实体iPhone Safari；Google同机授权后继续完成引导、用户自述场景并到达‘预览听与练’，登记为X1-091 passed，iOS具体版本未知且不保存身份或OAuth敏感值。Android/WebView及其余路径仍planned。另发现上轮中断后Playwright PID49032与无头Chrome仍后台运行，已仅终止该测试进程组，准备重跑完整verify。
 - T43完整verify环境复核：清理遗留Playwright、无头Chrome及3210监听后重跑372项；首屏已渲染但load耗时37.2秒触发冻结20秒失败，第二项19.2秒，故停止且不记绿。中断后已精确终止本轮PID69291/69311/70031。该环境墙已重复出现，按Loopwork不再绕；T43真机X1-091已过，但待完整verify exit0才可绿档。
+- [audit] phase → test-writing @ 2026-09-21T13:59:36+08:00
+- T43验证环境红考题：新增1项domain合同，要求372项可重复回归使用Playwright 1.63配套的固定Chromium，不跟随系统Chrome 153滚动升级；当前config.use.channel=chrome，考题1/1按预期exit1。未改20秒超时、业务断言或实现。
