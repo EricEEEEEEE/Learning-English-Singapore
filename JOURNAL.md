@@ -85,3 +85,5 @@
 - T43真机回跳修复：脱敏Vercel日志确认用户尝试已完成start302、callback302、session200；根因是成功分支只显示提示未进入问答。已让服务端session确认成功后创建/恢复onboarding并进入第1/12题，修复部署到原受保护Preview；真实Desktop Chrome回调复测通过。typecheck/build通过、T43 domain 17/17通过；全量372因当前Playwright页面加载异常缓慢两次撞300s上限，未记绿，仍待修复后真机复测。
 - T43回跳修复终审：补齐authPending、AbortController/active guard及跨StrictMode callbackRef快照；失败明确留登录，验证期间禁用重复入口。独立复核确认代码阻断清零；最终受保护Preview真实Google回调再次进入第1/12题并清理参数。typecheck/build与domain17/17通过；全量372仍因本机Chrome page.goto普遍8秒以上撞300s上限，修复版真机复测仍待用户。
 - T43桌面扩展复测：用户当前真实Desktop Chrome登录会话继续完成引导、自述场景、失败步骤恢复并出现‘预览听与练’入口；浏览器仍显示Google登录成功。此证据已写docs/evidence/t43，不冒充物理手机。完整verify真实启动372项，但首个本地文档已渲染仍超过冻结20秒load等待，环境失败未记绿；typecheck/build及既有T43 domain17/17边界保持。
+- T43真机复测已确认：用户明确本次修复版完整测试使用实体iPhone Safari；Google同机授权后继续完成引导、用户自述场景并到达‘预览听与练’，登记为X1-091 passed，iOS具体版本未知且不保存身份或OAuth敏感值。Android/WebView及其余路径仍planned。另发现上轮中断后Playwright PID49032与无头Chrome仍后台运行，已仅终止该测试进程组，准备重跑完整verify。
+- T43完整verify环境复核：清理遗留Playwright、无头Chrome及3210监听后重跑372项；首屏已渲染但load耗时37.2秒触发冻结20秒失败，第二项19.2秒，故停止且不记绿。中断后已精确终止本轮PID69291/69311/70031。该环境墙已重复出现，按Loopwork不再绕；T43真机X1-091已过，但待完整verify exit0才可绿档。
