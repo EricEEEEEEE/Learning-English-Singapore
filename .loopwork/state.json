@@ -7,7 +7,7 @@
   "round_count": 9,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "9525ea4ce415dcc63ceb150674930cb1424c749a",
+  "last_round_commit": "69a0915c4e42b6e527194fb340c33b3ac1cc064a",
   "milestones": [
     "T01"
   ],
@@ -15,18 +15,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-16T12:12:12+08:00",
+  "last_session": "2026-09-21T13:48:49+08:00",
   "authorized_batch": "B2",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 312146,
-  "blocks_seen": 558,
+  "audit_bytes": 330115,
+  "blocks_seen": 567,
   "red_commit_pending": true,
   "acceptance_status": "b1_user_accepted_t41_verified",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T43真机回跳修复、竞态收口与复测候选"
+    "msg": "存档: T43桌面扩展复测、真实验收边界与完整验证环境失败记录"
   }
 }

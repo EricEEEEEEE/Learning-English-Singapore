@@ -1,6 +1,6 @@
 {
   "task": "T43",
-  "recorded_at": "2026-09-14T20:14:00+08:00",
+  "recorded_at": "2026-09-21T14:00:00+08:00",
   "scope": "Google-first Preview verification",
   "environment": {
     "hosting": "Vercel Preview with Standard Protection",
@@ -28,7 +28,9 @@
       "provider callback returned to the stable alias",
       "server session endpoint confirmed authentication before success UI",
       "success text matched the selected auxiliary language",
-      "callback query parameters were removed from the address bar"
+      "callback query parameters were removed from the address bar",
+      "the authenticated zh-Hans session continued through onboarding into a user-provided scenario",
+      "the same session recovered a simulated failed preparation step and exposed the listening/practice preview entry"
     ]
   },
   "attempts": [
@@ -111,9 +113,10 @@
     "root_cause": "the verified-success branch displayed a notice but did not open onboarding",
     "preview_fix_deployed": true,
     "desktop_real_google_recheck": "passed; callback parameters removed and onboarding question 1 of 12 rendered",
+    "desktop_extended_flow_recheck": "passed on 2026-09-21; the authenticated Chrome session continued through onboarding, a user-provided scenario, preparation recovery and the listening/practice preview entry",
     "strict_mode_and_stale_result_guard_review": "passed",
     "physical_phone_recheck": "pending",
-    "full_verify_after_fix": "environment timeout; typecheck and production build passed, T43 domain security tests 17/17 passed"
+    "full_verify_after_fix": "typecheck and production build passed; T43 domain security tests 17/17 passed; the 2026-09-21 full run started 372 tests but Chrome's first local document load exceeded the frozen 20-second test timeout after the page had rendered, so it was stopped and is not counted as green"
   },
   "automated_security_coverage": [
     "cancelled authorization clears transaction state and creates no session",
