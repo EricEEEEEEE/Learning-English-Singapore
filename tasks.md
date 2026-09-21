@@ -1,6 +1,6 @@
 # Learning English in Singapore · 任务清单
 
-版本：1.2 · 2026-09-14 · **当前8/43项已确认绿存档；Google-first 已获授权，先执行 T43，再由 T07 收口双入口。**
+版本：1.2 · 2026-09-21 · **当前9/43项已确认绿存档；T43 Google-first 已完成，T07 等待微信开放平台外部条件。**
 
 依据 `spec.md` v0.2、`rules.md`、`plan.md`。用户已批准初始化及B1 T01–T06，按真实代存档回执推进。编号 T01–T40 为开发任务；规格里的 T01–T73 为研究来源。`考题` 指规格的实际验收句，关联不等于该条已满足。
 
@@ -106,7 +106,7 @@
 
   **验证／证据**：Google入口的五语言×五环境×六路径逐格记录；至少一部真实手机完成同机授权，保留脱敏回调证据。客户端传来的邮箱或昵称不能直接建会话；同一回调不可重放，失败后可安全重试。只证明Google-first，不冒充微信入口或完整G1已经通过。
 
-  **本轮证据**：真实External/Testing OAuth与受保护Preview已接通；Desktop Chrome五种辅助语言同机授权、匿名invalid-state拒绝均通过。修复登录成功后只显示提示的回跳问题，并在实体iPhone Safari完成`X1-091`同机Google授权，继续通过引导、用户自述场景及“预览听与练”入口。取消、state、nonce、PKCE、一次性code、ID token验签、重放、网络失败和WebView引导由自动化覆盖。完整验证改用Playwright 1.63.0固定Chromium revision 1243，在未改20秒超时下`373/373`、exit 0（`.loopwork/logs/verify-20260921-140711.log`）。证据见`docs/evidence/t43/`；Android及其余真实设备格继续为planned，不冒充已测，微信入口留给T07。
+  **本轮证据**：真实External/Testing OAuth与受保护Preview已接通；Desktop Chrome五种辅助语言同机授权、匿名invalid-state拒绝均通过。修复登录成功后只显示提示的回跳问题，并在实体iPhone Safari完成`X1-091`同机Google授权，继续通过引导、用户自述场景及“预览听与练”入口。取消、state、nonce、PKCE、一次性code、ID token验签、重放、网络失败和WebView引导由自动化覆盖。完整验证改用Playwright 1.63.0固定Chromium revision 1243，在未改20秒超时下`373/373`、exit 0（`.loopwork/logs/verify-20260921-140711.log`）。绿存档`9c6ed3efab`已核实。证据见`docs/evidence/t43/`；Android及其余真实设备格继续为planned，不冒充已测，微信入口留给T07。
 
 - [ ] T07 · 在同一手机完成微信与Google双入口登录〔考题: F1.1,F1.2,F1.3,F1.4,F1.5,F13.3,F13.4〕〔人类团队约12–24小时 / AI协作约8–16小时〕
 

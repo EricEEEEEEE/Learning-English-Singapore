@@ -2,6 +2,7 @@
   "task": "T43",
   "recorded_at": "2026-09-21T14:11:00+08:00",
   "scope": "Google-first Preview verification",
+  "green_commit": "9c6ed3efab4894a73875b1f93a0d2b321ff458e1",
   "environment": {
     "hosting": "Vercel Preview with Standard Protection",
     "stable_alias": "https://learning-english-singapore-preview-ericeeeeeee.vercel.app",
