@@ -15,7 +15,7 @@
 
 ## B02 · 后续真实实验条件（T06已整理，尚未落实）
 
-- A2：OpenAI API key已由用户通过一次性本地隐藏输入页保存到Git忽略的`.env.local`，权限0600，未在仓库、日志或对话保存密钥；未发起API请求，组织权限及模型资格未验证。付费实验数字额度仍未批准；建议预算及未知费用见`docs/experiments/b1/budget.md`，批准/实际均USD 0。密钥配置不等于消费授权。
+- A2：OpenAI API key已由用户通过一次性本地隐藏输入页保存到Git忽略的`.env.local`，权限0600，未在仓库、日志或对话保存密钥；未发起API请求，组织权限及模型资格未验证。用户于2026-09-22明确批准**仅T08/X2 OpenAI API总支出上限USD 25**，实际仍USD 0；T09/T10等其他池批准0。X2的单请求最坏费用、终止与结算仍须证明可控才启动，详见`docs/experiments/b1/budget.md`；项目级hard spend limit可能延迟生效、不能单独保证总额。
 - A3：用户已选择Google-first，并授权免费的测试OAuth与受限HTTPS测试环境。Google Auth Platform已建立External/Testing应用与Web OAuth Client；Vercel Preview已配置Google Client、服务端session密钥及稳定受保护域名，密钥仅在托管环境。Desktop Chrome已用真实Google完成五种辅助语言同机授权，实体iPhone Safari的`X1-091`也通过；T43绿档为`9c6ed3efab`。用户现已明确确认没有微信开放平台网站应用AppID及其管理权限，因此T07真实微信入口阻塞；不得用公众号、小程序、测试桩或Google结果冒充。恢复条件是取得合格主体、网站应用AppID与回调管理权限，并落实移动同机环境。OAuth Client仍有一个未使用的旧secret，停用属于删除/安全动作，需用户另行明确确认；生产环境未更新。
 - A4：辅助语言组合已确认为简体中文／印尼语／日语／韩语／Hindi，English 只作学习目标；具名本地/教学/各母语审查者、研究主持、联系人/报酬和外部联系授权仍未落实。
 - A5：实际供应商数据端点、订阅/录存/日志/地区/删除、真人声音及参与者分项同意未核实；M0最小D06须T09/T10取得真实证明，T11前引用通过记录。
