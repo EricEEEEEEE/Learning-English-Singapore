@@ -39,6 +39,10 @@ Runway路径总建议**2150**；LTX替代总建议4650。Simli若成为X4最终�
 
 ## 执行时硬停止
 
+2026-09-22 T08准备记录：已实现并离线验证X2共用USD25账本，区分已结算和在途预留，失败或结算未知时保留预留，同一样本至多一次重试；全量验证377项通过。已用只读`GET /v1/models/{model}`核对指定TTS快照与`gpt-realtime-2.1`均返回HTTP 200；这只证明模型可被查询，不证明生成权限或可控费用。账本目前是**进程内组件，未接真实供应商调用，也非持久化生产限额**。本次模型查询未生成音频，X2实际推理费用仍为USD0。
+
+依[Create speech参数](https://developers.openai.com/api/reference/cli/resources/audio/subresources/speech/methods/create)，TTS可限制输入文字长度，但未提供可设置的输出token／时长上限；依[Realtime会话参数](https://developers.openai.com/api/reference/cli/resources/realtime/subresources/calls/methods/accept)，`max_output_tokens`限制**单次回复**，不能代替整场会话的输入、回合数及总输出上限。`maximumEvidence`必须由实际端点限制与终态账单证明支撑；传给本地组件的文字本身不是证据。在这两类单请求最大暴露及结算闭环获证前，真实媒体请求继续拒绝。
+
 每次仅一个学习会话、最多两独立角色流；学习会话20分钟绝对截止，单次生成/录存上限、Runway5分钟上限另执行。每原始任务最多1次重试；重试创建新attempt与新预算预留，禁止SDK无限重连和自动充值。资源池额度包括成功、失败、取消、重试与在途请求。
 
 调用前由服务端原子预留该请求最坏费用，包括上下文、建角、两流预备/生成、录存传输及可能取消后延迟账单。**已结算＋全部在途预留＋新预留≤对应实验的用户批准值**才启动；账户余额不是授权。X2批准值为USD 25，其他实验批准值仍为0。无法有界估计或按时可靠结束的端点不执行。按实际分类usage结算；未知pending不释放预留，超出假设立即停止新请求并排查，不能自动抬高阈值。OpenAI项目级hard spend limit可作为额外护栏，但官方说明生效可能延迟、实际支出可略高于设定值，因此**不能单独保证本次USD 25总上限**。[官方说明](https://help.openai.com/en/articles/6614457-troubleshooting-api-usage-and-spend-limits)

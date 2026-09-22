@@ -101,3 +101,5 @@
 - T08 X2: 用户批准OpenAI API总支出USD25；预算表两行共用同一总池，实际USD0；项目级hard spend limit可能超限，真实请求须先证明逐请求最坏暴露和终止。预算CSV校验通过，git diff --check通过；本机verify首次因沙箱127.0.0.1:3210 EPERM未跑完。
 - [audit] phase → test-writing @ 2026-09-22T11:28:07+08:00
 - T08 X2红考题：4/4按预期失败，缺少lib/x2-budget.ts；覆盖无上界拒调用、TTS/Realtime共用USD25及在途预留、未知账单继续占额、同样本第三次尝试拒绝。运行命令 npm --prefix tests test -- --project=domain tests/domain/t08-x2-budget.spec.mjs（exit 1）；本轮未发OpenAI API请求，实际USD0。
+- [audit] phase → implementing @ 2026-09-22T11:30:14+08:00
+- T08 X2离线费用闸门：红档0ff72ae710后实现lib/x2-budget.ts；共用USD25、在途预留、未知费用不释放、最多一次重试，审查后补超预留冻结与attempt ID去重。完整verify.sh在允许本机端口的环境377/377、exit0（verify-20260922-113546.log），定向4/4、typecheck exit0；只读GET两模型均HTTP200，未发媒体请求、推理支出USD0。尝试过NODE_ENV测试专用护栏但Playwright未设test导致4题失败，已撤回并复测4/4。审查结论仅离线准备通过：证据字符串/本地实际费用不等于供应商终账，内存账本不能跨实例，T08样本0/60及本地审查者0，故任务不勾选、真实API仍阻断。
