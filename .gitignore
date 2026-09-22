@@ -18,4 +18,5 @@ outputs/
 tmp/
 test-results/
 playwright-report/
+ica-screenshots/
 *.local
