@@ -108,3 +108,5 @@
 - 2026-09-22 B2费用决议：用户明确X2总支出USD25绝对上限、不得超额；TTS/Realtime现有资料及离线账本不足以证明逐请求和最终结算零超额，真实媒体调用暂停，已记录BLOCKED/tasks/budget/prerequisites。X2仍0/60、实际媒体推理费USD0；T07微信权限、T09独立预算缺失，T10-T12与M0不放行。文档差异检查通过，未调用付费API。
 - 2026-09-22 Loopwork续接：9/43、B2，用户放行继续工作但USD25绝不超额不变。复核OpenAI官方TTS、Realtime、hard spend limit和prepaid文档，仍无可证明整个X2真实采样零超额的供应商闸门；T07微信网站AppID缺失、T08严格预算及审查者缺失、T09独立预算缺失。tasks标记T07-T09卡B02，T10-T12依赖未解，按连续受阻停批；未发付费请求，未勾任务，差异检查通过。
 - 2026-09-22 用户再次确认X2 USD25绝对上限持续有效。拟定Google-first私有记录离线准备候选批次 docs/proposals/google-first-offline-batch.md，限假数据/无付费/不发布，不改B2闸门或勾选T13；方向调整待批准。
+- [audit] phase → test-writing @ 2026-09-22T14:11:05+08:00
+- 2026-09-22 用户批准Google-first私有记录独立离线批次B2O。已在plan/tasks/方案/BLOCKED登记T44身份归属、T45本地替身、T46受限演示；9/46，T07-T13及G1-G4/M0仍未完成，X2 USD25绝对上限不变，未发付费请求。批次登记与git diff --check通过，下一轮红考题T44。
