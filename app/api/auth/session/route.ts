@@ -1,4 +1,5 @@
 import { GOOGLE_SESSION_COOKIE, openGoogleSession } from '../../../../lib/google-auth';
+import { ownerIdFromSessionCookie } from '../../../../lib/private-owner';
 
 export const runtime = 'nodejs';
 
@@ -12,11 +13,13 @@ function cookieValue(request: Request, name: string) {
 
 export async function GET(request: Request) {
   const secret = process.env.AUTH_SESSION_SECRET;
+  const cookie = cookieValue(request, GOOGLE_SESSION_COOKIE);
   const session = secret
-    ? await openGoogleSession(cookieValue(request, GOOGLE_SESSION_COOKIE), secret)
+    ? await openGoogleSession(cookie, secret)
     : null;
+  const accountKey = session && secret ? await ownerIdFromSessionCookie(cookie, secret) : null;
   return Response.json(
-    { authenticated: session !== null },
+    { authenticated: session !== null, accountKey },
     { headers: { 'cache-control': 'private, no-store, max-age=0' } },
   );
 }

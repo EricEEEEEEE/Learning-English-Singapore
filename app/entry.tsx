@@ -9,6 +9,7 @@ import Practice from './practice';
 import { usePractice } from './use-practice';
 import { scenarioCopy } from './scenario-copy';
 import { useScenario } from './use-scenario';
+import { useAccountBoundary } from './use-account-boundary';
 import { useStudySettings } from './use-study-settings';
 import { profileFromOnboarding } from '../lib/placement';
 import { guideCopy } from './guide-copy';
@@ -54,6 +55,7 @@ export default function Entry() {
   const onboardingRef = useRef<OnboardingSession | null>(null);
   const callbackRef = useRef<{ reason: string | null; language: EntryLanguage | null; shouldClean: boolean } | null>(null);
   const guideReadFailed = useRef(false);
+  const hydratedGuideKey = useRef<string | null | undefined>(undefined);
   const [guideOpen, setGuideOpen] = useState(false);
   const [guideStorageError, setGuideStorageError] = useState<'read' | 'save' | null>(null);
   const [choosingLanguage, setChoosingLanguage] = useState(false);
@@ -69,14 +71,21 @@ export default function Entry() {
   const language = preferences.language ?? 'zh-Hans';
   const copy = entryCopy[language];
   const showChoices = !preferences.language || choosingLanguage;
-  const showGuide = guideOpen && onboarding !== null && !showChoices;
+  const account = useAccountBoundary();
+  const activeGuideKey = account.scenarioKey
+    ? account.accountKey ? `${guideStorageKey}:${account.accountKey}` : guideStorageKey : null;
+  const activeStudyKey = account.scenarioKey
+    ? account.accountKey ? `le-sg-study-preferences-v1:${account.accountKey}` : 'le-sg-study-preferences-v1' : null;
+  const activePracticeKey = account.scenarioKey?.replace('le-sg-scenario-v1', 'le-sg-practice-v1') ?? null;
+  const showGuide = account.ready && hydratedGuideKey.current === activeGuideKey && guideOpen && onboarding !== null && !showChoices && !account.expired;
   const guide = guideCopy(language);
   const profile = useMemo(() => onboarding ? profileFromOnboarding(onboarding, onboarding.createdAt) : null, [onboarding]);
-  const study = useStudySettings(profile);
-  const scene = useScenario();
-  const practice = usePractice(scene.session);
-  const showPractice = practice.open && practice.session !== null && !showChoices;
-  const showScene = scene.open && scene.session !== null && !showChoices;
+  const study = useStudySettings(hydratedGuideKey.current === activeGuideKey ? profile : null, activeStudyKey);
+  const scene = useScenario(account.scenarioKey);
+  const practice = usePractice(scene.loadedKey === account.scenarioKey ? scene.session : null, account.scenarioKey);
+  const sceneBelongsToAccount = account.ready && scene.loadedKey === account.scenarioKey;
+  const showPractice = sceneBelongsToAccount && practice.loadedKey === activePracticeKey && practice.open && practice.session !== null && !showChoices && !account.expired;
+  const showScene = sceneBelongsToAccount && scene.open && scene.session !== null && !showChoices;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -107,12 +116,7 @@ export default function Entry() {
             if (!active) return;
             const authenticated = session.authenticated === true;
             setAuthNotice({ language: validCallbackLanguage, reason: authenticated ? 'success' : 'verification_failed' });
-            if (authenticated) {
-              if (!onboardingRef.current) saveOnboarding(createOnboardingSession());
-              setGuideOpen(true);
-            } else {
-              setGuideOpen(false);
-            }
+            if (!authenticated) setGuideOpen(false);
           })
           .catch(error => {
             if (!active || error instanceof DOMException && error.name === 'AbortError') return;
@@ -137,21 +141,36 @@ export default function Entry() {
       window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
     }
     setEmbeddedBrowser(/MicroMessenger|; wv\)/i.test(window.navigator.userAgent));
-    try {
-      const restored = readOnboardingSession(localStorage.getItem(guideStorageKey));
-      onboardingRef.current = restored;
-      setOnboarding(restored);
-      setGuideOpen(authReason ? false : restored !== null);
-    } catch {
-      guideReadFailed.current = true;
-      setGuideStorageError('read');
-    }
     setReady(true);
     return () => {
       active = false;
       controller.abort();
     };
   }, []);
+
+  useEffect(() => {
+    if (!account.ready || hydratedGuideKey.current === activeGuideKey) return;
+    hydratedGuideKey.current = activeGuideKey;
+    guideReadFailed.current = false;
+    onboardingRef.current = null;
+    setOnboarding(null);
+    setGuideOpen(false);
+    if (!activeGuideKey) return;
+    try {
+      let restored = readOnboardingSession(localStorage.getItem(activeGuideKey));
+      const returningFromGoogle = callbackRef.current?.reason === 'success' && account.authenticated;
+      if (!restored && returningFromGoogle) {
+        restored = createOnboardingSession();
+        localStorage.setItem(activeGuideKey, JSON.stringify(restored));
+      }
+      onboardingRef.current = restored;
+      setOnboarding(restored);
+      setGuideOpen(restored !== null && (returningFromGoogle || !callbackRef.current?.reason));
+    } catch {
+      guideReadFailed.current = true;
+      setGuideStorageError('read');
+    }
+  }, [account.ready, account.authenticated, activeGuideKey]);
 
   useEffect(() => {
     document.documentElement.lang = language;
@@ -183,9 +202,9 @@ export default function Entry() {
   function saveOnboarding(next: OnboardingSession) {
     onboardingRef.current = next;
     setOnboarding(next);
-    if (guideReadFailed.current) return;
+    if (guideReadFailed.current || !activeGuideKey) return;
     try {
-      localStorage.setItem(guideStorageKey, JSON.stringify(next));
+      localStorage.setItem(activeGuideKey, JSON.stringify(next));
       setGuideStorageError(current => current === 'save' ? null : current);
     } catch {
       setGuideStorageError('save');
@@ -254,17 +273,18 @@ export default function Entry() {
       ) : showScene && scene.session ? (
         <main className="guide-main">
           <Scenario language={language} session={scene.session} error={scene.error} onEvent={scene.act}
-            onLanguage={() => setChoosingLanguage(true)} onBack={scene.close} onPreview={practice.enter} />
+            onLanguage={() => setChoosingLanguage(true)} onBack={scene.close} onPreview={practice.enter}
+            privateDemoEnabled={account.authenticated} instanceId={scene.instanceId} />
           <aside className="guide-utilities" aria-label={copy.settings}>{utilities}</aside>
         </main>
       ) : showGuide && onboarding ? (
         <main className="guide-main">
           <Onboarding language={language} session={onboarding} onEvent={guideEvent}
             onLanguage={() => setChoosingLanguage(true)} onLeave={() => setGuideOpen(false)}
-            profilePanel={profile && study.settings ? <>
+            profilePanel={profile && study.settings && study.loadedKey === activeStudyKey ? <>
               <LearningProfilePanel language={language} profile={profile}
                 settings={study.settings} error={study.error} onAction={study.act} />
-              <button type="button" className="guide-primary" onClick={() => {
+              <button type="button" className="guide-primary" disabled={!account.ready} onClick={() => {
                 if (study.settings) scene.enter({ ...study.settings.chosen, listening_status: profile.placement_status, speaking_status: 'unobserved' });
               }}>{scenarioCopy(language).entry}</button>
             </> : null} />
@@ -276,6 +296,7 @@ export default function Entry() {
           <h1>{copy.title[0]}<span>{copy.title[1]}</span></h1>
           <p className="intro-copy">{copy.intro}</p>
           <DemoNotice copy={copy} />
+          {account.expired && <p role="status">登录已失效。此设备上的旧场景不会在当前账号下显示；请重新登录。</p>}
           <p className="pace-note">{copy.pace}</p>
         </div>
 
@@ -287,7 +308,7 @@ export default function Entry() {
               <p className="panel-copy">{copy.chooseHint}</p>
               <div className="language-choices">
                 {languageChoices.map(choice => (
-                  <button key={choice.code} type="button" lang={choice.code} disabled={!ready} onClick={() => selectLanguage(choice.code)}>
+                  <button key={choice.code} type="button" lang={choice.code} disabled={!ready || !account.ready} onClick={() => selectLanguage(choice.code)}>
                     <span><strong>{choice.name}</strong><small>{choice.note}</small></span>
                     <span aria-hidden="true">→</span>
                   </button>

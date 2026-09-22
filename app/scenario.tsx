@@ -9,12 +9,13 @@ import { scenarioCopy } from './scenario-copy';
 import { practiceCopy } from './practice-copy';
 import { choiceText } from './profile-copy';
 import { GuideIcon } from './guide-icons';
+import PrivateDemoPanel from './private-demo-panel';
 
 type Props = { language: EntryLanguage; session: ScenarioSession; error: 'read' | 'save' | null;
-  onEvent: (event: ScenarioEvent) => void; onLanguage: () => void; onBack: () => void; onPreview: (version: ScenarioVersion) => void };
+  onEvent: (event: ScenarioEvent) => void; onLanguage: () => void; onBack: () => void; onPreview: (version: ScenarioVersion) => void; privateDemoEnabled?: boolean; instanceId?: string | null };
 const fields: ScenarioField[] = ['who', 'where', 'goal', 'worry'];
 
-export default function Scenario({ language, session, error, onEvent, onLanguage, onBack, onPreview }: Props) {
+export default function Scenario({ language, session, error, onEvent, onLanguage, onBack, onPreview, privateDemoEnabled = false, instanceId }: Props) {
   const copy = scenarioCopy(language);
   const { editing, text } = session.form;
   const heading = useRef<HTMLHeadingElement>(null);
@@ -85,6 +86,7 @@ export default function Scenario({ language, session, error, onEvent, onLanguage
 
     {showingVersion && <>
       <div className="scene-version"><p>{copy.version.replace('{n}', String(version.goal_revision))}</p><p className="scene-goal">{version.user_goal}</p><p>{copy.noMedia}</p></div>
+      {privateDemoEnabled && instanceId && <PrivateDemoPanel language={language} version={version} instanceId={instanceId} />}
       <section className="scene-preferences" aria-label={copy.prefs}><h2>{copy.prefs}</h2><p>{choice?.content} · {choice?.speed} · {choice?.support}</p><p>{copy.ability}</p></section>
       <ol className="scene-progress" aria-label={copy.preparing}>{preparationParts.map((part, index) => <li key={part} data-status={version.preparation[part]}>
         <span aria-hidden="true">{index + 1}</span><div>{copy[part]}<small>{copy[version.preparation[part] === 'ready' ? 'done' : version.preparation[part] === 'failed' ? 'failed' : 'pending']}</small></div>

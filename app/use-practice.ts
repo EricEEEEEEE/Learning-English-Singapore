@@ -3,18 +3,33 @@
 import { useEffect, useRef, useState } from 'react';
 import { applyPracticeEvent, createPracticeSession, readPracticeSession, type PracticeEvent, type PracticeSession } from '../lib/practice';
 import type { ScenarioSession, ScenarioVersion } from '../lib/scenario';
-const storageKey = 'le-sg-practice-v1';
-export function usePractice(scenarios: ScenarioSession | null) {
+export function usePractice(scenarios: ScenarioSession | null, scenarioStorageKey: string | null) {
+  const storageKey = scenarioStorageKey ? scenarioStorageKey.replace('le-sg-scenario-v1', 'le-sg-practice-v1') : null;
   const [session, setSession] = useState<PracticeSession | null>(null);
+  const [displayKey, setDisplayKey] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<'read' | 'save' | null>(null);
   const current = useRef<PracticeSession | null>(null);
   const persisted = useRef<string | null>(null);
   const history = useRef<Record<string, PracticeSession>>({});
   const hydrated = useRef(false), readFailed = useRef(false), opened = useRef(false), clock = useRef(0);
+  const loadedKey = useRef<string | null>(null);
   useEffect(() => {
-    if (!scenarios || hydrated.current) return;
+    if (loadedKey.current !== storageKey) {
+      loadedKey.current = storageKey;
+      hydrated.current = false;
+      readFailed.current = false;
+      opened.current = false;
+      current.current = null;
+      persisted.current = null;
+      history.current = {};
+      setSession(null);
+      setOpen(false);
+      setDisplayKey(null);
+    }
+    if (!scenarios || !storageKey || hydrated.current) return;
     hydrated.current = true;
+    setDisplayKey(storageKey);
     try {
       const raw = localStorage.getItem(storageKey);
       persisted.current = raw;
@@ -42,12 +57,12 @@ export function usePractice(scenarios: ScenarioSession | null) {
       readFailed.current = true;
       setError('read');
     }
-  }, [scenarios]);
+  }, [scenarios, storageKey]);
   function save(next: PracticeSession) {
     current.current = next;
     history.current = { ...history.current, [next.scenario_version_id]: next };
     setSession(next);
-    if (readFailed.current) return;
+    if (readFailed.current || !storageKey) return;
     try {
       // Preserve changes made by another tab or an external storage repair.
       if (localStorage.getItem(storageKey) !== persisted.current) {
@@ -96,5 +111,5 @@ export function usePractice(scenarios: ScenarioSession | null) {
     act({ type: 'playback-ended', ...matching, at: clock.current });
   }
   function wait() { clock.current += 6000; act({ type: 'tick', at: clock.current }); }
-  return { session, open, error, enter, close, act, finishPlayback, wait };
+  return { session, open, loadedKey: displayKey, error, enter, close, act, finishPlayback, wait };
 }

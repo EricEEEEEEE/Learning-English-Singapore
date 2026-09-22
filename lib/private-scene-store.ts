@@ -17,6 +17,7 @@ function validPosition(value: number): boolean {
 
 export function createPrivateSceneStore({ sessionSecret }: { sessionSecret: string }) {
   const records = new Map<string, PrivateSceneRecord>();
+  const deletedOwners = new Map<string, VerifiedOwnerId>();
 
   async function authenticatedOwner({ cookie, now }: SessionInput): Promise<VerifiedOwnerId> {
     const owner = await ownerIdFromSessionCookie(cookie, sessionSecret, now);
@@ -34,6 +35,9 @@ export function createPrivateSceneStore({ sessionSecret }: { sessionSecret: stri
 
     async create(input: SessionInput & SceneInput): Promise<PrivateSceneRecord> {
       const ownerId = await authenticatedOwner(input);
+      if (records.size >= 1000 || [...records.values()].filter(record => record.ownerId === ownerId).length >= 20) {
+        throw new Error('Temporary record limit reached');
+      }
       const record = createOwnedScene(ownerId, input);
       records.set(record.id, record);
       return { ...record };
@@ -77,7 +81,14 @@ export function createPrivateSceneStore({ sessionSecret }: { sessionSecret: stri
       const record = records.get(input.id);
       if (!record || record.ownerId !== ownerId) return false;
       records.delete(record.id);
+      deletedOwners.set(record.id, ownerId);
+      if (deletedOwners.size > 1000) deletedOwners.delete(deletedOwners.keys().next().value!);
       return true;
+    },
+
+    async wasDeletedBy(input: Lookup): Promise<boolean> {
+      const ownerId = await authenticatedOwner(input);
+      return deletedOwners.get(input.id) === ownerId;
     },
   };
 }
