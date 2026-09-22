@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 10,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "3e98aba4940e15e582054edf6f0948c19fc6830d",
+  "last_round_commit": "6549a18817f92223308ec2e630e34b8e0e153fb1",
   "milestones": [
     "T01"
   ],
@@ -15,18 +15,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-22T11:27:21+08:00",
+  "last_session": "2026-09-22T11:29:48+08:00",
   "authorized_batch": "B2",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 356114,
+  "audit_bytes": 363055,
   "blocks_seen": 589,
   "red_commit_pending": false,
   "acceptance_status": "b1_user_accepted_t41_verified",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T08 X2美元25授权登记与费用闸门前置核对"
+    "kind": "red",
+    "msg": "存档: T08 X2费用闸门红考题"
   }
 }

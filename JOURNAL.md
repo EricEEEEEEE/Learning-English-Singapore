@@ -99,3 +99,5 @@
 - T43绿回执9c6ed3efab已与HEAD/state核实，round_count=10，当前9/43。B2续接核对：T07缺微信开放平台主体/AppID权限/移动同机回调；T08缺A2声音额度与A4真人审查者；T09缺A2三路线额度；T10依赖T08/T09；T11依赖A4/A5及T10；T12依赖前述G1–G4。无可诚实启动的下一条红考题，已更新tasks、T43结果和prerequisites，不伪造外部实测。
 - 用户已通过一次性127.0.0.1隐藏输入页保存OpenAI API key；本地只读核验：恰好一条OPENAI_API_KEY记录、权限0600、.env.local被Git忽略且未跟踪，输入服务正常退出。未输出/提交密钥，未发起API请求；A2付费额度仍为USD0，OpenAI模型资格和A4真人审查者仍待落实。T07缺微信网站应用AppID权限持续阻塞。
 - T08 X2: 用户批准OpenAI API总支出USD25；预算表两行共用同一总池，实际USD0；项目级hard spend limit可能超限，真实请求须先证明逐请求最坏暴露和终止。预算CSV校验通过，git diff --check通过；本机verify首次因沙箱127.0.0.1:3210 EPERM未跑完。
+- [audit] phase → test-writing @ 2026-09-22T11:28:07+08:00
+- T08 X2红考题：4/4按预期失败，缺少lib/x2-budget.ts；覆盖无上界拒调用、TTS/Realtime共用USD25及在途预留、未知账单继续占额、同样本第三次尝试拒绝。运行命令 npm --prefix tests test -- --project=domain tests/domain/t08-x2-budget.spec.mjs（exit 1）；本轮未发OpenAI API请求，实际USD0。
