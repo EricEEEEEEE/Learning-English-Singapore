@@ -97,3 +97,4 @@
 - T43 ✅ 固定Chromium实现：红档c2070f0ed3已核实。新增根目录playwright-runtime.mjs，Playwright config继续冻结在红档，仅由实现模块提供browserName=chromium与serviceWorkers=block。定向合同1/1通过；首次全量因本机缺Playwright 1.63.0所需revision 1243而112/373，通过官方install补齐固定浏览器后完整verify exit0、373/373（.loopwork/logs/verify-20260921-140711.log），20秒超时未改。实体iPhone Safari X1-091与真实Google链此前已过；T43勾选，Android/其余设备格仍planned，微信留T07。
 - [存档] 9c6ed3efab 存档: T43 固定Chromium全量验证与Google同机登录收口
 - T43绿回执9c6ed3efab已与HEAD/state核实，round_count=10，当前9/43。B2续接核对：T07缺微信开放平台主体/AppID权限/移动同机回调；T08缺A2声音额度与A4真人审查者；T09缺A2三路线额度；T10依赖T08/T09；T11依赖A4/A5及T10；T12依赖前述G1–G4。无可诚实启动的下一条红考题，已更新tasks、T43结果和prerequisites，不伪造外部实测。
+- 用户已通过一次性127.0.0.1隐藏输入页保存OpenAI API key；本地只读核验：恰好一条OPENAI_API_KEY记录、权限0600、.env.local被Git忽略且未跟踪，输入服务正常退出。未输出/提交密钥，未发起API请求；A2付费额度仍为USD0，OpenAI模型资格和A4真人审查者仍待落实。T07缺微信网站应用AppID权限持续阻塞。

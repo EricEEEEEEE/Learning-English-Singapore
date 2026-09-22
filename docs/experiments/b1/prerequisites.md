@@ -4,8 +4,8 @@ B1本地开发、终端和hooks已获授权，沿用真实Stop回执，不重复
 
 | 条件 | 缺什么、由谁确认 | 恢复条件 / 对应任务 |
 |---|---|---|
-| A2账号与预算 | OpenAI批准型号的组织权限、Realtime/TTS/Image可用性和速率；Runway Characters双流/录存；Simli paid单价/face与Compose权限；LTX端点；LiveKit计划。账号负责人、费用负责人姓名待填 | [预算](budget.md)逐项最大暴露和精确单价确认、用户批准该实验额度后才T08–T10；当前上限0 |
-| A3主体与环境 | Google External/Testing OAuth、受保护HTTPS Preview及实体iPhone Safari同机授权已由T43核实；仍缺微信开放平台主体类型/地区/权限、微信移动同机接续，以及Android/微信实机环境 | Google-first绿档`9c6ed3efab`；T07须落实微信主体负责人、真实AppID权限和可访问回调环境。不得用昵称/邮箱自动并号，不能把localhost演示当移动回调验收 |
+| A2账号与预算 | 本地已安全配置OpenAI API key（Git忽略、文件权限0600），尚未发起API请求，组织权限、Realtime/TTS/Image资格与速率未验证；Runway Characters双流/录存、Simli paid单价/face与Compose权限、LTX端点、LiveKit计划仍缺。账号负责人、费用负责人姓名待填 | [预算](budget.md)逐项最大暴露和精确单价确认、用户批准对应实验额度后才T08–T10；当前批准上限0，配置密钥不等于批准消费 |
+| A3主体与环境 | Google External/Testing OAuth、受保护HTTPS Preview及实体iPhone Safari同机授权已由T43核实；用户确认当前没有微信开放平台网站应用AppID管理权限，微信移动同机接续及Android/微信实机环境也未落实 | Google-first绿档`9c6ed3efab`；T07保持阻塞，直至落实微信主体负责人、真实网站应用AppID权限和可访问回调环境。不得用公众号、小程序、测试桩或Google结果冒充微信入口 |
 | A4语言与人 | 拟用简中/印尼语/日语/韩语/Hindi辅助界面全部未经母语/教学审查；两名不同背景新加坡英语审查者、第三名仲裁、两名教学标注者、各辅助语言母语审查者、研究主持、隐私负责人 | 具名、资历、是否独立、可用时间、报酬、联系人、联系授权均待填；人员不能由AI自评分代替。X5六人建议、M1九十份和M3二十四人分开落实 |
 | A5数据链与同意 | 供应商实际端点/订阅/日志/地区/录制/转写/保留/删除；声音本人授权与voice资格；参与说明联系方式和撤回流程 | T08真人声音先通过相应D06；T09/T10最小D06有证据且通过，T11才可真人观察；样本、参与、供应商处理和公开展示分开同意 |
 

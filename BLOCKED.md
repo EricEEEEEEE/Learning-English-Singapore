@@ -15,8 +15,8 @@
 
 ## B02 · 后续真实实验条件（T06已整理，尚未落实）
 
-- A2：付费服务账号、精确权限及数字额度未批准；建议预算及未知费用见 `docs/experiments/b1/budget.md`，批准/实际均USD 0。
-- A3：用户已选择Google-first，并授权免费的测试OAuth与受限HTTPS测试环境。Google Auth Platform已建立External/Testing应用与Web OAuth Client；Vercel Preview已配置Google Client、服务端session密钥及稳定受保护域名，密钥仅在托管环境。Desktop Chrome已用真实Google完成简体中文、印尼语、日语、韩语、Hindi五种辅助语言同机授权。用户首次真机尝试时，脱敏Vercel日志确认`start 302 → callback 302 → session 200`，但页面仍停在登录选择；根因是前端成功分支只显示提示而未进入问答。修复部署后，Desktop Chrome复测确认session成立并自动进入第1/12题；用户又确认实体iPhone Safari同机Google登录可继续完成引导、用户场景并到达“预览听与练”，对应`X1-091`，iOS具体版本未报告。T43最小退出条件已满足：固定Chromium revision 1243下完整373项验证exit 0，Android/WebView及其余真实路径继续记为planned，不冒充真实设备证据。OAuth Client目前有两个enabled secrets，Vercel使用后创建的secret；停用未使用的旧secret属于删除/安全动作，需用户另行明确确认。微信开放平台主体、权限与移动同机接续继续未落实，作为T07外部条件；生产环境未更新。
+- A2：OpenAI API key已由用户通过一次性本地隐藏输入页保存到Git忽略的`.env.local`，权限0600，未在仓库、日志或对话保存密钥；未发起API请求，组织权限及模型资格未验证。付费实验数字额度仍未批准；建议预算及未知费用见`docs/experiments/b1/budget.md`，批准/实际均USD 0。密钥配置不等于消费授权。
+- A3：用户已选择Google-first，并授权免费的测试OAuth与受限HTTPS测试环境。Google Auth Platform已建立External/Testing应用与Web OAuth Client；Vercel Preview已配置Google Client、服务端session密钥及稳定受保护域名，密钥仅在托管环境。Desktop Chrome已用真实Google完成五种辅助语言同机授权，实体iPhone Safari的`X1-091`也通过；T43绿档为`9c6ed3efab`。用户现已明确确认没有微信开放平台网站应用AppID及其管理权限，因此T07真实微信入口阻塞；不得用公众号、小程序、测试桩或Google结果冒充。恢复条件是取得合格主体、网站应用AppID与回调管理权限，并落实移动同机环境。OAuth Client仍有一个未使用的旧secret，停用属于删除/安全动作，需用户另行明确确认；生产环境未更新。
 - A4：辅助语言组合已确认为简体中文／印尼语／日语／韩语／Hindi，English 只作学习目标；具名本地/教学/各母语审查者、研究主持、联系人/报酬和外部联系授权仍未落实。
 - A5：实际供应商数据端点、订阅/录存/日志/地区/删除、真人声音及参与者分项同意未核实；M0最小D06须T09/T10取得真实证明，T11前引用通过记录。
 - 建议：按实验包X1–X5分项落实，每次有具体环境、最大费用和数据证据再执行；未知不自动选替代产品。完整清单 `docs/experiments/b1/prerequisites.md`。
