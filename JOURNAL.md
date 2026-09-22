@@ -113,3 +113,6 @@
 - 2026-09-22 T44红阶段：5项domain考题exit1，均因lib/private-owner.ts尚不存在而失败；覆盖稳定Google归属、同邮箱不同subject、无效会话、跨账号/撤销访问及客户端伪造owner/email/name。只读审题指出伪造新建场景盲区后已补题；当前仅tests/domain/t44-private-owner.spec.mjs及状态/追加日志变动，未写实现。
 - [audit] phase → implementing @ 2026-09-22T14:15:35+08:00
 - 2026-09-22 T44身份归属契约：红档334e23bc02后实现lib/private-owner.ts，定向5/5、最终完整verify.sh exit0且382/382（verify-20260922-142455.log）；只读复核有条件通过，真实CRUD路由从签封会话派生owner的证据留T45/T46。中间既有T43随机末字符考题曾令一次完整验证381/382，单测复跑1/1并最终全绿，考题冻结未改。假数据、付费调用0。
+- [存档] 1d023cd423 存档: T44 Google身份归属与个人记录内部契约
+- [audit] phase → test-writing @ 2026-09-22T14:31:36+08:00
+- 2026-09-22 T45红阶段：7项domain考题exit1，均因lib/private-scene-store.ts尚不存在。覆盖签封会话绑定的创建/读取/列表/更新/撤销/删除，跨账号及伪造owner、返回对象不能改内部归属、恢复目标版本/播放位置、失效会话拒绝、重建实例明确内存不持久。只读审题指出恢复与update/revoke失效会话盲区后已补题；未写实现。
