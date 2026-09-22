@@ -1,0 +1,31 @@
+pair_id	seed_ref	situation	speaker_role	english_line	listening_focus	local_expression_status
+pair-01	S01	school introduction	teacher	Hello. Please sit down.	invitation	plain English draft
+pair-02	S13	work instruction	employee	Please say that more slowly.	request slower speech	plain English draft
+pair-03	S33	drink stall	server	Would you like coffee or tea?	choice	plain English draft
+pair-04	S02	classroom question	teacher	Your child understood this task.	specific classroom observation	fictional classroom observation; not a real child report
+pair-05	S14	work order	colleague	First this box. Then that one.	order	plain English draft
+pair-06	S34	drink temperature	server	Hot or iced?	temperature choice	plain English draft
+pair-07	S03	home support	teacher	Please ask about school at home.	one suggested action	plain English draft
+pair-08	S35	drink takeaway	server	For here or takeaway?	eat-in versus takeaway	plain English draft
+pair-09	S25	card help	station staff	How can I help?	opening invitation	plain English draft
+pair-10	S21	appointment call	receptionist	Which day works for you?	day preference	plain English draft
+pair-11	S05	new-school adjustment	teacher	Is your child settling in?	adjustment question	plain English draft
+pair-12	S29	new neighbour	neighbour	Nice to meet you. I live next door.	greeting and location	plain English draft
+pair-13	S15	work handover	employee	These boxes first. Right?	restate and confirm order	plain English draft
+pair-14	S23	appointment location	receptionist	Let me check the place for you.	location confirmation	plain English draft
+pair-15	S28	station clarification	passenger	Sorry, could you say that again?	request repetition	plain English draft
+pair-16	S04	school follow-up	teacher	Would you prefer a call or message?	contact choice	plain English draft
+pair-17	S16	work safety clarification	colleague	Please stop and ask if anything is unclear.	pause and ask	plain English draft
+pair-18	S22	appointment change	receptionist	Tuesday morning is available. Does that work for you?	time offer and confirmation	fictional availability; not a real booking
+pair-19	S07	friendship concern	teacher	Can we talk about friends?	friends topic	fictional practice; no child facts
+pair-20	S26	card service point	station staff	Let us check your card before we decide the next step.	check before action	no invented service-point rule
+pair-21	S09	child's report	teacher	Thank you for telling me. I will check what happened.	receipt and follow-up	fictional practice; no confirmed event
+pair-22	S17	pay detail	employee	Please explain this part of my pay.	request one detail	no wage entitlement advice
+pair-23	S30	ceiling leak	neighbour	When did you first notice water on the ceiling?	time and place question	no fault or liability finding
+pair-24	S36	after asking and hearing that kopi means coffee	customer	Thanks. One kopi, please.	confirm order after a word explanation	kopi use and pronunciation require local review
+pair-25	S31	contractor visit	resident	Can you check the ceiling tomorrow evening?	confirm inspection scope and time	no repair promise
+pair-26	S33	drink preference	server	Would you like tea instead? I can change the order.	changed preference	fictional order; no price claim
+pair-27	S27	fare question	passenger	Can we check that fare? I do not understand the charge.	request fare explanation	no actual fare result
+pair-28	S32	neighbour noise	neighbour	Could we keep it quieter?	polite noise request	no blame or legal finding
+pair-29	S20	language support	colleague	Would it help if I explained that more slowly?	slower explanation offer	plain English draft
+pair-30	S12	online concern	teacher	Can you tell me what worried you? We can discuss a next step.	concern then next step	fictional practice; no diagnosis

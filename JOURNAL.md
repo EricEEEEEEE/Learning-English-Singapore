@@ -103,3 +103,4 @@
 - T08 X2红考题：4/4按预期失败，缺少lib/x2-budget.ts；覆盖无上界拒调用、TTS/Realtime共用USD25及在途预留、未知账单继续占额、同样本第三次尝试拒绝。运行命令 npm --prefix tests test -- --project=domain tests/domain/t08-x2-budget.spec.mjs（exit 1）；本轮未发OpenAI API请求，实际USD0。
 - [audit] phase → implementing @ 2026-09-22T11:30:14+08:00
 - T08 X2离线费用闸门：红档0ff72ae710后实现lib/x2-budget.ts；共用USD25、在途预留、未知费用不释放、最多一次重试，审查后补超预留冻结与attempt ID去重。完整verify.sh在允许本机端口的环境377/377、exit0（verify-20260922-113546.log），定向4/4、typecheck exit0；只读GET两模型均HTTP200，未发媒体请求、推理支出USD0。尝试过NODE_ENV测试专用护栏但Playwright未设test导致4题失败，已撤回并复测4/4。审查结论仅离线准备通过：证据字符串/本地实际费用不等于供应商终账，内存账本不能跨实例，T08样本0/60及本地审查者0，故任务不勾选、真实API仍阻断。
+- T08 X2继续准备：官方TTS仅公开输入上限、未给可设置的输出费用上限；Realtime max_output_tokens仅限单次回复；平台hard spend limit和预付余额均可能延迟超额，现有USD25严格上限下未发媒体请求。完成30对短句草稿及盲评说明，逐一匹配矩阵60格，近零基础每句<=8词；只读审查提出seed目标/语域问题后逐项修正并复验30/30、60/60。所有草稿未获本地/教学/母语审查，X2实际0/60、费用USD0；已向用户询问严格上限还是接受超额风险，未获答复前保持无真实调用。
