@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "4",
+  "stage": "5",
   "phase": "implementing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
-  "round_count": 18,
+  "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "66c19e91b7fe8505c37d4e87dfeef5c4e27dd916",
+  "last_round_commit": "40cacca7f197bb6d23ebf0cf48325cd198d42e0a",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T20:57:07+08:00",
+  "last_session": "2026-09-23T21:03:01+08:00",
   "authorized_batch": "b2u",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 570978,
-  "blocks_seen": 761,
-  "red_commit_pending": true,
-  "acceptance_status": "t52_green_candidate",
+  "audit_bytes": 579695,
+  "blocks_seen": 765,
+  "red_commit_pending": false,
+  "acceptance_status": "b2u_awaiting_user_acceptance",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T52 合成课程临时保存与同版本恢复界面"
+    "kind": "note",
+    "msg": "存档: B2U三项绿回执与批末验收说明"
   }
 }
