@@ -7,7 +7,7 @@
   "round_count": 17,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "929892ad857d95540a9be04f1a75cd56e616569a",
+  "last_round_commit": "3dfa58b0ad8c4bc1a9a0ae6784bc7955aa8f61ca",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T20:21:25+08:00",
+  "last_session": "2026-09-23T20:25:26+08:00",
   "authorized_batch": "b2u",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 551873,
-  "blocks_seen": 712,
+  "audit_bytes": 552671,
+  "blocks_seen": 715,
   "red_commit_pending": false,
   "acceptance_status": "t50_green_receipt_verified",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T50绿回执对账与T51听练操作续接"
+    "kind": "red",
+    "msg": "存档: T51 五语同版本听练操作红考题"
   }
 }
