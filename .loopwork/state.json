@@ -7,7 +7,7 @@
   "round_count": 16,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "e3a60026ed55cf3e2518b437e84ec102080f53ab",
+  "last_round_commit": "88c7c97339ecea2fed5c50cecfb2e8a67c04cdee",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T20:05:08+08:00",
+  "last_session": "2026-09-23T20:09:52+08:00",
   "authorized_batch": "b2u",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 540627,
-  "blocks_seen": 700,
+  "audit_bytes": 541694,
+  "blocks_seen": 703,
   "red_commit_pending": false,
   "acceptance_status": "b2u_authorized",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: B2U零费用课程界面授权与T50至T52任务登记"
+    "kind": "red",
+    "msg": "存档: T50 五语合成课程预览红考题"
   }
 }
