@@ -135,3 +135,4 @@
 - [存档] 0f7d0d36f3 存档: T47 合成双角色课程严格契约
 - [audit] phase → test-writing @ 2026-09-23T15:17:31+08:00
 - T47绿回执0f7d0d36f3已与HEAD/state核实，round_count=14，任务进度13/49；验收记录和tasks证据由候选更新为真实绿档。下一项T48，继续零费用合成数据边界。
+- T48 红考题：定向10/10按预期失败，根因均为lib/fixed-lesson-practice.ts不存在；覆盖稳定材料/指纹、角色顺序与两种learner role、听练同首句、all/chapter/sentence/A-B显式边界、错句/旧revision/跨fingerprint/旧playback拒绝、同revision不许悄改、新revision干净切换及复用T47深层语义校验。只读判卷通过；付费API调用0。

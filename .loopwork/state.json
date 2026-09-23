@@ -7,7 +7,7 @@
   "round_count": 14,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "0f7d0d36f366b38fd7940ccb681c48aea62f82d7",
+  "last_round_commit": "dbff8b7e8022920c97fc5060f59a9b16db220457",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T15:17:48+08:00",
+  "last_session": "2026-09-23T15:22:34+08:00",
   "authorized_batch": "b2p",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 509528,
-  "blocks_seen": 679,
+  "audit_bytes": 510775,
+  "blocks_seen": 683,
   "red_commit_pending": false,
   "acceptance_status": "t47_green_verified",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T47绿回执对账与T48前置核验"
+    "kind": "red",
+    "msg": "存档: T48 同版本听练衔接红考题"
   }
 }
