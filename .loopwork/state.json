@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "5",
-  "phase": "implementing",
+  "stage": "2",
+  "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "40cacca7f197bb6d23ebf0cf48325cd198d42e0a",
+  "last_round_commit": "7530df28e9d4a2f9d368bff13b5cf1a6a16bfc70",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T21:03:01+08:00",
+  "last_session": "2026-09-23T21:21:22+08:00",
   "authorized_batch": "b2u",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 579695,
-  "blocks_seen": 765,
+  "audit_bytes": 582550,
+  "blocks_seen": 774,
   "red_commit_pending": false,
-  "acceptance_status": "b2u_awaiting_user_acceptance",
+  "acceptance_status": "immersive_spec_revision_pending_user_review",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: B2U三项绿回执与批末验收说明"
+    "msg": "存档: 第一视角真实场景反馈与全项目文档重整"
   }
 }
