@@ -7,7 +7,7 @@
 - 红档：`df89840c79`。九条定向考题按预期失败，现有记录未保存课程且未拒绝非法课程。
 - 实现后定向验证：9/9，exit 0，日志 `.loopwork/logs/t49-green-target.log`。
 - 全量验证：429/429，`verify.sh` exit 0；日志 `.loopwork/logs/verify-20260923-154453.log`，退出摘要 `.loopwork/logs/t49-verify.log`。
-- 独立代码审查未发现必须修正项；绿档仍须以 Stop hook 回执为准。
+- 独立代码审查通过，无必须修正项；绿档 `80792213e9` 已获 Stop hook 回执并与 Git 核对。
 
 ## 已验证的内部流程
 
