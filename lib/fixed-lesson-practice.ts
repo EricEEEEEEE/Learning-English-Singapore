@@ -48,6 +48,23 @@ export type FixedLessonEvent =
   | { type: 'set-loop'; scope: LoopScope; start_sentence_id: string; end_sentence_id: string }
   | { type: 'playback-ended'; playback_id: string; sentence_id: string; lesson_revision: string; lesson_fingerprint: string };
 
+export type FixedLessonProgress = {
+  lesson_revision: string;
+  sentence_id: string;
+  mode: 'listen' | 'practice';
+  learner_role_id: string;
+};
+
+export function restoreFixedLessonSession(candidate: unknown, progress: unknown): FixedLessonSession {
+  if (!progress || typeof progress !== 'object' || Array.isArray(progress)) throw new Error('Invalid lesson progress');
+  const value = progress as Record<string, unknown>;
+  if (typeof value.learner_role_id !== 'string' || (value.mode !== 'listen' && value.mode !== 'practice')) throw new Error('Invalid lesson progress');
+  const state = createFixedLessonSession(candidate, value.learner_role_id);
+  const position = state.material.sentences.findIndex(sentence => sentence.id === value.sentence_id);
+  if (value.lesson_revision !== state.lesson_revision || position < 0) throw new Error('Invalid lesson progress revision or sentence');
+  return { ...state, position, mode: value.mode };
+}
+
 function fingerprint(value: SyntheticLesson): string {
   const input = JSON.stringify(value);
   let first = 0x811c9dc5;

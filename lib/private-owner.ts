@@ -1,5 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { openGoogleSession } from './google-auth';
+import type { SyntheticLesson } from './lesson-contract';
+import type { FixedLessonProgress } from './fixed-lesson-practice';
 
 declare const verifiedOwnerBrand: unique symbol;
 export type VerifiedOwnerId = string & { readonly [verifiedOwnerBrand]: true };
@@ -10,6 +12,8 @@ export type PrivateSceneRecord = {
   goalRevision: number;
   playbackPositionMs: number;
   revokedAt: number | null;
+  lesson?: SyntheticLesson;
+  lessonProgress?: FixedLessonProgress;
 };
 
 export async function ownerIdFromSessionCookie(

@@ -20,7 +20,8 @@ function reply(body: object, status = 200) {
 }
 
 function publicRecord(record: Awaited<ReturnType<Store['create']>>) {
-  return { id: record.id, goalRevision: record.goalRevision, playbackPositionMs: record.playbackPositionMs };
+  return { id: record.id, goalRevision: record.goalRevision, playbackPositionMs: record.playbackPositionMs,
+    ...(record.lesson ? { lesson: record.lesson, lessonProgress: record.lessonProgress } : {}) };
 }
 
 async function bodyObject(request: Request): Promise<Record<string, unknown> | null> {
@@ -74,7 +75,9 @@ export async function handlePrivateDemo(request: Request, { store, now }: { stor
 
     if (request.method === 'POST') {
       if (!validRevision(body.goalRevision) || !validPosition(body.playbackPositionMs)) return reply({ error: 'invalid_input' }, 400);
-      const record = await store.create({ cookie, now, goalRevision: body.goalRevision, playbackPositionMs: body.playbackPositionMs });
+      if (body.learnerRole !== undefined && typeof body.learnerRole !== 'string' || body.lessonProgress !== undefined) return reply({ error: 'invalid_input' }, 400);
+      const record = await store.create({ cookie, now, goalRevision: body.goalRevision, playbackPositionMs: body.playbackPositionMs,
+        lesson: body.lesson, learnerRole: body.learnerRole as string | undefined });
       return reply({ record: publicRecord(record) }, 201);
     }
 
@@ -82,6 +85,7 @@ export async function handlePrivateDemo(request: Request, { store, now }: { stor
     if (request.method === 'PATCH') {
       if (body.goalRevision !== undefined && !validRevision(body.goalRevision) || body.playbackPositionMs !== undefined && !validPosition(body.playbackPositionMs)) return reply({ error: 'invalid_input' }, 400);
       const record = await store.update({ cookie, now, id: body.id,
+        lesson: body.lesson, learnerRole: body.learnerRole as string | undefined, lessonProgress: body.lessonProgress,
         ...(body.goalRevision === undefined ? {} : { goalRevision: body.goalRevision as number }),
         ...(body.playbackPositionMs === undefined ? {} : { playbackPositionMs: body.playbackPositionMs as number }) });
       return record ? reply({ record: publicRecord(record) }) : reply({ error: 'not_found' }, 404);
@@ -101,7 +105,8 @@ export async function handlePrivateDemo(request: Request, { store, now }: { stor
       return reply({ error: 'invalid_input' }, 400);
     }
     return reply({ error: 'method_not_allowed' }, 405);
-  } catch {
+  } catch (error) {
+    if (error instanceof Error && /^Invalid /i.test(error.message)) return reply({ error: 'invalid_input' }, 400);
     return reply({ error: 'temporarily_unavailable' }, 503);
   }
 }
