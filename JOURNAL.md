@@ -138,3 +138,5 @@
 - T48 红考题：定向10/10按预期失败，根因均为lib/fixed-lesson-practice.ts不存在；覆盖稳定材料/指纹、角色顺序与两种learner role、听练同首句、all/chapter/sentence/A-B显式边界、错句/旧revision/跨fingerprint/旧playback拒绝、同revision不许悄改、新revision干净切换及复用T47深层语义校验。只读判卷通过；付费API调用0。
 - [audit] phase → implementing @ 2026-09-23T15:23:09+08:00
 - T48 固定课程同版本听练衔接完成：目标考题 10/10，全量 verify.sh 420/420，独立只读判卷通过；未调用外部 API，费用为 0。
+- [存档] 81b5140ee1 存档: T48 固定课程同版本听练衔接
+- T48绿回执81b5140ee1已与HEAD/state核实，round_count=15，任务进度14/49；tasks与验收记录由候选更新为真实绿档。下一项T49，继续零费用合成身份与本地临时记录边界。
