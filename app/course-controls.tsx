@@ -1,21 +1,20 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { applyFixedLessonEvent, type FixedLessonSession, type FixedLessonEvent } from '../lib/fixed-lesson-practice';
+import { type FixedLessonSession, type FixedLessonEvent } from '../lib/fixed-lesson-practice';
 import type { CourseLanguage } from '../lib/synthetic-courses';
 import { courseControlsCopy } from './course-controls-copy';
 
-export default function CourseControls({ initial, language, onClose }: { initial: FixedLessonSession; language: CourseLanguage; onClose: () => void }) {
-  const [state, setState] = useState(initial);
+export default function CourseControls({ initial: state, language, onClose, onChange }: { initial: FixedLessonSession; language: CourseLanguage; onClose: () => void; onChange: (event: FixedLessonEvent) => void }) {
   const [from, setFrom] = useState(0);
-  const [to, setTo] = useState(initial.material.sentences.length - 1);
+  const [to, setTo] = useState(state.material.sentences.length - 1);
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => { heading.current?.focus(); }, []);
   const copy = courseControlsCopy[language];
   const sentences = state.material.sentences;
   const row = sentences[state.position];
   const active = state.current_playback;
-  const act = (event: FixedLessonEvent) => setState(current => applyFixedLessonEvent(current, event));
+  const act = onChange;
 
   function loop(scope: 'all' | 'chapter' | 'sentence' | 'ab') {
     let start = state.position, end = state.position;

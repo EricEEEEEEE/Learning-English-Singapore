@@ -7,6 +7,7 @@ import LearningProfilePanel from './learning-profile';
 import Scenario from './scenario';
 import Practice from './practice';
 import SyntheticCoursePreview from './synthetic-course-preview';
+import { courseRecordNotices } from './course-records';
 import { syntheticCourseCopy } from './synthetic-course-copy';
 import { usePractice } from './use-practice';
 import { scenarioCopy } from './scenario-copy';
@@ -271,7 +272,7 @@ export default function Entry() {
       </header>
 
       {courseOpen && !showChoices ? (
-        <main className="guide-main"><SyntheticCoursePreview language={language} onBack={() => {
+        <main className="guide-main">{account.expired && <p role="status">{courseRecordNotices[language].expired}</p>}<SyntheticCoursePreview key={`${language}:${account.accountKey ?? 'guest'}`} verified={account.ready} authenticated={account.authenticated} language={language} onBack={() => {
           setCourseOpen(false); focusPanel.current = true; panelHeading.current?.focus();
         }} /></main>
       ) : showPractice && practice.session ? (
