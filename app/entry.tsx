@@ -6,6 +6,8 @@ import Onboarding from './onboarding';
 import LearningProfilePanel from './learning-profile';
 import Scenario from './scenario';
 import Practice from './practice';
+import SyntheticCoursePreview from './synthetic-course-preview';
+import { syntheticCourseCopy } from './synthetic-course-copy';
 import { usePractice } from './use-practice';
 import { scenarioCopy } from './scenario-copy';
 import { useScenario } from './use-scenario';
@@ -57,6 +59,7 @@ export default function Entry() {
   const guideReadFailed = useRef(false);
   const hydratedGuideKey = useRef<string | null | undefined>(undefined);
   const [guideOpen, setGuideOpen] = useState(false);
+  const [courseOpen, setCourseOpen] = useState(false);
   const [guideStorageError, setGuideStorageError] = useState<'read' | 'save' | null>(null);
   const [choosingLanguage, setChoosingLanguage] = useState(false);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
@@ -178,7 +181,7 @@ export default function Entry() {
       panelHeading.current?.focus();
       focusPanel.current = false;
     }
-  }, [language, showChoices]);
+  }, [language, showChoices, courseOpen]);
 
   function savePreferences(next: Preferences) {
     setPreferences(next);
@@ -227,6 +230,9 @@ export default function Entry() {
 
   const utilities = (
     <>
+          {!showChoices && !courseOpen && <button type="button" className="guide-primary" onClick={() => {
+            setGuideOpen(false); scene.close(); practice.close(); setCourseOpen(true);
+          }}>{syntheticCourseCopy[language].entry}</button>}
           <p className="trial-note">{copy.trial}</p>
           <button type="button" className="audio-unavailable" disabled>
             <Icon name="sound" /><span>{copy.audio}<small>{copy.unavailable}</small></span>
@@ -264,7 +270,11 @@ export default function Entry() {
         <span className="demo-label">{copy.demo}</span>
       </header>
 
-      {showPractice && practice.session ? (
+      {courseOpen && !showChoices ? (
+        <main className="guide-main"><SyntheticCoursePreview language={language} onBack={() => {
+          setCourseOpen(false); focusPanel.current = true; panelHeading.current?.focus();
+        }} /></main>
+      ) : showPractice && practice.session ? (
         <main className="guide-main">
           <Practice language={language} session={practice.session} error={practice.error} onEvent={practice.act}
             onBack={practice.close} onLanguage={() => setChoosingLanguage(true)} onEndPlayback={practice.finishPlayback} onWait={practice.wait} />
