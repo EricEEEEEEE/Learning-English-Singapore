@@ -3,11 +3,15 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { createSyntheticCoursePreview, listSyntheticCourses, type CourseLanguage } from '../lib/synthetic-courses';
 import { syntheticCourseCopy } from './synthetic-course-copy';
+import CourseControls from './course-controls';
+import { courseControlsCopy } from './course-controls-copy';
 
 export default function SyntheticCoursePreview({ language, onBack }: { language: CourseLanguage; onBack: () => void }) {
   const copy = syntheticCourseCopy[language];
   const samples = useMemo(() => listSyntheticCourses(language), [language]);
   const [selected, setSelected] = useState(samples[0].id);
+  const [controlsOpen, setControlsOpen] = useState(false);
+  const controlsButton = useRef<HTMLButtonElement>(null);
   const sample = samples.find(item => item.id === selected) ?? samples[0];
   const state = useMemo(() => createSyntheticCoursePreview(sample.id, language), [sample.id, language]);
   const heading = useRef<HTMLHeadingElement>(null);
@@ -17,7 +21,7 @@ export default function SyntheticCoursePreview({ language, onBack }: { language:
     <h1 id="synthetic-course-title" ref={heading} tabIndex={-1}>{copy.entry}</h1>
     <div className="scene-preferences">{copy.notices.map(notice => <p key={notice}>{notice}</p>)}</div>
     <label className="synthetic-course-choice">{copy.choose}
-      <select value={sample.id} onChange={event => setSelected(event.target.value)} onKeyDown={event => {
+      <select aria-label={copy.choose} value={sample.id} onChange={event => setSelected(event.target.value)} onKeyDown={event => {
         if (event.altKey || event.ctrlKey || event.metaKey || !['ArrowDown', 'ArrowUp'].includes(event.key)) return;
         event.preventDefault();
         const index = samples.findIndex(item => item.id === sample.id);
@@ -25,6 +29,10 @@ export default function SyntheticCoursePreview({ language, onBack }: { language:
         setSelected(samples[next].id);
       }}>{samples.map(item => <option key={item.id} value={item.id}>{item.title}</option>)}</select>
     </label>
+    <button type="button" ref={controlsButton} className="guide-primary" aria-expanded={controlsOpen}
+      onClick={() => setControlsOpen(true)}>{courseControlsCopy[language].open}</button>
+    {controlsOpen && <CourseControls key={state.lesson_revision} initial={state} language={language}
+      onClose={() => { setControlsOpen(false); controlsButton.current?.focus(); }} />}
     <h2>{copy.purpose}</h2><p data-testid="course-goal" lang="en">{state.user_goal}</p>
     <h2>{copy.roles}</h2>
     <ul>{state.roles.map(role => <li key={role.id} lang="en" data-testid="course-role" data-role-id={role.id}>{role.label}</li>)}</ul>

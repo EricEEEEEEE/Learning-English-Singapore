@@ -242,6 +242,8 @@ h1 span { display: block; }
 .synthetic-course-lines { padding-inline-start: 24px; }
 .synthetic-course-lines li { padding: 16px 0; border-bottom: 1px solid #dce5df; }
 .synthetic-course-lines p { margin: 8px 0; }
+.course-controls { margin: 24px 0; padding: 16px; border: 1px solid #b2c4b8; border-radius: 8px; }
+.course-controls .guide-primary { margin-top: 12px; }
 .practice button:disabled { color: var(--muted); background: var(--surface); border-color: var(--line); }
 .practice button[aria-pressed="true"] { background: #e7f0e9; border-color: var(--accent); }
 .practice-entry { margin-bottom: 16px; }

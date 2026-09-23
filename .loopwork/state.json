@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "test-writing",
+  "phase": "implementing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 17,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "3dfa58b0ad8c4bc1a9a0ae6784bc7955aa8f61ca",
+  "last_round_commit": "d5892b534ebba5ff9b6d61b62419fff176edcfec",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T20:25:26+08:00",
+  "last_session": "2026-09-23T20:35:10+08:00",
   "authorized_batch": "b2u",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 552671,
-  "blocks_seen": 715,
-  "red_commit_pending": false,
-  "acceptance_status": "t50_green_receipt_verified",
+  "audit_bytes": 555740,
+  "blocks_seen": 736,
+  "red_commit_pending": true,
+  "acceptance_status": "t51_green_candidate",
   "batch_preflight": "google-first-authorized-credentials-pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "red",
-    "msg": "存档: T51 五语同版本听练操作红考题"
+    "kind": "green",
+    "msg": "存档: T51 五语同版本听练操作界面"
   }
 }
