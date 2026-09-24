@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "3",
+  "stage": "4",
   "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "9bda42ca7c78c8c2628f800dabbaab9d497e4386",
+  "last_round_commit": "19da5f110d5de4a80ce420489ec9a878b53c243a",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T18:24:50+08:00",
-  "authorized_batch": "hotel_pov_12s_tts1_single_probe",
+  "last_session": "2026-09-24T22:48:30+08:00",
+  "authorized_batch": "B2V_T59_existing_media_four_pages",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 609376,
+  "audit_bytes": 613050,
   "blocks_seen": 847,
   "red_commit_pending": false,
   "acceptance_status": "visual_direction_accepted_five_step_course_pending",
-  "batch_preflight": "five_step_spec_updated_implementation_pending",
+  "batch_preflight": "B2V_local_only_no_new_generation",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 视觉方向认可与五步场景课程逻辑落实"
+    "msg": "存档: B2V现有样片四页学习授权与T59登记"
   }
 }
