@@ -7,7 +7,7 @@
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "f2cf3b56029e2f9f271fd61a380e253c9c413c2b",
+  "last_round_commit": "9bda42ca7c78c8c2628f800dabbaab9d497e4386",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T18:14:10+08:00",
+  "last_session": "2026-09-24T18:24:50+08:00",
   "authorized_batch": "hotel_pov_12s_tts1_single_probe",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 602498,
-  "blocks_seen": 844,
+  "audit_bytes": 609376,
+  "blocks_seen": 847,
   "red_commit_pending": false,
-  "acceptance_status": "immersive_direction_approved_sample_pending",
-  "batch_preflight": "hotel_probe_generated_user_visual_review_pending",
+  "acceptance_status": "visual_direction_accepted_five_step_course_pending",
+  "batch_preflight": "five_step_spec_updated_implementation_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 首个真实酒店第一视角样片与费用核验"
+    "msg": "存档: 视觉方向认可与五步场景课程逻辑落实"
   }
 }
