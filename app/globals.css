@@ -247,3 +247,13 @@ h1 span { display: block; }
 .practice button:disabled { color: var(--muted); background: var(--surface); border-color: var(--line); }
 .practice button[aria-pressed="true"] { background: #e7f0e9; border-color: var(--accent); }
 .practice-entry { margin-bottom: 16px; }
+
+.real-scene { width: 100%; min-width: 0; }
+.real-scene video { display: block; width: min(100%, 320px); max-height: 50vh; margin: 20px auto 0; background: #142d28; border-radius: 12px; }
+.scene-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.real-scene button { white-space: normal; overflow-wrap: anywhere; border: 1px solid #91ada0; border-radius: 8px; padding: 12px 16px; color: #164b3d; background: #fff; cursor: pointer; min-height: 44px; }
+.real-scene button[aria-current="step"] { background: #215f4d; color: white; }
+.real-scene button:focus-visible { outline: 3px solid #387eac; outline-offset: 3px; }
+.scene-caption { text-align: center; font-size: 1.3rem; min-height: 2em; }
+.scene-card { margin: 12px 0; padding: 16px; background: #f0f5f2; border-radius: 10px; }
+.scene-card strong, .scene-card [lang="en"] { font-size: 1.2rem; }

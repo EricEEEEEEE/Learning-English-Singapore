@@ -7,6 +7,7 @@ import LearningProfilePanel from './learning-profile';
 import Scenario from './scenario';
 import Practice from './practice';
 import SyntheticCoursePreview from './synthetic-course-preview';
+import RealSceneCourse, { realSceneCopy } from './real-scene-course';
 import { courseRecordNotices } from './course-records';
 import { syntheticCourseCopy } from './synthetic-course-copy';
 import { usePractice } from './use-practice';
@@ -61,6 +62,7 @@ export default function Entry() {
   const hydratedGuideKey = useRef<string | null | undefined>(undefined);
   const [guideOpen, setGuideOpen] = useState(false);
   const [courseOpen, setCourseOpen] = useState(false);
+  const [realSceneOpen, setRealSceneOpen] = useState(false);
   const [guideStorageError, setGuideStorageError] = useState<'read' | 'save' | null>(null);
   const [choosingLanguage, setChoosingLanguage] = useState(false);
   const [permissionsOpen, setPermissionsOpen] = useState(false);
@@ -231,6 +233,9 @@ export default function Entry() {
 
   const utilities = (
     <>
+          {!showChoices && !courseOpen && <button type="button" className="guide-primary" data-testid="real-scene-entry" onClick={() => {
+            setGuideOpen(false); scene.close(); practice.close(); setRealSceneOpen(true);
+          }}>{realSceneCopy[language].title}</button>}
           {!showChoices && !courseOpen && <button type="button" className="guide-primary" onClick={() => {
             setGuideOpen(false); scene.close(); practice.close(); setCourseOpen(true);
           }}>{syntheticCourseCopy[language].entry}</button>}
@@ -271,7 +276,9 @@ export default function Entry() {
         <span className="demo-label">{copy.demo}</span>
       </header>
 
-      {courseOpen && !showChoices ? (
+      {realSceneOpen && !showChoices ? (
+        <main className="guide-main"><RealSceneCourse language={language} onBack={() => setRealSceneOpen(false)} /></main>
+      ) : courseOpen && !showChoices ? (
         <main className="guide-main">{account.expired && <p role="status">{courseRecordNotices[language].expired}</p>}<SyntheticCoursePreview key={`${language}:${account.accountKey ?? 'guest'}`} verified={account.ready} authenticated={account.authenticated} language={language} onBack={() => {
           setCourseOpen(false); focusPanel.current = true; panelHeading.current?.focus();
         }} /></main>
