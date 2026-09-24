@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "2",
+  "stage": "3",
   "phase": "test-writing",
   "cycle": 1,
   "project_name": "Learning English in Singapore",
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "7530df28e9d4a2f9d368bff13b5cf1a6a16bfc70",
+  "last_round_commit": "14a874ee2f2f5cd9155c207d3449aeaf130b5d29",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-23T21:21:22+08:00",
-  "authorized_batch": "b2u",
+  "last_session": "2026-09-24T11:16:39+08:00",
+  "authorized_batch": "immersive-free-source-storyboard",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 582550,
-  "blocks_seen": 774,
+  "audit_bytes": 589259,
+  "blocks_seen": 792,
   "red_commit_pending": false,
-  "acceptance_status": "immersive_spec_revision_pending_user_review",
-  "batch_preflight": "google-first-authorized-credentials-pending",
+  "acceptance_status": "immersive_direction_approved_sample_pending",
+  "batch_preflight": "free_source_storyboard_partial_media_and_cost_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 第一视角真实场景反馈与全项目文档重整"
+    "msg": "存档: 真实场景来源初筛与两条第一视角样片提案"
   }
 }
