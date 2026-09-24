@@ -7,7 +7,7 @@
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "e5e7919994fbc285386079a01dfee8e8dc486bf3",
+  "last_round_commit": "680e22975ad002fe5ecffb1b50ceb94de5fa61f7",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T11:43:03+08:00",
+  "last_session": "2026-09-24T13:33:51+08:00",
   "authorized_batch": "immersive-free-source-storyboard",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 593927,
-  "blocks_seen": 801,
+  "audit_bytes": 598522,
+  "blocks_seen": 824,
   "red_commit_pending": false,
   "acceptance_status": "immersive_direction_approved_sample_pending",
-  "batch_preflight": "ltx_account_info_pending_audio_route_unselected",
+  "batch_preflight": "ltx_funded_autotopup_off_key_setup_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 第一视角样片音轨段长与费用核查"
+    "msg": "存档: LTX小额充值到账与密钥接入前置核对"
   }
 }
