@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "5",
-  "phase": "implementing",
-  "cycle": 1,
+  "stage": "4",
+  "phase": "test-writing",
+  "cycle": 2,
   "project_name": "Learning English in Singapore",
-  "round_count": 19,
+  "round_count": 0,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "7f20f7e353292a18a05391320933a8b77024550c",
+  "last_round_commit": "01f70de6c43d4386ed255017b97f32ea0964dd83",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T22:58:07+08:00",
-  "authorized_batch": "B2V_T59_existing_media_four_pages",
+  "last_session": "2026-09-24T23:06:43+08:00",
+  "authorized_batch": "C2A_T60_course_driven_four_steps",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 618233,
-  "blocks_seen": 860,
-  "red_commit_pending": true,
-  "acceptance_status": "B2V_four_pages_technical_green_user_review_pending",
-  "batch_preflight": "B2V_local_only_no_new_generation",
+  "audit_bytes": 625350,
+  "blocks_seen": 862,
+  "red_commit_pending": false,
+  "acceptance_status": "B2V_direction_user_accepted_C2A_started",
+  "batch_preflight": "C2A_existing_media_no_new_paid_calls",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T59 真实样片四页学习与重复播放"
+    "kind": "note",
+    "msg": "存档: 四页方向用户验收与全项目文档统一及第二圈T60续接"
   }
 }
