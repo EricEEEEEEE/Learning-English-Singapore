@@ -7,7 +7,7 @@
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "9a900722afe8b4bfa18bf5e5cfa7919f0e051872",
+  "last_round_commit": "f2cf3b56029e2f9f271fd61a380e253c9c413c2b",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T18:08:31+08:00",
-  "authorized_batch": "immersive-free-source-storyboard",
+  "last_session": "2026-09-24T18:14:10+08:00",
+  "authorized_batch": "hotel_pov_12s_tts1_single_probe",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 601682,
-  "blocks_seen": 832,
+  "audit_bytes": 602498,
+  "blocks_seen": 844,
   "red_commit_pending": false,
   "acceptance_status": "immersive_direction_approved_sample_pending",
-  "batch_preflight": "ltx_readonly_auth_checked_audio_choice_pending",
+  "batch_preflight": "hotel_probe_generated_user_visual_review_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: LTX只读鉴权对照通过与首段音轨选择"
+    "msg": "存档: 首个真实酒店第一视角样片与费用核验"
   }
 }
