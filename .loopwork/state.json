@@ -7,7 +7,7 @@
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "14a874ee2f2f5cd9155c207d3449aeaf130b5d29",
+  "last_round_commit": "e5e7919994fbc285386079a01dfee8e8dc486bf3",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T11:16:39+08:00",
+  "last_session": "2026-09-24T11:43:03+08:00",
   "authorized_batch": "immersive-free-source-storyboard",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 589259,
-  "blocks_seen": 792,
+  "audit_bytes": 593927,
+  "blocks_seen": 801,
   "red_commit_pending": false,
   "acceptance_status": "immersive_direction_approved_sample_pending",
-  "batch_preflight": "free_source_storyboard_partial_media_and_cost_pending",
+  "batch_preflight": "ltx_account_info_pending_audio_route_unselected",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 真实场景来源初筛与两条第一视角样片提案"
+    "msg": "存档: 第一视角样片音轨段长与费用核查"
   }
 }

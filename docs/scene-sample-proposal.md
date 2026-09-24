@@ -69,6 +69,8 @@
 
 ## 7. 技术候选与费用提案
 
+后续核查见[音轨与费用可行性](scene-sample-feasibility.md)：已查明API最低充值USD5另税、fast单段最长20秒；推荐试验改为先12秒，再补12秒，最多4个12秒请求。以下三次完整24秒是初版估算，不是当前推荐试验次数。
+
 推荐先验证OpenAI生成教学音轨，再使用[LTX audio-to-video](https://docs.ltx.io/api-documentation/api-reference/async-video-generation/submit-audio-to-video)驱动画面。官方文档支持音轨输入与可选参考图，但本仓库没有跑通该链路；双角色归属、嘴型、连续性和新加坡口音均须实测。不能根据“fast”型号声称全市场最快。
 
 [LTX官方价格](https://docs.ltx.io/pricing)本次列出ltx-2-5-fast音频驱动720p为USD0.09/输入音频秒。以24秒成片、合计24秒计费输入估算：一次USD2.16；同等长度完整尝试最多3次为USD6.48。此为**视频API部分算术估算**，未含OpenAI语音、参考图、税费、最低充值、按段填充或其他计费差异，不是总额报价或绝不超额保证。实际段长若增加，必须重算。
