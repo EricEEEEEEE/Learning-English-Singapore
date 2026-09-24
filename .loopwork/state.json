@@ -7,7 +7,7 @@
   "round_count": 19,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "a20e4819c391f1e47b8d3114bf2c83194dc730bb",
+  "last_round_commit": "9a900722afe8b4bfa18bf5e5cfa7919f0e051872",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T18:07:25+08:00",
+  "last_session": "2026-09-24T18:08:31+08:00",
   "authorized_batch": "immersive-free-source-storyboard",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 601095,
-  "blocks_seen": 831,
+  "audit_bytes": 601682,
+  "blocks_seen": 832,
   "red_commit_pending": false,
   "acceptance_status": "immersive_direction_approved_sample_pending",
-  "batch_preflight": "ltx_key_locally_saved_not_api_verified_audio_route_pending",
+  "batch_preflight": "ltx_readonly_auth_checked_audio_choice_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: LTX密钥本地安全保存核验"
+    "msg": "存档: LTX只读鉴权对照通过与首段音轨选择"
   }
 }
