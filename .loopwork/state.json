@@ -7,7 +7,7 @@
   "round_count": 0,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "01f70de6c43d4386ed255017b97f32ea0964dd83",
+  "last_round_commit": "9f5cd26111419e410bcb5730b3f7074d761d040a",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-24T23:06:43+08:00",
+  "last_session": "2026-09-24T23:09:20+08:00",
   "authorized_batch": "C2A_T60_course_driven_four_steps",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 625350,
-  "blocks_seen": 862,
+  "audit_bytes": 628274,
+  "blocks_seen": 865,
   "red_commit_pending": false,
   "acceptance_status": "B2V_direction_user_accepted_C2A_started",
   "batch_preflight": "C2A_existing_media_no_new_paid_calls",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: 四页方向用户验收与全项目文档统一及第二圈T60续接"
+    "kind": "red",
+    "msg": "存档: T60 课程数据驱动与同版媒体红考题"
   }
 }
