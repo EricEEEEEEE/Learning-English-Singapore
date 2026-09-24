@@ -1,0 +1,74 @@
+{
+  "id": "hotel-pov",
+  "version": "hotel-pov-v1",
+  "source": "ai-sample",
+  "media": {
+    "src": "/media/hotel-pov-12s.mp4",
+    "duration": 12.042,
+    "version": "hotel-pov-v1"
+  },
+  "lines": [
+    {
+      "id": "line-0",
+      "role": "partner",
+      "text": "Hello. Checking in?",
+      "start": 1,
+      "end": 2.5,
+      "version": "hotel-pov-v1",
+      "translations": {
+        "zh-Hans": "您好。办理入住吗？",
+        "id": "Halo. Mau check-in?",
+        "ja": "こんにちは。チェックインですか？",
+        "ko": "안녕하세요. 체크인하시나요?",
+        "hi": "नमस्ते। चेक-इन करना है?"
+      }
+    },
+    {
+      "id": "line-1",
+      "role": "learner",
+      "text": "Yes. I booked a room.",
+      "start": 6,
+      "end": 7.7,
+      "version": "hotel-pov-v1",
+      "translations": {
+        "zh-Hans": "是的。我预订了一间客房。",
+        "id": "Ya. Saya sudah memesan kamar.",
+        "ja": "はい。部屋を予約しました。",
+        "ko": "네. 객실을 예약했어요.",
+        "hi": "जी हाँ। मैंने एक कमरा बुक किया है।"
+      }
+    }
+  ],
+  "phrases": [
+    {
+      "id": "phrase-0",
+      "text": "Checking in",
+      "lineId": "line-0",
+      "translations": {
+        "zh-Hans": "办理入住",
+        "id": "mendaftar masuk",
+        "ja": "チェックインする",
+        "ko": "체크인하기",
+        "hi": "चेक-इन करना"
+      }
+    },
+    {
+      "id": "phrase-1",
+      "text": "booked a room",
+      "lineId": "line-1",
+      "translations": {
+        "zh-Hans": "预订了一间客房",
+        "id": "memesan kamar",
+        "ja": "部屋を予約した",
+        "ko": "객실을 예약했다",
+        "hi": "एक कमरा बुक किया"
+      }
+    }
+  ],
+  "turns": [
+    {
+      "partnerLineId": "line-0",
+      "learnerLineId": "line-1"
+    }
+  ]
+}
