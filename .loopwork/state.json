@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "4",
+  "stage": "5",
   "phase": "implementing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
-  "round_count": 1,
+  "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "b1d6d26ca3af5ce28a541f5df6955de947d1b210",
+  "last_round_commit": "cba8fcedc2f2c1ea5ec68e4459fa645e1c50f037",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-25T09:29:02+08:00",
+  "last_session": "2026-09-25T09:34:11+08:00",
   "authorized_batch": "C2B_T61A_zero_provider_cost_orchestration",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 647692,
+  "audit_bytes": 652031,
   "blocks_seen": 895,
-  "red_commit_pending": true,
-  "acceptance_status": "C2B_T61A_technical_green_pending_receipt",
-  "batch_preflight": "C2A_complete_next_generation_plan_pending",
+  "red_commit_pending": false,
+  "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
+  "batch_preflight": "C2B_complete_real_short_course_proposal_next",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "green",
-    "msg": "存档: T61A本地持久生成任务与零调用边界"
+    "kind": "note",
+    "msg": "存档: T61A绿回执与真实短课前置对账"
   }
 }

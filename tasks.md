@@ -6,7 +6,7 @@
 
   范围与验收详见docs/proposals/scene-generation-integration.md。先红后绿实现版本/归属、持久状态、重复提交、未授权费用零调用、未知提交不重发和用户可见状态；生产provider默认关闭，替身不宣称真实课程就绪。真实生成、收费与部署不在本批授权内。T60已绿且不重开。
 
-  技术验证：2026-09-25 verify.sh exit 0，571/571通过；独立子进程中断恢复及迟到GET专项验证通过。证据docs/evidence/t61/result.md；已登记绿档后须以Stop回执确认落档。
+  技术验证：2026-09-25 verify.sh exit 0，571/571通过；独立子进程中断恢复及迟到GET专项验证通过。证据docs/evidence/t61/result.md；绿档cba8fcedc2已由Stop回执确认。本批1/1技术收口；下一步准备真实短课脚本、分镜与费用方案，真实调用仍需批准。
 
 
 ## 第二圈 C2A · 课程数据驱动（当前已批准零新增API费用）
