@@ -200,3 +200,5 @@
 - T61A实现检查点：build exit0，目标13/14通过；失败为冻结测试child.pathname未解码含空格路径，子进程未启动。先保存实现，下一轮test-writing补红fileURLToPath，不改断言。独立审查GET迟到覆盖POST问题已修；请求键数量限制500。未登记绿档，未付费。
 - [audit] phase → test-writing @ 2026-09-25T09:22:59+08:00
 - T61A测试路径更正：fileURLToPath处理两处子进程脚本路径，无业务断言变化；domain11/11 exit0，含独立子进程exit17及另一进程恢复未知预留。当前为考题更正归档，不伪称新红失败；原实现前红证据ee4e474cce保留。
+- [audit] phase → implementing @ 2026-09-25T09:23:50+08:00
+- T61A ✅ verify.sh exit0，571/571通过；子进程中断恢复与迟到GET专项通过，只读复核通过。零真实模型调用、零发布；证据docs/evidence/t61/result.md，待绿回执。
