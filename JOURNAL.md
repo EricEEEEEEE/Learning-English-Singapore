@@ -226,3 +226,5 @@
 - T61B私有素材存储9例红题exit1缺private-media-store.ts，8未运行；独立复核通过。仅本地字节/hash/身份/版本/幂等验证，不冒充可播放媒体或T62云库。未找到当前PATH/已知runtime的拼接工具，先推进独立存储；无收费请求。
 - [audit] phase → implementing @ 2026-09-26T09:43:20+08:00
 - T61B本地私有素材存储检查点：最终9/9与typecheck exit0，独立复核通过；签名归属/版本/hash/不可覆盖保存。保留断电、孤儿资产及同权限进程竞态限制，不称云库/媒体可用。T61B未完成，无收费调用。
+- [audit] phase → test-writing @ 2026-09-26T09:45:30+08:00
+- T61B下载16例红题exit1缺download-generated-media.ts，15未运行；原15例复核通过，补独立IP误允许拒绝和有限合成流。仅字节完整性，不声称媒体或全面DNS安全。无外部下载/付费。
