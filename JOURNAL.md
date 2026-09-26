@@ -234,3 +234,5 @@
 - T61B 逐句语音持久接线红考题：4项全部预期失败（runAudio尚未实现），exit 1；覆盖私有音轨复用与累计预留、并发及跨用户拦截、未知提交保留已有音轨且禁重试、真实模式零调用。日志 .loopwork/logs/t61b-audio-task-red.log。未修改实现，未产生收费调用。
 - [audit] phase → implementing @ 2026-09-26T09:52:52+08:00
 - T61B逐句语音持久接线：红档40b444442c后实现，28项定向回归及typecheck通过；verify.sh exit 0、659项全绿，日志verify-20260926-095357.log。只读复核通过当前内部切片；真实调用仍关闭，无新增费用，独立进程恢复和整体费用硬上限未验证，T61B不勾完成。
+- [audit] phase → test-writing @ 2026-09-26T09:59:49+08:00
+- T61B音轨组装前置红考题：4项预期失败，缺少assemble-course-audio模块（exit 1）；覆盖真实PCM顺序合并、实测字幕时间、哈希与格式拒绝、60秒/4段上限。日志t61b-audio-assembly-red.log。未改实现，无收费请求。
