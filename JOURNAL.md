@@ -326,3 +326,5 @@
 - [audit] phase → implementing @ 2026-09-26T11:29:48+08:00
 - T61B并发成片修复：红26a50e5fab后SQLite事务独占token+pid，finally精确释放；重叠两store concat/verify各一次，182项领域/typecheck/diff通过。只读审查无限定阻断，PID复用/DB释放失败/真实崩溃回收专项未验已记录；本轮未全量verify，无费用。
 - T61B真实音轨核查：官方input-formats明确支持Data URI但不支持PCM；现有PCM组装及HTTPS-only传输仍有缺口。记录本地压缩转码+实际时长起点/解码+哈希听审绑定路线，不能将本地替身链路说成供应商输入通过。仅官方只读查证，无费用，代码考题未改。
+- [audit] phase → test-writing @ 2026-09-26T11:33:10+08:00
+- T61B音轨转码六项红题exit1，encode-video-audio缺失。覆盖PCM源hash、AAC-LC输出实测时长与起点、全片解码、格式/时长/解码失败清理；仅本地执行替身，不发API请求。日志t61b-encode-audio-red.log，diff检查通过。
