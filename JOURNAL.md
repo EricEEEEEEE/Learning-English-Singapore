@@ -302,3 +302,5 @@
 - T61B课程数据12项红题exit1，generated-course模块缺失；覆盖脚本与实际字幕时间同版私有素材引用、深拷贝与不泄漏owner、未完成/未解码/缺句乱序重叠越界/时长不符/非法版本/缺翻译/错误短语/坏hash拒绝。仅合成数据，无费用；日志t61b-course-manifest-red.log。
 - [audit] phase → implementing @ 2026-09-26T11:02:36+08:00
 - T61B同版课程数据实现：红a6efa67a7c后新增generated-course，保留五语材料与实测字幕，私有素材引用同revision，模拟来源显式标记且不泄漏owner/费用；168项T61B领域exit0、typecheck/diff通过。只读审查无阻断，词组回合深拷贝和非模拟标签专项覆盖待补；尚未接课程读取/UI，本轮未全量verify，无费用。
+- [audit] phase → test-writing @ 2026-09-26T11:05:00+08:00
+- T61B私有课程读取3项红题exit1（同文件既有4项通过）：getCourse/getCourseMedia缺失。覆盖本人重开读取同版数据与字节且不再生成，跨账号/无会话/过期拒绝，未完成和错误revision拒绝。日志t61b-course-read-red.log；合成数据，无费用。

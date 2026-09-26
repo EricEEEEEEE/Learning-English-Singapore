@@ -119,3 +119,39 @@ for (const mode of ['reject', 'wrong-hash']) test(`T61B final task: ${mode} veri
   expect(saved.videoTimeline).toBeUndefined();
   expect(c.finalCounts()).toEqual({ concats: 1, verifies: 1 });
 });
+
+test('T61B private course read: owner reopens matching course and final bytes without generating again', async () => {
+  const c = await prepared();
+  await c.store.probeVideo(c.input); await c.store.assembleVideo(c.input);
+  const before = await c.store.get(c.input);
+  const request = { ...c.input, revision: 1 };
+  const course = await c.reopen().getCourse(request);
+  expect(course).toMatchObject({ id: c.input.id, revision: 1, source: 'test-fixture', media: { courseId: c.input.id, revision: 1, sha256: finalHash } });
+  expect(course.lines.map(line => [line.id, line.start, line.end])).toEqual([['a', 0, 11], ['b', 11, 22]]);
+  expect(course).not.toHaveProperty('ownerId');
+  const media = await c.reopen().getCourseMedia(request);
+  expect(Buffer.from(media.bytes)).toEqual(finalBytes);
+  expect(media.sha256).toBe(course.media.sha256);
+  expect(await c.store.get(c.input)).toEqual(before);
+  expect(c.finalCounts()).toEqual({ concats: 1, verifies: 1 });
+});
+
+test('T61B private course read: other identity, no session and expired session never obtain course or media', async () => {
+  const c = await prepared();
+  await c.store.probeVideo(c.input); await c.store.assembleVideo(c.input);
+  for (const credentials of [{ cookie: c.other }, { cookie: undefined }, { now: now + 366 * 86400000 }]) {
+    for (const method of ['getCourse', 'getCourseMedia']) {
+      await expect(c.reopen()[method]({ ...c.input, revision: 1, ...credentials })).rejects.toThrow();
+    }
+  }
+  expect(c.finalCounts()).toEqual({ concats: 1, verifies: 1 });
+});
+
+test('T61B private course read: incomplete task and wrong revision never return learning data', async () => {
+  const c = await prepared();
+  for (const method of ['getCourse', 'getCourseMedia']) await expect(c.store[method]({ ...c.input, revision: 1 })).rejects.toThrow();
+  await c.store.probeVideo(c.input); await c.store.assembleVideo(c.input);
+  for (const revision of [0, 2, 1.5]) {
+    for (const method of ['getCourse', 'getCourseMedia']) await expect(c.store[method]({ ...c.input, revision })).rejects.toThrow();
+  }
+});
