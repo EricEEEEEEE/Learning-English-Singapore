@@ -308,3 +308,5 @@
 - T61B私有课程读取：红3cae1cf218后新增getCourse/getCourseMedia，共用签名owner+revision+课程状态验证及实际私有成片size/hash核对；171项T61B领域exit0，typecheck/diff通过。只读审查无阻断；当前元数据也读取整片，HTTP缓存/错误脱敏和UI尚待，无收费请求，本轮未全量verify。
 - [audit] phase → test-writing @ 2026-09-26T11:07:37+08:00
 - T61B课程数据HTTP四项红题exit1，generated-courses路由缺失；覆盖cookie与显式版本传递、重复/畸形参数拒绝、只读GET、private no-store和通用脱敏错误。仅注入替身，不代表真实HTTP鉴权集成已验，无费用，日志t61b-course-http-red.log。
+- [audit] phase → implementing @ 2026-09-26T11:08:12+08:00
+- T61B课程数据HTTP：红5dce766f7d后实现本地只读GET，严格参数、签名会话透传、private no-store及脱敏错误，无providers。175项T61B领域/typecheck/build/diff通过，构建含动态路由；只读审查无阻断，真实HTTP端到端/视频路由/UI仍待，无费用，未全量verify。
