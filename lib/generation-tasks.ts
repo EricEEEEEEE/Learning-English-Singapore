@@ -35,7 +35,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     const db = new DatabaseSync(path, { timeout: 5000 });
     try {
       chmodSync(path, 0o600);
-      db.exec('PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, owner TEXT NOT NULL, fingerprint TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(owner,fingerprint)); CREATE TABLE IF NOT EXISTS requests (owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, PRIMARY KEY(owner,key)); BEGIN IMMEDIATE;');
+      db.exec('PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, owner TEXT NOT NULL, fingerprint TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(owner,fingerprint)); CREATE TABLE IF NOT EXISTS requests (owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, PRIMARY KEY(owner,key)); CREATE TABLE IF NOT EXISTS final_assembly_locks (task TEXT PRIMARY KEY, owner TEXT NOT NULL, token TEXT NOT NULL, pid INTEGER NOT NULL); BEGIN IMMEDIATE;');
       const result = work(db); db.exec('COMMIT'); return result;
     } finally { db.close(); }
   }
@@ -311,23 +311,40 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         segments.push({ segmentIndex: i, assetId: asset.assetId, sha256: asset.sha256, duration: check.duration });
       }
       const timeline = planVideoTimeline({ segments, audioAssembly: audio });
-      const joined = await videoConcat(sources);
-      if (!(joined?.bytes instanceof Uint8Array) || !joined.bytes.length || joined.bytes.length > 100_000_000) throw new Error('Invalid assembled video');
-      const bytes = Buffer.from(joined.bytes), sha256 = createHash('sha256').update(bytes).digest('hex');
-      if (sha256 !== joined.sha256) throw new Error('Invalid assembled integrity');
-      const checked = await finalVideoVerify({ bytes: Buffer.from(bytes), sha256, plan: { sourceDuration: audio.duration, segmentDurations: segments.map(s => s.duration) } });
-      if (!checked || checked.sha256 !== sha256 || checked.decoded !== true || !Number.isFinite(checked.duration) || Math.abs(checked.duration - timeline.duration) > 0.001001 || checked.width !== 720 || checked.height !== 1280 || !Number.isFinite(checked.fps) || Math.abs(checked.fps - 24) > 0.001 || checked.videoCodec !== 'h264' || checked.audioCodec !== 'aac') throw new Error('Invalid final verification');
-      const assetId = `final-${sha256}`;
-      const metadata = await mediaStore.put({ ...locator, assetId, bytes, sha256 });
-      // Publish only after immutable bytes are saved; never mark a complete course ready here.
-      return transact(db => {
+      const token = randomUUID();
+      transact(db => {
         const current = read(db, snapshot.id, ownerId);
-        if (current?.status === 'video_assembled' && current.finalVideo?.sha256 === sha256) return current;
-        if (!current || current.status !== 'video_pending' || JSON.stringify(current.audioAssembly) !== JSON.stringify(audio) || JSON.stringify(current.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(current.videoAssets) !== JSON.stringify(snapshot.videoAssets) || JSON.stringify(current.videoChecks) !== JSON.stringify(snapshot.videoChecks)) throw new Error('Task changed during final assembly');
-        current.finalVideo = { assetId, size: metadata.size, sha256, decoded: true, duration: checked.duration, width: checked.width, height: checked.height, fps: checked.fps, videoCodec: checked.videoCodec, audioCodec: checked.audioCodec };
-        current.videoTimeline = timeline;
-        current.status = 'video_assembled'; save(db, current); return current;
+        if (!current || current.status !== 'video_pending' || JSON.stringify(current) !== JSON.stringify(snapshot)) throw new Error('Task changed before final assembly');
+        const lock = db.prepare('SELECT pid FROM final_assembly_locks WHERE task=?').get(snapshot.id);
+        if (lock) {
+          let dead = false;
+          try { process.kill(Number(lock.pid), 0); } catch (error) { dead = (error as NodeJS.ErrnoException).code === 'ESRCH'; }
+          if (!dead) throw new Error('Final assembly already running');
+          db.prepare('DELETE FROM final_assembly_locks WHERE task=?').run(snapshot.id);
+        }
+        db.prepare('INSERT INTO final_assembly_locks VALUES(?,?,?,?)').run(snapshot.id, ownerId, token, process.pid);
       });
+      try {
+        const joined = await videoConcat(sources);
+        if (!(joined?.bytes instanceof Uint8Array) || !joined.bytes.length || joined.bytes.length > 100_000_000) throw new Error('Invalid assembled video');
+        const bytes = Buffer.from(joined.bytes), sha256 = createHash('sha256').update(bytes).digest('hex');
+        if (sha256 !== joined.sha256) throw new Error('Invalid assembled integrity');
+        const checked = await finalVideoVerify({ bytes: Buffer.from(bytes), sha256, plan: { sourceDuration: audio.duration, segmentDurations: segments.map(s => s.duration) } });
+        if (!checked || checked.sha256 !== sha256 || checked.decoded !== true || !Number.isFinite(checked.duration) || Math.abs(checked.duration - timeline.duration) > 0.001001 || checked.width !== 720 || checked.height !== 1280 || !Number.isFinite(checked.fps) || Math.abs(checked.fps - 24) > 0.001 || checked.videoCodec !== 'h264' || checked.audioCodec !== 'aac') throw new Error('Invalid final verification');
+        const assetId = `final-${sha256}`;
+        const metadata = await mediaStore.put({ ...locator, assetId, bytes, sha256 });
+        // Publish only after immutable bytes are saved; never mark a complete course ready here.
+        return transact(db => {
+          const current = read(db, snapshot.id, ownerId);
+          if (current?.status === 'video_assembled' && current.finalVideo?.sha256 === sha256) return current;
+          if (!current || current.status !== 'video_pending' || JSON.stringify(current.audioAssembly) !== JSON.stringify(audio) || JSON.stringify(current.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(current.videoAssets) !== JSON.stringify(snapshot.videoAssets) || JSON.stringify(current.videoChecks) !== JSON.stringify(snapshot.videoChecks)) throw new Error('Task changed during final assembly');
+          current.finalVideo = { assetId, size: metadata.size, sha256, decoded: true, duration: checked.duration, width: checked.width, height: checked.height, fps: checked.fps, videoCodec: checked.videoCodec, audioCodec: checked.audioCodec };
+          current.videoTimeline = timeline;
+          current.status = 'video_assembled'; save(db, current); return current;
+        });
+      } finally {
+        transact(db => db.prepare('DELETE FROM final_assembly_locks WHERE task=? AND owner=? AND token=?').run(snapshot.id, ownerId, token));
+      }
     },
     async runSimulation(input: Session & { id: string; reservedMicros: number }, provider: () => Promise<{ jobId: string }>) {
       if (simulation !== true) throw new Error('Provider calls disabled');

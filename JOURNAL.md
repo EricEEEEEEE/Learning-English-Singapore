@@ -323,3 +323,5 @@
 - T61B本地链路取证exit0：无直接DB状态注入，从create/script/逐句audio/组装/两段video保存probe到成片concat全片decode/课程读取重开跑通。实际24.084秒hash一致，第二句偏移12.042，重复复用、跨账号拒绝。脚本语音及provider为合成，酒店既有视频复用，不证明内容匹配；无费用，代码考题未改，生产runner/费用/听审绑定/音轨传输仍待。
 - [audit] phase → test-writing @ 2026-09-26T11:28:22+08:00
 - T61B成片并发红题：新增两存储实例重叠组装用例，实际concat和verify各执行2次而非1次，exit1；同文件既有7项通过。考题及时收集所有Promise，释放暂停门避免悬挂。仅本地替身，无费用；日志t61b-final-concurrent-red.log。
+- [audit] phase → implementing @ 2026-09-26T11:29:48+08:00
+- T61B并发成片修复：红26a50e5fab后SQLite事务独占token+pid，finally精确释放；重叠两store concat/verify各一次，182项领域/typecheck/diff通过。只读审查无限定阻断，PID复用/DB释放失败/真实崩溃回收专项未验已记录；本轮未全量verify，无费用。
