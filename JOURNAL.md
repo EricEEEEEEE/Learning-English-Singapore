@@ -252,3 +252,5 @@
 - T61B视频回收：红档a34236ee0c后实现collectVideo私有素材保存，32项定向回归exit 0、typecheck/diff通过，只读复核通过限定切片。临时URL不持久化，下载失败可重取不重生成；并发可能重复下载、旧引用不重新验证文件，真实下载器绑定/MP4探测/多段仍待。无费用，未跑全量，不勾T61B。
 - [audit] phase → test-writing @ 2026-09-26T10:11:31+08:00
 - T61B媒体探测报告校验11项红题exit 1，video-probe模块缺失；720x1280/24fps、MP4 H264/AAC本地播放候选profile、音视频实际时长对照、缺失异常拒绝。依据ffmpeg.org/ffprobe.html（2026-09-26核对）；PATH未找到ffprobe/ffmpeg，本轮只是报告校验不是真实文件检测。日志t61b-probe-red.log，无费用。
+- [audit] phase → implementing @ 2026-09-26T10:12:30+08:00
+- T61B探测报告校验：红档d9f8034d8c后实现video-probe，11项exit 0、typecheck/diff通过，只读复核通过报告字段限定范围。未跑全量或真实媒体工具；报告需绑定实际素材哈希，起始偏移/旋转/像素格式/恒定帧率和真实解码未验证，不能声称可播放或同步。无费用，不勾T61B。
