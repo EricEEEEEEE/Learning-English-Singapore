@@ -298,3 +298,5 @@
 - T61B成片持久接线4项红题：预置两段已保存视频，覆盖校验后存储/时间轴/重开恢复/重复操作不重做、未探测和跨账号拒绝、解码失败和错hash不发布。首次沙箱EPERM，获准原样重跑4项因assembleVideo缺失失败exit1；日志t61b-final-task-red.log。仅合成替身，无付费请求，尚未改实现。
 - [audit] phase → implementing @ 2026-09-26T10:59:34+08:00
 - T61B成片持久接线：红b748382c0e后实现assembleVideo，来源哈希/探测齐全才拼接，成片验证与私有保存成功后CAS发布，重开复用；4项新题+2项回归通过，全部T61B领域156项exit0，typecheck/diff通过。只读审查无切片阻断，并发重复本地处理及孤立素材限制已记；无费用，未重跑完整verify，不勾T61B。
+- [audit] phase → test-writing @ 2026-09-26T11:02:03+08:00
+- T61B课程数据12项红题exit1，generated-course模块缺失；覆盖脚本与实际字幕时间同版私有素材引用、深拷贝与不泄漏owner、未完成/未解码/缺句乱序重叠越界/时长不符/非法版本/缺翻译/错误短语/坏hash拒绝。仅合成数据，无费用；日志t61b-course-manifest-red.log。
