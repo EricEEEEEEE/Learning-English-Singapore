@@ -287,3 +287,6 @@
 - T61B拼接时间戳修复：红adee251bf1后正式执行器copyts+disabled；6项定向exit0/typecheck通过。真实执行器双酒店拼接exit0，ffprobe断言24.084秒/双起点0通过，全片-xerror解码exit0，hash608e6efe...990c。只读复核通过限定样本；未听审/不同段兼容/全量，费用0。
 - [audit] phase → test-writing @ 2026-09-26T10:42:33+08:00
 - T61B成片报告7项红题exit 1，final-video-probe缺失；用真实双酒店字段覆盖>20秒输出、帧率有理数舍入、截短/非零或缺起点/缺音轨/错误帧率拒绝，以及源<=60秒和分段<=20秒限制。日志t61b-final-probe-red.log，无费用。
+- [audit] phase → implementing @ 2026-09-26T10:43:47+08:00
+- T61B成片报告校验：红bb5f051506后实现final-video-probe；18项定向回归exit0、typecheck/diff通过，真实24.084秒拼接报告校验exit0。只读复核已提交暂未返回，不声称评审通过；成片hash绑定执行器/任务发布和全量仍待，无费用，不勾T61B。
+- T61B成片报告复核补记：只读审查随后返回，无静态阻断，允许登记限定报告检查点；AAC逐段容差不能证明中间接缝和听感。非T61B整体绿验收。
