@@ -13,10 +13,12 @@ import { assembleCourseAudio } from './assemble-course-audio';
 type Assembly = ReturnType<typeof assembleCourseAudio>;
 type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
+type VideoJob = { segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
+type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; videoJobs?: VideoJob[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -155,6 +157,53 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (!current || current.status !== 'audio_ready' || JSON.stringify(current.audioAssets) !== JSON.stringify(task.audioAssets)) throw new Error('Task changed during assembly');
         current.audioAssembly = { duration: assembled.duration, lines: assembled.lines, segments };
         current.status = 'audio_assembled'; save(db, current); return current;
+      });
+    },
+    async runVideo(input: Session & { id: string }) {
+      if (simulation !== true || !videoProvider || videoProvider.audioReviewed !== true || !mediaStore) throw new Error('Video submission disabled');
+      const ownerId = await owner(input);
+      const reservation = videoProvider.reservedMicros;
+      if (!Number.isSafeInteger(reservation) || reservation <= 0) throw new Error('Invalid reservation');
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      if (!snapshot || !snapshot.simulation || snapshot.status !== 'audio_assembled' || !snapshot.audioAssembly || snapshot.videoJobs?.length) throw new Error('Submission prohibited');
+      // First segment only; later segments require completed-media verification before continuation.
+      const segment = snapshot.audioAssembly.segments[0];
+      if (!segment) throw new Error('Missing segment');
+      const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: segment.assetId });
+      if (!media || media.sha256 !== segment.sha256 || wavDuration(media.bytes) !== segment.duration) throw new Error('Invalid segment media');
+      const task = transact(db => {
+        const value = read(db, input.id, ownerId);
+        if (!value || value.status !== 'audio_assembled' || value.videoJobs?.length || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        value.status = 'submitting'; value.pid = process.pid; value.reservedMicros += reservation; value.providerCalls++;
+        save(db, value); return value;
+      });
+      let id: string | undefined;
+      try {
+        const response = await videoProvider.submit({ bytes: media.bytes, duration: segment.duration, goal: task.goal });
+        if (response?.status === 'pending' && typeof response.jobId === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(response.jobId)) id = response.jobId;
+      } catch { /* Unknown submission: retain reservation and never resubmit automatically. */ }
+      return transact(db => {
+        task.status = id ? 'video_pending' : 'submission_unknown';
+        if (id) task.videoJobs = [{ segmentIndex: 0, jobId: id, status: 'pending' }];
+        save(db, task); return task;
+      });
+    },
+    async queryVideo(input: Session & { id: string }) {
+      if (simulation !== true || !videoProvider?.query) throw new Error('Video query disabled');
+      const ownerId = await owner(input);
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      const job = snapshot?.videoJobs?.[0];
+      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job) throw new Error('Query prohibited');
+      if (job.status === 'completed' || job.status === 'failed') return snapshot;
+      let result;
+      try { result = await videoProvider.query(job.jobId); } catch { throw new Error('Video status unavailable'); }
+      if (!result || result.jobId !== job.jobId || !['pending', 'processing', 'failed', 'completed'].includes(result.status)) throw new Error('Invalid video status');
+      return transact(db => {
+        const current = read(db, snapshot.id, ownerId), latest = current?.videoJobs?.[0];
+        if (!current || current.status !== 'video_pending' || latest?.jobId !== job.jobId) throw new Error('Task changed during query');
+        if (latest.status !== 'completed' && latest.status !== 'failed' && !(latest.status === 'processing' && result.status === 'pending')) latest.status = result.status as VideoJob['status'];
+        // Provider completion alone is not validated media or a publishable course.
+        save(db, current); return current;
       });
     },
     async runSimulation(input: Session & { id: string; reservedMicros: number }, provider: () => Promise<{ jobId: string }>) {
