@@ -222,3 +222,5 @@
 - T61B视频19例红题最终exit1缺generated-video.ts，18未运行。原17例只读复核通过，补输入合法性/查询错误脱敏；核对官方v2协议。全部HTTP替身，无收费请求。供应商completed不等于课程ready，资产时长与安全下载仍需后续接线。
 - [audit] phase → implementing @ 2026-09-26T09:39:19+08:00
 - T61B视频传输适配19/19目标测试、typecheck exit0，独立静态复核通过。无自动重发，GET原ID，completed不发布课程；持久视频/安全下载/组装未接线，T61B仍未完成。签名URL不得入日志或Git。无收费请求。
+- [audit] phase → test-writing @ 2026-09-26T09:40:23+08:00
+- T61B私有素材存储9例红题exit1缺private-media-store.ts，8未运行；独立复核通过。仅本地字节/hash/身份/版本/幂等验证，不冒充可播放媒体或T62云库。未找到当前PATH/已知runtime的拼接工具，先推进独立存储；无收费请求。
