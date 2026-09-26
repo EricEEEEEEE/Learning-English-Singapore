@@ -281,3 +281,5 @@
 - [audit] phase → implementing @ 2026-09-26T10:35:31+08:00
 - T61B拼接执行器：红274e239d36后实现concat-video-bytes，12项定向测试exit 0、typecheck/diff通过，只读复核通过执行器范围。仅替身，真实ffmpeg/编码参数兼容/输出重探测全帧解码仍待，大小cap不证明完整，未跑全量，无费用，不勾T61B。
 - T61B真实拼接：原生FFmpeg4.4两份已有酒店样片concat执行exit 0，输出2950999字节；全片音视频-xerror解码exit 0且日志0字节。但成片视频起点0.041992秒、容器24.127比计划24.084多约43ms，时间轴未验收。未改实现考题，无API费用，后续补时间戳红题。
+- [audit] phase → test-writing @ 2026-09-26T10:39:47+08:00
+- T61B拼接时间戳取证：源AAC首包pts=-1024/24k=-.042667含skip1024；avoid_negative_ts disabled单独无效，copyts+disabled实测双起点0/容器24.084，全片-xerror解码exit 0。新增参数回归1项预期红exit 1，未改实现。依据FFmpeg官方timestamp文档，输出copyts-probe.json保存在outputs；无费用。
