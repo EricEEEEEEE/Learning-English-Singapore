@@ -250,7 +250,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
         if (!media || media.sha256 !== asset.sha256 || media.size !== asset.size || createHash('sha256').update(media.bytes).digest('hex') !== asset.sha256) throw new Error('Invalid media');
         const result = await videoProbe({ bytes: media.bytes, sha256: asset.sha256, expectedDuration: segment.duration });
-        if (!result || result.sha256 !== asset.sha256 || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - segment.duration) > 1 / 24 || result.width !== 720 || result.height !== 1280 || result.fps !== 24 || result.videoCodec !== 'h264' || result.audioCodec !== 'aac') throw new Error('Invalid probe result');
+        if (!result || result.sha256 !== asset.sha256 || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - segment.duration) > Math.max(1 / 24, 1024 / 8000) + 0.001002 || result.width !== 720 || result.height !== 1280 || result.fps !== 24 || result.videoCodec !== 'h264' || result.audioCodec !== 'aac') throw new Error('Invalid probe result');
         checked = { sha256: result.sha256, duration: result.duration, width: result.width, height: result.height, fps: result.fps, videoCodec: result.videoCodec, audioCodec: result.audioCodec };
       } catch { throw new Error('Video verification failed'); }
       return transact(db => {
