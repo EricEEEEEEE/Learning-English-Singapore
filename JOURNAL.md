@@ -220,3 +220,5 @@
 - T61B语音/分段检查点：17目标测试、typecheck通过；独立静态复核通过。完整verify.sh exit0，611/611通过，日志verify-20260926-093115.log。未改冻结考题，无收费；T61B语音持久化/视频/课程组装仍待完成，不勾总任务，保存后补下一切片红题。
 - [audit] phase → test-writing @ 2026-09-26T09:36:25+08:00
 - T61B视频19例红题最终exit1缺generated-video.ts，18未运行。原17例只读复核通过，补输入合法性/查询错误脱敏；核对官方v2协议。全部HTTP替身，无收费请求。供应商completed不等于课程ready，资产时长与安全下载仍需后续接线。
+- [audit] phase → implementing @ 2026-09-26T09:39:19+08:00
+- T61B视频传输适配19/19目标测试、typecheck exit0，独立静态复核通过。无自动重发，GET原ID，completed不发布课程；持久视频/安全下载/组装未接线，T61B仍未完成。签名URL不得入日志或Git。无收费请求。
