@@ -292,3 +292,5 @@
 - T61B成片报告复核补记：只读审查随后返回，无静态阻断，允许登记限定报告检查点；AAC逐段容差不能证明中间接缝和听感。非T61B整体绿验收。
 - [audit] phase → test-writing @ 2026-09-26T10:46:29+08:00
 - T61B成片验证执行器4项红题exit1，verify-final-video缺失；覆盖实际字节hash绑定、可信本地probe后全片-xerror解码、哈希/报告/解码任一步失败拒绝及临时清理。仅替身，无费用，日志t61b-final-runner-red.log。
+- [audit] phase → implementing @ 2026-09-26T10:47:47+08:00
+- T61B成片字节绑定执行器：红093d8f3969后实现，11项定向/typecheck通过；真实24.084秒酒店拼接文件hash绑定probe与全片解码exit0。完整verify首次沙箱EPERM，获准原样重跑723项通过exit0。只读审查无切片阻断，尚待持久成片发布接线；无付费调用，不勾T61B。
