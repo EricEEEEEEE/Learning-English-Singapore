@@ -10,8 +10,13 @@ import type { createPrivateMediaStore } from './private-media-store';
 
 import { assembleCourseAudio } from './assemble-course-audio';
 
+import { planVideoTimeline } from './video-timeline';
+import type { verifyFinalVideo } from './verify-final-video';
+import type { concatVideoBytes } from './concat-video-bytes';
+
 import type { probeVideoBytes } from './probe-video-bytes';
 
+type FinalCheck = Awaited<ReturnType<typeof verifyFinalVideo>>;
 type VideoCheck = Awaited<ReturnType<typeof probeVideoBytes>>;
 type Assembly = ReturnType<typeof assembleCourseAudio>;
 type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
@@ -19,9 +24,9 @@ type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type VideoJob = { segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; videoJobs?: VideoJob[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, videoDownload, videoProbe }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify }: { directory: string; sessionSecret: string; simulation?: boolean; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -267,6 +272,48 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         current.videoChecks = [...(current.videoChecks ?? []).filter(value => value.segmentIndex !== segmentIndex), { segmentIndex, ...checked }];
         // A probe report is evidence, not a complete decode or course acceptance.
         save(db, current); return current;
+      });
+    },
+    async assembleVideo(input: Session & { id: string }) {
+      if (simulation !== true || !mediaStore || !videoConcat || !finalVideoVerify) throw new Error('Video assembly disabled');
+      const ownerId = await owner(input);
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      if (!snapshot?.simulation) throw new Error('Assembly prohibited');
+      const locator = { cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision };
+      if (snapshot.status === 'video_assembled') {
+        const final = snapshot.finalVideo;
+        const stored = final && await mediaStore.get({ ...locator, assetId: final.assetId });
+        if (!stored || stored.sha256 !== final!.sha256 || stored.size !== final!.size) throw new Error('Final media unavailable');
+        return snapshot;
+      }
+      const audio = snapshot.audioAssembly;
+      if (snapshot.status !== 'video_pending' || !audio || snapshot.videoJobs?.length !== audio.segments.length || snapshot.videoAssets?.length !== audio.segments.length || snapshot.videoChecks?.length !== audio.segments.length) throw new Error('Incomplete video sources');
+      const sources = [], segments = [];
+      for (let i = 0; i < audio.segments.length; i++) {
+        const job = snapshot.videoJobs[i], asset = snapshot.videoAssets.find(a => a.segmentIndex === i), check = snapshot.videoChecks.find(c => c.segmentIndex === i);
+        if (job.segmentIndex !== i || job.status !== 'completed' || !asset || !check || check.sha256 !== asset.sha256) throw new Error('Unverified video source');
+        const stored = await mediaStore.get({ ...locator, assetId: asset.assetId });
+        if (!stored || stored.sha256 !== asset.sha256 || stored.size !== asset.size || createHash('sha256').update(stored.bytes).digest('hex') !== asset.sha256) throw new Error('Video source unavailable');
+        sources.push({ bytes: stored.bytes, sha256: asset.sha256 });
+        segments.push({ segmentIndex: i, assetId: asset.assetId, sha256: asset.sha256, duration: check.duration });
+      }
+      const timeline = planVideoTimeline({ segments, audioAssembly: audio });
+      const joined = await videoConcat(sources);
+      if (!(joined?.bytes instanceof Uint8Array) || !joined.bytes.length || joined.bytes.length > 100_000_000) throw new Error('Invalid assembled video');
+      const bytes = Buffer.from(joined.bytes), sha256 = createHash('sha256').update(bytes).digest('hex');
+      if (sha256 !== joined.sha256) throw new Error('Invalid assembled integrity');
+      const checked = await finalVideoVerify({ bytes: Buffer.from(bytes), sha256, plan: { sourceDuration: audio.duration, segmentDurations: segments.map(s => s.duration) } });
+      if (!checked || checked.sha256 !== sha256 || checked.decoded !== true || !Number.isFinite(checked.duration) || Math.abs(checked.duration - timeline.duration) > 0.001001 || checked.width !== 720 || checked.height !== 1280 || !Number.isFinite(checked.fps) || Math.abs(checked.fps - 24) > 0.001 || checked.videoCodec !== 'h264' || checked.audioCodec !== 'aac') throw new Error('Invalid final verification');
+      const assetId = `final-${sha256}`;
+      const metadata = await mediaStore.put({ ...locator, assetId, bytes, sha256 });
+      // Publish only after immutable bytes are saved; never mark a complete course ready here.
+      return transact(db => {
+        const current = read(db, snapshot.id, ownerId);
+        if (current?.status === 'video_assembled' && current.finalVideo?.sha256 === sha256) return current;
+        if (!current || current.status !== 'video_pending' || JSON.stringify(current.audioAssembly) !== JSON.stringify(audio) || JSON.stringify(current.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(current.videoAssets) !== JSON.stringify(snapshot.videoAssets) || JSON.stringify(current.videoChecks) !== JSON.stringify(snapshot.videoChecks)) throw new Error('Task changed during final assembly');
+        current.finalVideo = { assetId, size: metadata.size, sha256, decoded: true, duration: checked.duration, width: checked.width, height: checked.height, fps: checked.fps, videoCodec: checked.videoCodec, audioCodec: checked.audioCodec };
+        current.videoTimeline = timeline;
+        current.status = 'video_assembled'; save(db, current); return current;
       });
     },
     async runSimulation(input: Session & { id: string; reservedMicros: number }, provider: () => Promise<{ jobId: string }>) {
