@@ -332,3 +332,5 @@
 - T61B音轨AAC编码器：红a170e6a463后实现hash绑定/本地AAC-LC/probe/全片decode/清理；188项领域与typecheck通过，审查路径脱敏建议已修并6项复测通过。真实静音12→12秒、人声PCM11.989333→11.99秒成功，无上传费用；听审和持久/传输接线仍待，未全量verify。
 - [audit] phase → test-writing @ 2026-09-26T11:37:17+08:00
 - T61B编码音轨提交九项红题exit1，submitEncodedVideoSegment缺失；精确AAC Data URI/听审hash绑定、默认禁用、改字节/未解码/PCM/超时长/超体积零请求、未知提交不重试。仅HTTP替身，无实际听审或付费；日志t61b-encoded-submit-red.log。
+- [audit] phase → implementing @ 2026-09-26T11:38:24+08:00
+- T61BAAC Data URI适配：红5315e78de3后实现实际字节hash/听审hash比较、默认关闭、格式时长体积限制及一次提交未知不重试；197项领域/typecheck/diff通过。只读审查限定通过：来源/decoded/听审须可信服务端记录，旧HTTPS入口仍需统一runner闸门；无上传费用，未全量verify。

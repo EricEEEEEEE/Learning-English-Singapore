@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+import type { encodeVideoAudio } from './encode-video-audio';
 type Options = { enabled?: boolean; apiKey?: string; fetch?: typeof fetch };
 type VideoInput = { audioUri: string; duration: number; prompt: string };
 type Submission = { status: 'pending'; jobId: string } | { status: 'submission_unknown' };
@@ -18,6 +20,24 @@ function configured(options: Options) {
 export async function submitVideoSegment(input: VideoInput, options: Options = {}): Promise<Submission> {
   const headers = configured(options);
   if (!input || !httpsUri(input.audioUri) || !Number.isFinite(input.duration) || input.duration <= 0 || input.duration > 20 || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 5000) throw new Error('Invalid video input');
+  return submit(input, options, headers);
+}
+
+// Server-internal only: the caller owns durable budget reservation and review provenance.
+export async function submitEncodedVideoSegment(input: { audio: Awaited<ReturnType<typeof encodeVideoAudio>>; prompt: string }, options: Options & { reviewedSha256?: string } = {}): Promise<Submission> {
+  const headers = configured(options);
+  const audio = input?.audio;
+  if (!audio || !(audio.bytes instanceof Uint8Array) || !audio.bytes.length || audio.bytes.length > 11_250_000 || audio.mimeType !== 'audio/mp4' || audio.decoded !== true || !Number.isFinite(audio.duration) || audio.duration <= 0 || audio.duration > 20 || !Number.isFinite(audio.sourceDuration) || audio.sourceDuration <= 0 || audio.sourceDuration > 20 || Math.abs(audio.duration - audio.sourceDuration) > 1024 / 8000 + 0.001001 || typeof audio.sourceSha256 !== 'string' || !/^[a-f0-9]{64}$/.test(audio.sourceSha256) || typeof input.prompt !== 'string' || !input.prompt.trim() || input.prompt.length > 5000) throw new Error('Invalid encoded video input');
+  const bytes = Buffer.from(audio.bytes);
+  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  if (sha256 !== audio.sha256 || sha256 !== options.reviewedSha256) throw new Error('Encoded audio review mismatch');
+  const audioUri = `data:audio/mp4;base64,${bytes.toString('base64')}`;
+  // Include the URI prefix in the conservative 15 MB encoded-input limit.
+  if (Buffer.byteLength(audioUri) > 15_000_000) throw new Error('Encoded audio too large');
+  return submit({ audioUri, duration: audio.duration, prompt: input.prompt }, options, headers);
+}
+
+async function submit(input: VideoInput, options: Options, headers: Record<string, string>): Promise<Submission> {
   try {
     const response = await (options.fetch ?? fetch)(endpoint, {
       method: 'POST', headers, redirect: 'error', signal: AbortSignal.timeout(30_000),
