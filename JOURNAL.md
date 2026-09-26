@@ -325,3 +325,4 @@
 - T61B成片并发红题：新增两存储实例重叠组装用例，实际concat和verify各执行2次而非1次，exit1；同文件既有7项通过。考题及时收集所有Promise，释放暂停门避免悬挂。仅本地替身，无费用；日志t61b-final-concurrent-red.log。
 - [audit] phase → implementing @ 2026-09-26T11:29:48+08:00
 - T61B并发成片修复：红26a50e5fab后SQLite事务独占token+pid，finally精确释放；重叠两store concat/verify各一次，182项领域/typecheck/diff通过。只读审查无限定阻断，PID复用/DB释放失败/真实崩溃回收专项未验已记录；本轮未全量verify，无费用。
+- T61B真实音轨核查：官方input-formats明确支持Data URI但不支持PCM；现有PCM组装及HTTPS-only传输仍有缺口。记录本地压缩转码+实际时长起点/解码+哈希听审绑定路线，不能将本地替身链路说成供应商输入通过。仅官方只读查证，无费用，代码考题未改。
