@@ -248,3 +248,5 @@
 - T61B首段视频任务：红档75b6dc3920后实现内部runVideo/queryVideo；30项定向回归exit 0、typecheck/diff通过，只读静态复核通过。仅首段模拟：job持久化、未知禁重投、查询无生成；未跑全量，听审哈希绑定/全局预算/并发乱序专门考题/上传下载多段仍待，不勾T61B，无费用。
 - [audit] phase → test-writing @ 2026-09-26T10:08:42+08:00
 - T61B视频回收3项红考题exit 1：collectVideo未实现。覆盖completed后私有保存但非课程ready、签名URL不进任务、下载失败重取不重生成、错误哈希不发布引用。仅合成传输字节，不假称可播放视频；日志t61b-video-collection-red.log。无费用。
+- [audit] phase → implementing @ 2026-09-26T10:09:42+08:00
+- T61B视频回收：红档a34236ee0c后实现collectVideo私有素材保存，32项定向回归exit 0、typecheck/diff通过，只读复核通过限定切片。临时URL不持久化，下载失败可重取不重生成；并发可能重复下载、旧引用不重新验证文件，真实下载器绑定/MP4探测/多段仍待。无费用，未跑全量，不勾T61B。
