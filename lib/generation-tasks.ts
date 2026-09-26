@@ -10,15 +10,18 @@ import type { createPrivateMediaStore } from './private-media-store';
 
 import { assembleCourseAudio } from './assemble-course-audio';
 
+import type { probeVideoBytes } from './probe-video-bytes';
+
+type VideoCheck = Awaited<ReturnType<typeof probeVideoBytes>>;
 type Assembly = ReturnType<typeof assembleCourseAudio>;
 type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type VideoJob = { segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; videoJobs?: VideoJob[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; videoJobs?: VideoJob[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, videoDownload }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, videoDownload, videoProbe }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -232,6 +235,30 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         latest.status = 'completed';
         current.videoAssets = [...(current.videoAssets ?? []), { segmentIndex: job.segmentIndex, assetId: metadata.assetId, sha256: metadata.sha256, size: metadata.size }];
         // Stored bytes are not yet a probed, playable video or an accepted course.
+        save(db, current); return current;
+      });
+    },
+    async probeVideo(input: Session & { id: string }) {
+      if (simulation !== true || !mediaStore || !videoProbe) throw new Error('Video probe disabled');
+      const ownerId = await owner(input);
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === 0);
+      const segment = snapshot?.audioAssembly?.segments[0];
+      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !asset || !segment) throw new Error('Probe prohibited');
+      let checked: VideoCheck;
+      try {
+        const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
+        if (!media || media.sha256 !== asset.sha256 || media.size !== asset.size || createHash('sha256').update(media.bytes).digest('hex') !== asset.sha256) throw new Error('Invalid media');
+        const result = await videoProbe({ bytes: media.bytes, sha256: asset.sha256, expectedDuration: segment.duration });
+        if (!result || result.sha256 !== asset.sha256 || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - segment.duration) > 1 / 24 || result.width !== 720 || result.height !== 1280 || result.fps !== 24 || result.videoCodec !== 'h264' || result.audioCodec !== 'aac') throw new Error('Invalid probe result');
+        checked = { sha256: result.sha256, duration: result.duration, width: result.width, height: result.height, fps: result.fps, videoCodec: result.videoCodec, audioCodec: result.audioCodec };
+      } catch { throw new Error('Video verification failed'); }
+      return transact(db => {
+        const current = read(db, snapshot.id, ownerId);
+        const latest = current?.videoAssets?.find(value => value.segmentIndex === 0);
+        if (!current || current.status !== 'video_pending' || JSON.stringify(latest) !== JSON.stringify(asset) || JSON.stringify(current.audioAssembly?.segments[0]) !== JSON.stringify(segment)) throw new Error('Task changed during probe');
+        current.videoChecks = [...(current.videoChecks ?? []).filter(value => value.segmentIndex !== 0), { segmentIndex: 0, ...checked }];
+        // A probe report is evidence, not a complete decode or course acceptance.
         save(db, current); return current;
       });
     },
