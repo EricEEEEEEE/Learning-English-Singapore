@@ -28,7 +28,7 @@ type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type VideoJob = { segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
@@ -216,6 +216,27 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (existing && JSON.stringify(existing) === JSON.stringify(saved)) return current;
         if (JSON.stringify(current.encodedAudio) !== JSON.stringify(snapshot.encodedAudio)) throw new Error('Encoded task changed');
         current.encodedAudio = [...(current.encodedAudio ?? []), saved];
+        save(db, current); return current;
+      });
+    },
+    async confirmEncodedAudio(input: Session & { id: string; revision: number; segmentIndex: number; sha256: string }) {
+      if (simulation !== true || !mediaStore) throw new Error('Audio confirmation disabled');
+      const ownerId = await owner(input);
+      if (!Number.isSafeInteger(input.revision) || input.revision < 1 || !Number.isSafeInteger(input.segmentIndex) || input.segmentIndex < 0 || typeof input.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(input.sha256)) throw new Error('Invalid audio confirmation');
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      const encoded = snapshot?.encodedAudio?.[input.segmentIndex];
+      const source = snapshot?.audioAssembly?.segments[input.segmentIndex];
+      if (!snapshot?.simulation || snapshot.status !== 'audio_assembled' || snapshot.revision !== input.revision || !encoded || !source || encoded.segmentIndex !== input.segmentIndex || encoded.sha256 !== input.sha256 || encoded.sourceSha256 !== source.sha256 || encoded.sourceDuration !== source.duration) throw new Error('Audio confirmation prohibited');
+      const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: encoded.assetId });
+      if (!media || media.sha256 !== encoded.sha256 || media.size !== encoded.size || createHash('sha256').update(media.bytes).digest('hex') !== encoded.sha256) throw new Error('Audio confirmation media unavailable');
+      const confirmedAt = input.now ?? Date.now();
+      if (!Number.isSafeInteger(confirmedAt) || confirmedAt < 0) throw new Error('Invalid confirmation time');
+      return transact(db => {
+        const current = read(db, snapshot.id, ownerId);
+        if (!current || current.status !== 'audio_assembled' || current.revision !== input.revision || JSON.stringify(current.encodedAudio?.[input.segmentIndex]) !== JSON.stringify(encoded) || JSON.stringify(current.audioAssembly?.segments[input.segmentIndex]) !== JSON.stringify(source)) throw new Error('Audio changed during confirmation');
+        const existing = current.audioReviews?.find(review => review.segmentIndex === input.segmentIndex);
+        if (existing?.sha256 === encoded.sha256 && existing.sourceSha256 === source.sha256 && existing.revision === input.revision) return current;
+        current.audioReviews = [...(current.audioReviews ?? []).filter(review => review.segmentIndex !== input.segmentIndex), { revision: input.revision, segmentIndex: input.segmentIndex, sha256: encoded.sha256, sourceSha256: source.sha256, confirmedAt }];
         save(db, current); return current;
       });
     },
