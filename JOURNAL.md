@@ -254,3 +254,5 @@
 - T61B媒体探测报告校验11项红题exit 1，video-probe模块缺失；720x1280/24fps、MP4 H264/AAC本地播放候选profile、音视频实际时长对照、缺失异常拒绝。依据ffmpeg.org/ffprobe.html（2026-09-26核对）；PATH未找到ffprobe/ffmpeg，本轮只是报告校验不是真实文件检测。日志t61b-probe-red.log，无费用。
 - [audit] phase → implementing @ 2026-09-26T10:12:30+08:00
 - T61B探测报告校验：红档d9f8034d8c后实现video-probe，11项exit 0、typecheck/diff通过，只读复核通过报告字段限定范围。未跑全量或真实媒体工具；报告需绑定实际素材哈希，起始偏移/旋转/像素格式/恒定帧率和真实解码未验证，不能声称可播放或同步。无费用，不勾T61B。
+- [audit] phase → test-writing @ 2026-09-26T10:14:04+08:00
+- T61B探测执行器5项红题exit 1，probe-video-bytes模块缺失。覆盖实际私有字节/hash绑定、禁shell及网络协议、超时/输出限额、损坏输入零执行、失败清理自产临时文件；仅注入替身，真实工具未接入。日志t61b-probe-runner-red.log，无费用。
