@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "b455d4a46233d1512bd54c0586ddf27a0df3ed55",
+  "last_round_commit": "1c3a5e13b280794d9571f34fa1c21d5ac50cc15b",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-26T09:16:31+08:00",
+  "last_session": "2026-09-26T09:19:03+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 657746,
-  "blocks_seen": 901,
+  "audit_bytes": 659801,
+  "blocks_seen": 904,
   "red_commit_pending": false,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_development_ready_paid_amount_pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T61B接入授权与付费金额边界登记"
+    "kind": "red",
+    "msg": "存档: T61B结构化脚本接入首组红考题"
   }
 }
