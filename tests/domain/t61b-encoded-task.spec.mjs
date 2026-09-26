@@ -79,3 +79,33 @@ test('T61B encoded task: other owner and incomplete audio cannot start encoder',
   expect(calls).toBe(0);
 });
 
+test('T61B audio review: explicit confirmation persists exact encoded and source hashes for this revision', async () => {
+  const c = await ready(async input => encoded(input));
+  const saved = await c.store.encodeAudio(c.input);
+  const confirmed = await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  expect(confirmed.audioReviews).toEqual([{ revision: 1, segmentIndex: 0, sha256: encodedHash, sourceSha256: saved.encodedAudio[0].sourceSha256, confirmedAt: c.input.now }]);
+  expect(await c.reopen().get(c.input)).toEqual(confirmed);
+  expect(await c.reopen().confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash })).toEqual(confirmed);
+  expect(confirmed.providerCalls).toBe(saved.providerCalls);
+  expect(confirmed.reservedMicros).toBe(saved.reservedMicros);
+});
+
+test('T61B audio review: missing audio, wrong hash, wrong revision and other owner cannot confirm', async () => {
+  const c = await ready(async input => encoded(input));
+  const request = { ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash };
+  await expect(c.store.confirmEncodedAudio(request)).rejects.toThrow();
+  await c.store.encodeAudio(c.input);
+  for (const change of [{ revision: 2 }, { sha256: 'd'.repeat(64) }, { segmentIndex: 1 }, { segmentIndex: -1 }, { cookie: c.other }]) {
+    await expect(c.store.confirmEncodedAudio({ ...request, ...change })).rejects.toThrow();
+  }
+  expect((await c.reopen().get(c.input)).audioReviews).toBeUndefined();
+});
+
+test('T61B audio review: deleted or inaccessible encoded asset cannot gain confirmation', async () => {
+  const c = await ready(async input => encoded(input));
+  await c.store.encodeAudio(c.input);
+  // Inject a read failure at the media boundary; do not delete any existing file.
+  c.mediaStore.get = async () => { throw new Error('synthetic media unavailable'); };
+  await expect(c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash })).rejects.toThrow();
+  expect((await c.reopen().get(c.input)).audioReviews).toBeUndefined();
+});

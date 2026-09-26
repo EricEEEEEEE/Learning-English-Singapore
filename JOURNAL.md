@@ -338,3 +338,5 @@
 - T61B编码音轨持久接线六项红题exit1，encodeAudio方法缺失；覆盖原分段hash/实测时长绑定、私有AAC保存与重开复用、错误来源/输出/解码拒绝及账号隔离，编码不增加provider费用计数。仅合成替身，无费用，日志t61b-encoded-task-red.log。
 - [audit] phase → implementing @ 2026-09-26T11:41:18+08:00
 - T61B编码音轨持久接线：红bf68b21783后实现encodeAudio，实际源PCM哈希/时长绑定、输出核对、私有保存后CAS引用、重开复用；203项领域/typecheck/diff通过，静态审查无阻断。并发本地重复编码/孤立文件边界保留，runVideo尚未切AAC及听审；无费用，未全量verify。
+- [audit] phase → test-writing @ 2026-09-26T11:43:44+08:00
+- T61B听审确认记录三项红题exit1，confirmEncodedAudio缺失；覆盖具体版本/编码hash/源hash持久确认与重复复用，未编码/错hash错版本/跨账号/素材读取失败拒绝。既有6项通过；仅模拟确认记录，不代表真人听审或授权收费，日志t61b-audio-review-red.log。
