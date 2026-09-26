@@ -14,13 +14,13 @@ function wav() {
   b.writeUInt32LE(8000, 24); b.writeUInt32LE(16000, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34);
   b.write('data', 36); b.writeUInt32LE(16000, 40); return b;
 }
-async function setup(audioEncoder, simulation = true) {
+async function setup(audioEncoder, simulation = true, providers = {}) {
   const { createGenerationTaskStore } = await import('../../lib/generation-tasks.ts');
   const { createPrivateMediaStore } = await import('../../lib/private-media-store.ts');
   const { sealGoogleSession } = await import('../../lib/google-auth.ts');
   const directory = await mkdtemp(join(tmpdir(), 'les-audio-task-'));
   const mediaStore = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret: secret });
-  const options = { directory, sessionSecret: secret, simulation, mediaStore, audioEncoder,
+  const options = { directory, sessionSecret: secret, simulation, mediaStore, audioEncoder, ...providers,
     scriptProvider: { reservedMicros: 100, generate: async () => ({ requestId: 'script', script: { lines, phrases: [{ id: 'p', text: 'Hello', lineId: 'a', translations }], turns: [{ partnerLineId: 'a', learnerLineId: 'b' }] } }) },
     audioProvider: { reservedMicros: 200, generate: async line => asset(line) } };
   const store = createGenerationTaskStore(options);
@@ -36,8 +36,8 @@ const asset = line => { const bytes = wav(); return { lineId: line.id, role: lin
 const encodedBytes = Buffer.from('synthetic AAC');
 const encodedHash = createHash('sha256').update(encodedBytes).digest('hex');
 const encoded = input => ({ bytes: encodedBytes, sha256: encodedHash, sourceSha256: input.sha256, sourceDuration: 2, duration: 2, mimeType: 'audio/mp4', decoded: true });
-async function ready(encoder) {
-  const c = await setup(encoder);
+async function ready(encoder, providers = {}) {
+  const c = await setup(encoder, true, providers);
   await c.store.runAudio(c.input); await c.store.runAudio(c.input); await c.store.assembleAudio(c.input);
   return c;
 }
@@ -108,4 +108,48 @@ test('T61B audio review: deleted or inaccessible encoded asset cannot gain confi
   c.mediaStore.get = async () => { throw new Error('synthetic media unavailable'); };
   await expect(c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash })).rejects.toThrow();
   expect((await c.reopen().get(c.input)).audioReviews).toBeUndefined();
+});
+
+test('T61B encoded video task: submits stored reviewed AAC with reservation persisted before transport', async () => {
+  let calls = 0, c;
+  c = await ready(async input => encoded(input), { encodedVideoProvider: { reservedMicros: 90000, submit: async input => {
+    calls++;
+    expect(Buffer.from(input.audio.bytes)).toEqual(encodedBytes);
+    expect(input.audio.sha256).toBe(encodedHash);
+    expect(input.reviewedSha256).toBe(encodedHash);
+    expect(input.goal).toBe('Party greeting');
+    const pending = await c.reopen().get(c.input);
+    expect(pending).toMatchObject({ status: 'submitting', providerCalls: 4, reservedMicros: 90500 });
+    return { status: 'pending', jobId: 'encoded-job' };
+  } } });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  const result = await c.reopen().runVideo(c.input);
+  expect(result.status).toBe('video_pending');
+  expect(result.videoJobs[0]).toMatchObject({ jobId: 'encoded-job', segmentIndex: 0, audioSha256: encodedHash, audioDuration: 2 });
+  await expect(c.store.runVideo(c.input)).rejects.toThrow();
+  expect(calls).toBe(1);
+});
+
+test('T61B encoded video task: missing review never falls back to legacy reviewed flag or reserves cost', async () => {
+  let calls = 0;
+  const submit = async () => { calls++; return { status: 'pending', jobId: 'unexpected' }; };
+  const c = await ready(async input => encoded(input), {
+    encodedVideoProvider: { reservedMicros: 90000, submit },
+    videoProvider: { reservedMicros: 90000, audioReviewed: true, submit },
+  });
+  await c.store.encodeAudio(c.input);
+  const before = await c.store.get(c.input);
+  await expect(c.store.runVideo({ ...c.input, reviewedSha256: encodedHash })).rejects.toThrow();
+  expect(calls).toBe(0); expect(await c.reopen().get(c.input)).toEqual(before);
+});
+
+test('T61B encoded video task: uncertain submission remains reserved and cannot repeat after reopening', async () => {
+  let calls = 0;
+  const c = await ready(async input => encoded(input), { encodedVideoProvider: { reservedMicros: 90000, submit: async () => { calls++; throw new Error('synthetic timeout'); } } });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  const result = await c.store.runVideo(c.input);
+  expect(result).toMatchObject({ status: 'submission_unknown', providerCalls: 4, reservedMicros: 90500 });
+  await expect(c.reopen().runVideo(c.input)).rejects.toThrow(); expect(calls).toBe(1);
 });
