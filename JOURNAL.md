@@ -321,3 +321,5 @@
 - T61B累计播放回归：完整verify exit0，758项通过4.5m；只碰考题预警核对为无tests/spec/rules差异、本轮仅state变动，未改实现考题。独立合成密钥本地HTTP课程GET和媒体GET/HEAD未登录401+no-store，不泄漏Range长度；非已登录完整播放验收。无费用，不勾T61B。
 - T61B合成账号真实HTTP取证：独立合成密钥服务，无page.route替身；本人课程200/媒体hash一致/Range206，另一账号两接口404+no-store；390x844 Chromium真实私有播放、句子页、返回通过exit0。仅注入已有酒店fixture，不代表生成管线/真人OAuth/Safari；截图已查看，实验服务关闭，无费用，代码考题未改。
 - T61B本地链路取证exit0：无直接DB状态注入，从create/script/逐句audio/组装/两段video保存probe到成片concat全片decode/课程读取重开跑通。实际24.084秒hash一致，第二句偏移12.042，重复复用、跨账号拒绝。脚本语音及provider为合成，酒店既有视频复用，不证明内容匹配；无费用，代码考题未改，生产runner/费用/听审绑定/音轨传输仍待。
+- [audit] phase → test-writing @ 2026-09-26T11:28:22+08:00
+- T61B成片并发红题：新增两存储实例重叠组装用例，实际concat和verify各执行2次而非1次，exit1；同文件既有7项通过。考题及时收集所有Promise，释放暂停门避免悬挂。仅本地替身，无费用；日志t61b-final-concurrent-red.log。

@@ -56,11 +56,12 @@ const probe = async input => ({ sha256: input.sha256, duration: input.expectedDu
 
 const finalBytes = Buffer.from('synthetic final output');
 const finalHash = createHash('sha256').update(finalBytes).digest('hex');
-async function prepared(mode = 'success') {
+async function prepared(mode = 'success', pauseConcat = async () => {}) {
   let concats = 0, verifies = 0;
   const c = await ready(download, probe, {
     videoConcat: async sources => {
       concats++;
+      await pauseConcat();
       expect(sources).toHaveLength(2);
       for (const source of sources) {
         expect(Buffer.from(source.bytes)).toEqual(video);
@@ -154,4 +155,27 @@ test('T61B private course read: incomplete task and wrong revision never return 
   for (const revision of [0, 2, 1.5]) {
     for (const method of ['getCourse', 'getCourseMedia']) await expect(c.store[method]({ ...c.input, revision })).rejects.toThrow();
   }
+});
+
+test('T61B final task: concurrent stores cannot run duplicate concat while first assembly is pending', async () => {
+  let entered;
+  const started = new Promise(resolve => { entered = resolve; });
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  const c = await prepared('success', async () => { entered(); await gate; });
+  await c.store.probeVideo(c.input);
+  const first = c.store.assembleVideo(c.input);
+  await started;
+  const second = c.reopen().assembleVideo(c.input);
+  const settled = Promise.allSettled([first, second]);
+  // Release both paths even when duplicate work exists, so failure leaves no hanging promise.
+  await new Promise(resolve => setTimeout(resolve, 25));
+  release();
+  const results = await settled;
+  expect(results[0].status).toBe('fulfilled');
+  expect(c.finalCounts()).toEqual({ concats: 1, verifies: 1 });
+  const saved = await c.reopen().get(c.input);
+  expect(saved.status).toBe('video_assembled');
+  expect(saved.finalVideo.sha256).toBe(finalHash);
+  expect(await c.reopen().assembleVideo(c.input)).toEqual(saved);
 });
