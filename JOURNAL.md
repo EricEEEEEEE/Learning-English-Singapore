@@ -294,3 +294,5 @@
 - T61B成片验证执行器4项红题exit1，verify-final-video缺失；覆盖实际字节hash绑定、可信本地probe后全片-xerror解码、哈希/报告/解码任一步失败拒绝及临时清理。仅替身，无费用，日志t61b-final-runner-red.log。
 - [audit] phase → implementing @ 2026-09-26T10:47:47+08:00
 - T61B成片字节绑定执行器：红093d8f3969后实现，11项定向/typecheck通过；真实24.084秒酒店拼接文件hash绑定probe与全片解码exit0。完整verify首次沙箱EPERM，获准原样重跑723项通过exit0。只读审查无切片阻断，尚待持久成片发布接线；无付费调用，不勾T61B。
+- [audit] phase → test-writing @ 2026-09-26T10:56:55+08:00
+- T61B成片持久接线4项红题：预置两段已保存视频，覆盖校验后存储/时间轴/重开恢复/重复操作不重做、未探测和跨账号拒绝、解码失败和错hash不发布。首次沙箱EPERM，获准原样重跑4项因assembleVideo缺失失败exit1；日志t61b-final-task-red.log。仅合成替身，无付费请求，尚未改实现。
