@@ -8,9 +8,13 @@ import { validateGeneratedScript, type GeneratedScript } from './generated-scrip
 import { wavDuration, planAudioSegments, type AudioAsset } from './generated-audio';
 import type { createPrivateMediaStore } from './private-media-store';
 
+import { assembleCourseAudio } from './assemble-course-audio';
+
+type Assembly = ReturnType<typeof assembleCourseAudio>;
+type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[] };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
@@ -122,6 +126,35 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
           } catch { /* Keep all completed media, but prohibit further generation. */ }
         }
         save(db, task); return task;
+      });
+    },
+    async assembleAudio(input: Session & { id: string }) {
+      if (simulation !== true || !mediaStore) throw new Error('Audio assembly disabled');
+      const ownerId = await owner(input);
+      const task = transact(db => read(db, input.id, ownerId));
+      if (!task || !task.simulation || task.status !== 'audio_ready' || !task.script || !task.audioAssets || task.audioAssets.length !== task.script.lines.length) throw new Error('Assembly prohibited');
+      const sources = [];
+      for (let i = 0; i < task.audioAssets.length; i++) {
+        const asset = task.audioAssets[i], line = task.script.lines[i];
+        if (asset.lineId !== line.id || asset.role !== line.role) throw new Error('Audio source mismatch');
+        const source = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId: asset.assetId });
+        if (!source || source.sha256 !== asset.sha256) throw new Error('Audio source unavailable');
+        sources.push({ lineId: line.id, bytes: source.bytes, sha256: asset.sha256 });
+      }
+      const assembled = assembleCourseAudio(sources);
+      const segments: SavedAssembly['segments'] = [];
+      for (let i = 0; i < assembled.segments.length; i++) {
+        const segment = assembled.segments[i], assetId = `audio-segment-${i}`;
+        await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId, bytes: segment.bytes, sha256: segment.sha256 });
+        segments.push({ assetId, lineIds: segment.lineIds, duration: segment.duration, sha256: segment.sha256 });
+      }
+      // Publish references only after every immutable asset is saved. Concurrent assembly is idempotent.
+      return transact(db => {
+        const current = read(db, task.id, ownerId);
+        if (current?.status === 'audio_assembled') return current;
+        if (!current || current.status !== 'audio_ready' || JSON.stringify(current.audioAssets) !== JSON.stringify(task.audioAssets)) throw new Error('Task changed during assembly');
+        current.audioAssembly = { duration: assembled.duration, lines: assembled.lines, segments };
+        current.status = 'audio_assembled'; save(db, current); return current;
       });
     },
     async runSimulation(input: Session & { id: string; reservedMicros: number }, provider: () => Promise<{ jobId: string }>) {
