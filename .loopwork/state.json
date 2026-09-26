@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "5",
+  "stage": "4",
   "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "55b6bf81b6881c8c7243148f413289519825e2c7",
+  "last_round_commit": "b455d4a46233d1512bd54c0586ddf27a0df3ed55",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-25T09:38:38+08:00",
-  "authorized_batch": "C2C_T61P_zero_cost_documents_and_short_course_preparation",
+  "last_session": "2026-09-26T09:16:31+08:00",
+  "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 653704,
-  "blocks_seen": 900,
+  "audit_bytes": 657746,
+  "blocks_seen": 901,
   "red_commit_pending": false,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
-  "batch_preflight": "C2C_preparation_ready_paid_execution_not_authorized",
+  "batch_preflight": "T61B_development_ready_paid_amount_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61P新主线文档对账与真实短课准备包"
+    "msg": "存档: T61B接入授权与付费金额边界登记"
   }
 }
