@@ -5,10 +5,14 @@ import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { validateGeneratedScript, type GeneratedScript } from './generated-script';
 
+import { wavDuration, planAudioSegments, type AudioAsset } from './generated-audio';
+import type { createPrivateMediaStore } from './private-media-store';
+
+type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -78,6 +82,45 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       return transact(db => {
         task.status = result ? 'script_ready' : 'submission_unknown';
         if (result) { task.providerJobId = result.requestId; task.script = result.script; }
+        save(db, task); return task;
+      });
+    },
+    async runAudio(input: Session & { id: string }) {
+      if (simulation !== true || !audioProvider || !mediaStore) throw new Error('Audio provider disabled');
+      const ownerId = await owner(input);
+      const reservation = audioProvider.reservedMicros;
+      if (!Number.isSafeInteger(reservation) || reservation <= 0) throw new Error('Invalid reservation');
+      const task = transact(db => {
+        const value = read(db, input.id, ownerId);
+        if (!value || !value.simulation || value.status !== 'script_ready' || !value.script) throw new Error('Submission prohibited');
+        const count = value.audioAssets?.length ?? 0;
+        if (count >= value.script.lines.length || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        value.status = 'submitting'; value.pid = process.pid;
+        value.reservedMicros += reservation; value.providerCalls++;
+        save(db, value); return value;
+      });
+      const index = task.audioAssets?.length ?? 0;
+      const line = task.script!.lines[index];
+      let saved: SavedAudio | undefined;
+      try {
+        const result = await audioProvider.generate(structuredClone(line));
+        if (!result || result.lineId !== line.id || result.role !== line.role || !(result.bytes instanceof Uint8Array) || result.bytes.length > 4_000_000) throw new Error('Invalid audio result');
+        const duration = wavDuration(result.bytes);
+        if (duration !== result.duration || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256) throw new Error('Invalid audio integrity');
+        const assetId = `audio-${index}`;
+        await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId, bytes: result.bytes, sha256: result.sha256 });
+        saved = { lineId: line.id, role: line.role, duration, sha256: result.sha256, assetId };
+      } catch { /* Preserve prior assets and reservation. Never repeat an uncertain request. */ }
+      return transact(db => {
+        task.status = 'submission_unknown';
+        if (saved) {
+          task.audioAssets = [...(task.audioAssets ?? []), saved];
+          // Oversized courses remain blocked before any video request.
+          try {
+            planAudioSegments(task.audioAssets);
+            task.status = task.audioAssets.length === task.script!.lines.length ? 'audio_ready' : 'script_ready';
+          } catch { /* Keep all completed media, but prohibit further generation. */ }
+        }
         save(db, task); return task;
       });
     },

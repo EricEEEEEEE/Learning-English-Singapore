@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 
 type AudioLine = { id: string; role: 'partner' | 'learner'; text: string };
-type AudioAsset = { lineId: string; role: AudioLine['role']; duration: number; sha256: string; bytes: Uint8Array };
+export type AudioAsset = { lineId: string; role: AudioLine['role']; duration: number; sha256: string; bytes: Uint8Array };
 const MAX_BYTES = 4_000_000;
 
 // Restrict to uncompressed PCM WAV; unknown streaming lengths terminate at EOF.
-function wavDuration(bytes: Uint8Array): number {
+export function wavDuration(bytes: Uint8Array): number {
   const b = Buffer.from(bytes);
   if (b.length < 44 || b.toString('ascii', 0, 4) !== 'RIFF' || b.toString('ascii', 8, 12) !== 'WAVE') throw new Error('Invalid WAV');
   const riffSize = b.readUInt32LE(4);
