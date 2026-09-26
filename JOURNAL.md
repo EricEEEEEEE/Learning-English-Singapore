@@ -334,3 +334,5 @@
 - T61B编码音轨提交九项红题exit1，submitEncodedVideoSegment缺失；精确AAC Data URI/听审hash绑定、默认禁用、改字节/未解码/PCM/超时长/超体积零请求、未知提交不重试。仅HTTP替身，无实际听审或付费；日志t61b-encoded-submit-red.log。
 - [audit] phase → implementing @ 2026-09-26T11:38:24+08:00
 - T61BAAC Data URI适配：红5315e78de3后实现实际字节hash/听审hash比较、默认关闭、格式时长体积限制及一次提交未知不重试；197项领域/typecheck/diff通过。只读审查限定通过：来源/decoded/听审须可信服务端记录，旧HTTPS入口仍需统一runner闸门；无上传费用，未全量verify。
+- [audit] phase → test-writing @ 2026-09-26T11:39:56+08:00
+- T61B编码音轨持久接线六项红题exit1，encodeAudio方法缺失；覆盖原分段hash/实测时长绑定、私有AAC保存与重开复用、错误来源/输出/解码拒绝及账号隔离，编码不增加provider费用计数。仅合成替身，无费用，日志t61b-encoded-task-red.log。
