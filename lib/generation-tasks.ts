@@ -168,15 +168,21 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const reservation = videoProvider.reservedMicros;
       if (!Number.isSafeInteger(reservation) || reservation <= 0) throw new Error('Invalid reservation');
       const snapshot = transact(db => read(db, input.id, ownerId));
-      if (!snapshot || !snapshot.simulation || snapshot.status !== 'audio_assembled' || !snapshot.audioAssembly || snapshot.videoJobs?.length) throw new Error('Submission prohibited');
-      // First segment only; later segments require completed-media verification before continuation.
-      const segment = snapshot.audioAssembly.segments[0];
+      if (!snapshot || !snapshot.simulation || !['audio_assembled', 'video_pending'].includes(snapshot.status) || !snapshot.audioAssembly) throw new Error('Submission prohibited');
+      const segmentIndex = snapshot.videoJobs?.length ?? 0;
+      for (let i = 0; i < segmentIndex; i++) {
+        const job = snapshot.videoJobs![i], asset = snapshot.videoAssets?.find(a => a.segmentIndex === i), check = snapshot.videoChecks?.find(c => c.segmentIndex === i);
+        if (job.segmentIndex !== i || job.status !== 'completed' || !asset || check?.sha256 !== asset.sha256) throw new Error('Previous segment not verified');
+        const stored = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
+        if (!stored || stored.sha256 !== asset.sha256) throw new Error('Previous segment unavailable');
+      }
+      const segment = snapshot.audioAssembly.segments[segmentIndex];
       if (!segment) throw new Error('Missing segment');
       const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: segment.assetId });
       if (!media || media.sha256 !== segment.sha256 || wavDuration(media.bytes) !== segment.duration) throw new Error('Invalid segment media');
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
-        if (!value || value.status !== 'audio_assembled' || value.videoJobs?.length || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        if (!value || value.status !== snapshot.status || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros += reservation; value.providerCalls++;
         save(db, value); return value;
       });
@@ -187,7 +193,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       } catch { /* Unknown submission: retain reservation and never resubmit automatically. */ }
       return transact(db => {
         task.status = id ? 'video_pending' : 'submission_unknown';
-        if (id) task.videoJobs = [{ segmentIndex: 0, jobId: id, status: 'pending' }];
+        if (id) task.videoJobs = [...(task.videoJobs ?? []), { segmentIndex, jobId: id, status: 'pending' }];
         save(db, task); return task;
       });
     },
@@ -195,14 +201,14 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (simulation !== true || !videoProvider?.query) throw new Error('Video query disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
-      const job = snapshot?.videoJobs?.[0];
+      const job = snapshot?.videoJobs?.at(-1);
       if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job) throw new Error('Query prohibited');
       if (job.status === 'completed' || job.status === 'failed') return snapshot;
       let result;
       try { result = await videoProvider.query(job.jobId); } catch { throw new Error('Video status unavailable'); }
       if (!result || result.jobId !== job.jobId || !['pending', 'processing', 'failed', 'completed'].includes(result.status)) throw new Error('Invalid video status');
       return transact(db => {
-        const current = read(db, snapshot.id, ownerId), latest = current?.videoJobs?.[0];
+        const current = read(db, snapshot.id, ownerId), latest = current?.videoJobs?.find(value => value.segmentIndex === job.segmentIndex);
         if (!current || current.status !== 'video_pending' || latest?.jobId !== job.jobId) throw new Error('Task changed during query');
         if (latest.status !== 'completed' && latest.status !== 'failed' && !(latest.status === 'processing' && result.status === 'pending')) latest.status = result.status as VideoJob['status'];
         // Provider completion alone is not validated media or a publishable course.
@@ -213,7 +219,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (simulation !== true || !videoProvider?.query || !videoDownload || !mediaStore) throw new Error('Video collection disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
-      const job = snapshot?.videoJobs?.[0];
+      const job = snapshot?.videoJobs?.at(-1);
       if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job || job.status === 'failed') throw new Error('Collection prohibited');
       if (snapshot.videoAssets?.some(asset => asset.segmentIndex === job.segmentIndex)) return snapshot;
       let metadata;
@@ -229,7 +235,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
           assetId: `video-${job.segmentIndex}`, bytes: downloaded.bytes, sha256: downloaded.sha256 });
       } catch { throw new Error('Video collection failed'); }
       return transact(db => {
-        const current = read(db, snapshot.id, ownerId), latest = current?.videoJobs?.[0];
+        const current = read(db, snapshot.id, ownerId), latest = current?.videoJobs?.find(value => value.segmentIndex === job.segmentIndex);
         if (!current || current.status !== 'video_pending' || latest?.jobId !== job.jobId || latest.status === 'failed') throw new Error('Task changed during collection');
         if (current.videoAssets?.some(asset => asset.segmentIndex === job.segmentIndex)) return current;
         latest.status = 'completed';
@@ -242,9 +248,10 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (simulation !== true || !mediaStore || !videoProbe) throw new Error('Video probe disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
-      const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === 0);
-      const segment = snapshot?.audioAssembly?.segments[0];
-      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !asset || !segment) throw new Error('Probe prohibited');
+      const segmentIndex = snapshot?.videoJobs?.at(-1)?.segmentIndex;
+      const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === segmentIndex);
+      const segment = segmentIndex === undefined ? undefined : snapshot?.audioAssembly?.segments[segmentIndex];
+      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !asset || !segment || segmentIndex === undefined) throw new Error('Probe prohibited');
       let checked: VideoCheck;
       try {
         const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
@@ -255,9 +262,9 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       } catch { throw new Error('Video verification failed'); }
       return transact(db => {
         const current = read(db, snapshot.id, ownerId);
-        const latest = current?.videoAssets?.find(value => value.segmentIndex === 0);
-        if (!current || current.status !== 'video_pending' || JSON.stringify(latest) !== JSON.stringify(asset) || JSON.stringify(current.audioAssembly?.segments[0]) !== JSON.stringify(segment)) throw new Error('Task changed during probe');
-        current.videoChecks = [...(current.videoChecks ?? []).filter(value => value.segmentIndex !== 0), { segmentIndex: 0, ...checked }];
+        const latest = current?.videoAssets?.find(value => value.segmentIndex === segmentIndex);
+        if (!current || current.status !== 'video_pending' || JSON.stringify(latest) !== JSON.stringify(asset) || JSON.stringify(current.audioAssembly?.segments[segmentIndex]) !== JSON.stringify(segment)) throw new Error('Task changed during probe');
+        current.videoChecks = [...(current.videoChecks ?? []).filter(value => value.segmentIndex !== segmentIndex), { segmentIndex, ...checked }];
         // A probe report is evidence, not a complete decode or course acceptance.
         save(db, current); return current;
       });
