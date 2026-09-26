@@ -31,7 +31,7 @@ export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: stri
     for (let i = 0; i < segments.length; i++) await writeFile(files[i], segments[i], { flag: 'wx', mode: 0o600 });
     await writeFile(manifest, names.map(name => `file '${name}'\n`).join(''), { flag: 'wx', mode: 0o600 });
     const execute: Execute = options.execute ?? ((executable, args, settings) => run(executable, args, settings));
-    const result = await execute(options.executable, ['-nostdin', '-v', 'error', '-n', '-protocol_whitelist', 'file', '-f', 'concat', '-safe', '1', '-i', manifest, '-map', '0:v:0', '-map', '0:a:0', '-c', 'copy', '-movflags', '+faststart', '-fs', '100000000', output], { shell: false, timeout: 60_000, maxBuffer: 1_000_000, encoding: 'utf8' });
+    const result = await execute(options.executable, ['-nostdin', '-v', 'error', '-n', '-copyts', '-protocol_whitelist', 'file', '-f', 'concat', '-safe', '1', '-i', manifest, '-map', '0:v:0', '-map', '0:a:0', '-c', 'copy', '-avoid_negative_ts', 'disabled', '-movflags', '+faststart', '-fs', '100000000', output], { shell: false, timeout: 60_000, maxBuffer: 1_000_000, encoding: 'utf8' });
     if (typeof result.stderr !== 'string' || result.stderr.trim()) throw new Error('Concat reported errors');
     const info = await lstat(output);
     // Reaching the ffmpeg size cap may produce truncated media even with exit 0.
