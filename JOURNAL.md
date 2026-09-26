@@ -300,3 +300,5 @@
 - T61B成片持久接线：红b748382c0e后实现assembleVideo，来源哈希/探测齐全才拼接，成片验证与私有保存成功后CAS发布，重开复用；4项新题+2项回归通过，全部T61B领域156项exit0，typecheck/diff通过。只读审查无切片阻断，并发重复本地处理及孤立素材限制已记；无费用，未重跑完整verify，不勾T61B。
 - [audit] phase → test-writing @ 2026-09-26T11:02:03+08:00
 - T61B课程数据12项红题exit1，generated-course模块缺失；覆盖脚本与实际字幕时间同版私有素材引用、深拷贝与不泄漏owner、未完成/未解码/缺句乱序重叠越界/时长不符/非法版本/缺翻译/错误短语/坏hash拒绝。仅合成数据，无费用；日志t61b-course-manifest-red.log。
+- [audit] phase → implementing @ 2026-09-26T11:02:36+08:00
+- T61B同版课程数据实现：红a6efa67a7c后新增generated-course，保留五语材料与实测字幕，私有素材引用同revision，模拟来源显式标记且不泄漏owner/费用；168项T61B领域exit0、typecheck/diff通过。只读审查无阻断，词组回合深拷贝和非模拟标签专项覆盖待补；尚未接课程读取/UI，本轮未全量verify，无费用。
