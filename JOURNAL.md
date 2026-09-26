@@ -330,3 +330,5 @@
 - T61B音轨转码六项红题exit1，encode-video-audio缺失。覆盖PCM源hash、AAC-LC输出实测时长与起点、全片解码、格式/时长/解码失败清理；仅本地执行替身，不发API请求。日志t61b-encode-audio-red.log，diff检查通过。
 - [audit] phase → implementing @ 2026-09-26T11:33:47+08:00
 - T61B音轨AAC编码器：红a170e6a463后实现hash绑定/本地AAC-LC/probe/全片decode/清理；188项领域与typecheck通过，审查路径脱敏建议已修并6项复测通过。真实静音12→12秒、人声PCM11.989333→11.99秒成功，无上传费用；听审和持久/传输接线仍待，未全量verify。
+- [audit] phase → test-writing @ 2026-09-26T11:37:17+08:00
+- T61B编码音轨提交九项红题exit1，submitEncodedVideoSegment缺失；精确AAC Data URI/听审hash绑定、默认禁用、改字节/未解码/PCM/超时长/超体积零请求、未知提交不重试。仅HTTP替身，无实际听审或付费；日志t61b-encoded-submit-red.log。
