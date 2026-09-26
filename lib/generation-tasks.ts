@@ -3,10 +3,12 @@ import { mkdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdFromSessionCookie } from './private-owner';
+import { validateGeneratedScript, type GeneratedScript } from './generated-script';
 
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false }: { directory: string; sessionSecret: string; simulation?: boolean }) {
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript };
+type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider }: { directory: string; sessionSecret: string; simulation?: boolean; scriptProvider?: ScriptProvider }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -55,6 +57,30 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     },
     async get(input: Session & { id: string }) { const id = await owner(input); return transact(db => read(db, input.id, id)); },
     async list(input: Session) { const id = await owner(input); return transact(db => db.prepare('SELECT id FROM jobs WHERE owner=? ORDER BY rowid DESC').all(id).map(row => read(db, String(row.id), id)!)); },
+    async runScript(input: Session & { id: string }) {
+      // This runner is for offline integration only until the live budget gate is implemented.
+      if (simulation !== true || !scriptProvider) throw new Error('Script provider disabled');
+      const ownerId = await owner(input);
+      const reservedMicros = scriptProvider.reservedMicros;
+      if (!Number.isSafeInteger(reservedMicros) || reservedMicros <= 0) throw new Error('Invalid reservation');
+      const task = transact(db => {
+        const value = read(db, input.id, ownerId);
+        if (!value || !value.simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+        value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = reservedMicros; value.providerCalls = 1;
+        save(db, value); return value;
+      });
+      let result: { requestId: string; script: GeneratedScript } | undefined;
+      try {
+        const response = await scriptProvider.generate({ goal: task.goal });
+        const checked = validateGeneratedScript(response?.script);
+        if (typeof response?.requestId === 'string' && response.requestId.trim() && response.requestId.length <= 500 && checked.ok) result = { requestId: response.requestId, script: checked.value };
+      } catch { /* Submission may have reached the provider. Preserve reservation; do not retry. */ }
+      return transact(db => {
+        task.status = result ? 'script_ready' : 'submission_unknown';
+        if (result) { task.providerJobId = result.requestId; task.script = result.script; }
+        save(db, task); return task;
+      });
+    },
     async runSimulation(input: Session & { id: string; reservedMicros: number }, provider: () => Promise<{ jobId: string }>) {
       if (simulation !== true) throw new Error('Provider calls disabled');
       const ownerId = await owner(input);
