@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { validateGeneratedScript, type GeneratedScript } from './generated-script';
+import { buildGeneratedCourse } from './generated-course';
 
 import { wavDuration, planAudioSegments, type AudioAsset } from './generated-audio';
 import type { createPrivateMediaStore } from './private-media-store';
@@ -54,7 +55,19 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     }
     return task;
   }
+  async function readCourse(input: Session & { id: string; revision: number }) {
+    const ownerId = await owner(input);
+    if (!mediaStore || !Number.isSafeInteger(input.revision) || input.revision < 1) throw new Error('Course unavailable');
+    const task = transact(db => read(db, input.id, ownerId));
+    if (!task || task.revision !== input.revision) throw new Error('Course unavailable');
+    const course = buildGeneratedCourse(task);
+    const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId: course.media.assetId });
+    if (!media || media.sha256 !== course.media.sha256 || media.size !== task.finalVideo!.size || createHash('sha256').update(media.bytes).digest('hex') !== course.media.sha256) throw new Error('Course media unavailable');
+    return { course, media };
+  }
   return {
+    async getCourse(input: Session & { id: string; revision: number }) { return (await readCourse(input)).course; },
+    async getCourseMedia(input: Session & { id: string; revision: number }) { return (await readCourse(input)).media; },
     async create(input: Session & { goal: string; revision: number; requestKey: string }) {
       const ownerId = await owner(input);
       if (typeof input.goal !== 'string' || !input.goal.trim() || input.goal.length > 2000 || !Number.isSafeInteger(input.revision) || input.revision < 1 || typeof input.requestKey !== 'string' || !input.requestKey.trim() || input.requestKey.length > 128) throw new Error('Invalid task');
