@@ -319,3 +319,4 @@
 - [audit] phase → implementing @ 2026-09-26T11:15:47+08:00
 - T61B私有课程四页UI：红f005423e15后接任务入口和私有课程播放器，版本核对且失败无公共回退；三视口6项新题通过，桌面T59/T60/T61旧流程13项回归通过，build/diff通过。只读静态审查无阻断；接口仍测试替身，真实HTTP鉴权播放未验，无费用，未全量verify。
 - T61B累计播放回归：完整verify exit0，758项通过4.5m；只碰考题预警核对为无tests/spec/rules差异、本轮仅state变动，未改实现考题。独立合成密钥本地HTTP课程GET和媒体GET/HEAD未登录401+no-store，不泄漏Range长度；非已登录完整播放验收。无费用，不勾T61B。
+- T61B合成账号真实HTTP取证：独立合成密钥服务，无page.route替身；本人课程200/媒体hash一致/Range206，另一账号两接口404+no-store；390x844 Chromium真实私有播放、句子页、返回通过exit0。仅注入已有酒店fixture，不代表生成管线/真人OAuth/Safari；截图已查看，实验服务关闭，无费用，代码考题未改。
