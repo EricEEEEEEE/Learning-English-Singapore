@@ -238,3 +238,5 @@
 - T61B音轨组装前置红考题：4项预期失败，缺少assemble-course-audio模块（exit 1）；覆盖真实PCM顺序合并、实测字幕时间、哈希与格式拒绝、60秒/4段上限。日志t61b-audio-assembly-red.log。未改实现，无收费请求。
 - [audit] phase → implementing @ 2026-09-26T10:00:27+08:00
 - T61B音轨组装：红档ca6b1dfac0后实现纯PCM分段拼接与实际字节字幕计时；21项定向回归exit 0、typecheck及diff检查通过，只读审查通过限定切片。本轮未重跑全量；无收费，尚未接入任务音轨读取和视频提交。
+- [audit] phase → test-writing @ 2026-09-26T10:02:17+08:00
+- T61B组装持久接线3项红考题exit 1：assembleAudio尚未实现。覆盖私有分段与时间持久恢复且零重调、未齐备及跨用户拒绝、源素材缺失不得发布完成。初跑发现缺失源用例捕获缺方法可能假绿，登记前补显式接口断言并重跑3项全部红；日志t61b-assembly-task-red.log。未改实现，无费用。
