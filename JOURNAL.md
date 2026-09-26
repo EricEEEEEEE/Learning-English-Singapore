@@ -278,3 +278,5 @@
 - T61B实测视频时间轴：红c3760da71e后实现video-timeline，11项回归exit 0、typecheck/diff通过，只读复核通过纯计划切片。按实际视频段长累计字幕偏移，完整引用与边界检查；未实际拼接、未跑全量，不证明声音完整，输出可能含容器舍入增量，无费用，不勾T61B。
 - [audit] phase → test-writing @ 2026-09-26T10:34:19+08:00
 - T61B视频拼接执行器5项红题exit 1，concat-video-bytes未实现；覆盖顺序原字节和哈希、固定安全本地清单、禁shell/file协议/执行限额、损坏输入零执行、工具失败或无输出不返回媒体及自产临时文件清理。仅替身不真实拼接；日志t61b-concat-red.log，无费用。
+- [audit] phase → implementing @ 2026-09-26T10:35:31+08:00
+- T61B拼接执行器：红274e239d36后实现concat-video-bytes，12项定向测试exit 0、typecheck/diff通过，只读复核通过执行器范围。仅替身，真实ffmpeg/编码参数兼容/输出重探测全帧解码仍待，大小cap不证明完整，未跑全量，无费用，不勾T61B。
