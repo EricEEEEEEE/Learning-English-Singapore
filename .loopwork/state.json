@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "789532741bba2c79e64e5125ad51a495edad363e",
+  "last_round_commit": "20ea461ba3a90009a1495d909c8b19df693f03ff",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-27T12:36:19+08:00",
+  "last_session": "2026-09-27T20:22:52+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 850069,
+  "audit_bytes": 851218,
   "blocks_seen": 990,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
-  "batch_preflight": "T61B_development_ready_paid_amount_pending",
+  "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61B真实试跑条件对账与预算归属澄清"
+    "msg": "存档: T61B与此前实验共用25美元绝对总额授权"
   }
 }
