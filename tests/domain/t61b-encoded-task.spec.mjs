@@ -8,11 +8,12 @@ const now = Date.UTC(2026, 8, 26);
 const secret = 'offline-audio-task-session-secret-at-least-32';
 const translations = Object.fromEntries(['zh-Hans', 'id', 'ja', 'ko', 'hi'].map(k => [k, 'synthetic']));
 const lines = [{ id: 'a', role: 'partner', text: 'Hello', translations }, { id: 'b', role: 'learner', text: 'Hi', translations }];
-function wav() {
-  const b = Buffer.alloc(16044); b.write('RIFF'); b.writeUInt32LE(16036, 4); b.write('WAVE', 8);
+function wav(seconds = 1) {
+  const size = seconds * 16000;
+  const b = Buffer.alloc(size + 44); b.write('RIFF'); b.writeUInt32LE(size + 36, 4); b.write('WAVE', 8);
   b.write('fmt ', 12); b.writeUInt32LE(16, 16); b.writeUInt16LE(1, 20); b.writeUInt16LE(1, 22);
   b.writeUInt32LE(8000, 24); b.writeUInt32LE(16000, 28); b.writeUInt16LE(2, 32); b.writeUInt16LE(16, 34);
-  b.write('data', 36); b.writeUInt32LE(16000, 40); return b;
+  b.write('data', 36); b.writeUInt32LE(size, 40); return b;
 }
 async function setup(audioEncoder, simulation = true, providers = {}) {
   const { createGenerationTaskStore } = await import('../../lib/generation-tasks.ts');
@@ -22,7 +23,7 @@ async function setup(audioEncoder, simulation = true, providers = {}) {
   const mediaStore = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret: secret });
   const options = { directory, sessionSecret: secret, simulation, mediaStore, audioEncoder, ...providers,
     scriptProvider: { reservedMicros: 100, generate: async () => ({ requestId: 'script', script: { lines, phrases: [{ id: 'p', text: 'Hello', lineId: 'a', translations }], turns: [{ partnerLineId: 'a', learnerLineId: 'b' }] } }) },
-    audioProvider: { reservedMicros: 200, generate: async line => asset(line) } };
+    audioProvider: providers.audioProvider ?? { reservedMicros: 200, generate: async line => asset(line) } };
   const store = createGenerationTaskStore(options);
   const cookie = await sealGoogleSession({ provider: 'google', issuer: 'https://accounts.google.com', providerSubject: 'synthetic-a', email: 'a@example.invalid' }, secret, now);
   const other = await sealGoogleSession({ provider: 'google', issuer: 'https://accounts.google.com', providerSubject: 'synthetic-b', email: 'b@example.invalid' }, secret, now);
@@ -267,4 +268,31 @@ test('T61B encoded final: independently valid AAC and video rounding survives fi
   const course = await c.reopen().getCourse({ ...c.input, revision: 1 });
   expect(course.revision).toBe(1);
   expect({ concatenations, verifications }).toEqual({ concatenations: 1, verifications: 1 });
+});
+
+for (const missing of ['encoding', 'review', 'private-media']) test(`T61B all audio: ${missing} in a later segment prevents first video submission`, async () => {
+  let calls = 0;
+  const c = await ready(async input => ({ ...encoded(input), sourceDuration: 11, duration: 11 }), {
+    audioProvider: { reservedMicros: 200, generate: async line => { const bytes = wav(11); return { lineId: line.id, role: line.role, duration: 11, bytes, sha256: createHash('sha256').update(bytes).digest('hex') }; } },
+    encodedVideoProvider: { reservedMicros: 90000, submit: async () => { calls++; return { status: 'pending', jobId: 'all-reviewed' }; } },
+  });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  if (missing !== 'encoding') await c.store.encodeAudio(c.input);
+  if (missing === 'private-media') {
+    const saved = await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 1, sha256: encodedHash });
+    const original = c.mediaStore.get.bind(c.mediaStore);
+    c.mediaStore.get = async input => input.assetId === saved.encodedAudio[1].assetId ? null : original(input);
+  }
+  const before = await c.store.get(c.input);
+  expect(before.audioAssembly.segments).toHaveLength(2);
+  await expect(c.store.runVideo(c.input)).rejects.toThrow();
+  expect(calls).toBe(0);
+  expect(await c.reopen().get(c.input)).toEqual(before);
+  if (missing !== 'private-media') {
+    if (missing === 'encoding') await c.store.encodeAudio(c.input);
+    await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 1, sha256: encodedHash });
+    expect((await c.store.runVideo(c.input)).status).toBe('video_pending');
+    expect(calls).toBe(1);
+  }
 });
