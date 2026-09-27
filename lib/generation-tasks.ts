@@ -282,12 +282,14 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (!media || media.sha256 !== segment.sha256 || wavDuration(media.bytes) !== segment.duration) throw new Error('Invalid segment media');
       let encoded: EncodedAudio | undefined;
       if (encodedVideoProvider) {
-        const saved = snapshot.encodedAudio?.find(audio => audio.segmentIndex === segmentIndex);
-        const review = snapshot.audioReviews?.find(value => value.segmentIndex === segmentIndex);
-        if (!saved || saved.sourceSha256 !== segment.sha256 || saved.sourceDuration !== segment.duration || !review || review.revision !== snapshot.revision || review.sha256 !== saved.sha256 || review.sourceSha256 !== segment.sha256) throw new Error('Confirmed encoded audio required');
-        const stored = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: saved.assetId });
-        if (!stored || stored.size !== saved.size || stored.sha256 !== saved.sha256 || createHash('sha256').update(stored.bytes).digest('hex') !== saved.sha256) throw new Error('Encoded audio unavailable');
-        encoded = { bytes: Buffer.from(stored.bytes), sha256: saved.sha256, sourceSha256: saved.sourceSha256, sourceDuration: saved.sourceDuration, duration: saved.duration, mimeType: saved.mimeType, decoded: saved.decoded };
+        for (const [index, source] of snapshot.audioAssembly.segments.entries()) {
+          const saved = snapshot.encodedAudio?.find(audio => audio.segmentIndex === index);
+          const review = snapshot.audioReviews?.find(value => value.segmentIndex === index);
+          if (!saved || saved.sourceSha256 !== source.sha256 || saved.sourceDuration !== source.duration || !review || review.revision !== snapshot.revision || review.sha256 !== saved.sha256 || review.sourceSha256 !== source.sha256) throw new Error('All encoded audio must be confirmed');
+          const stored = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: saved.assetId });
+          if (!stored || stored.size !== saved.size || stored.sha256 !== saved.sha256 || createHash('sha256').update(stored.bytes).digest('hex') !== saved.sha256) throw new Error('Encoded audio unavailable');
+          if (index === segmentIndex) encoded = { bytes: Buffer.from(stored.bytes), sha256: saved.sha256, sourceSha256: saved.sourceSha256, sourceDuration: saved.sourceDuration, duration: saved.duration, mimeType: saved.mimeType, decoded: saved.decoded };
+        }
       }
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
