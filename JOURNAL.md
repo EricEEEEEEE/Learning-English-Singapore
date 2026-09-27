@@ -358,3 +358,4 @@
 - T61B 编码音轨成片串联红题：PCM2s→AAC2.08s→视频2.16s逐级合法，却被时间轴直接对PCM比较拒绝。新增1题失败Invalid timeline segment、原16题通过，exit1；覆盖后续实际成片报告校验器和课程读取，全部合成离线，不收费。日志t61b-encoded-final-red.log。
 - [audit] phase → implementing @ 2026-09-27T12:17:48+08:00
 - T61B 累计时长串联修复：分两阶段校验、不放宽课程上限；新增串联题通过，领域214 passed、typecheck/diff通过。复核发现成片与课程上限冲突，已在发布前调用课程校验并复核通过；四段60秒反例待补红。无真实收费，本轮未完整verify。
+- T61B 四段边界补充取证exit0：60.32秒课程可重开读取且字幕按实际视频段定位；60.64秒拒绝且不保存完成状态。正常任务API、无DB注入，媒体/供应商为替身，真实调用0。可复现脚本docs/evidence/t61/four-segment-check.mjs；未改实现测试、不冒充红转绿。
