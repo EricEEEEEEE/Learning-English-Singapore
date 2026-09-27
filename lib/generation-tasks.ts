@@ -342,22 +342,25 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (simulation !== true || !mediaStore || !videoProbe) throw new Error('Video probe disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
-      const segmentIndex = snapshot?.videoJobs?.at(-1)?.segmentIndex;
+      const job = snapshot?.videoJobs?.at(-1);
+      const segmentIndex = job?.segmentIndex;
       const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === segmentIndex);
       const segment = segmentIndex === undefined ? undefined : snapshot?.audioAssembly?.segments[segmentIndex];
       if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !asset || !segment || segmentIndex === undefined) throw new Error('Probe prohibited');
+      const expectedDuration = job?.audioSha256 !== undefined ? job.audioDuration : segment.duration;
+      if (typeof expectedDuration !== 'number' || !Number.isFinite(expectedDuration) || expectedDuration <= 0 || expectedDuration > 20) throw new Error('Invalid submitted audio duration');
       let checked: VideoCheck;
       try {
         const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
         if (!media || media.sha256 !== asset.sha256 || media.size !== asset.size || createHash('sha256').update(media.bytes).digest('hex') !== asset.sha256) throw new Error('Invalid media');
-        const result = await videoProbe({ bytes: media.bytes, sha256: asset.sha256, expectedDuration: segment.duration });
-        if (!result || result.sha256 !== asset.sha256 || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - segment.duration) > Math.max(1 / 24, 1024 / 8000) + 0.001002 || result.width !== 720 || result.height !== 1280 || result.fps !== 24 || result.videoCodec !== 'h264' || result.audioCodec !== 'aac') throw new Error('Invalid probe result');
+        const result = await videoProbe({ bytes: media.bytes, sha256: asset.sha256, expectedDuration });
+        if (!result || result.sha256 !== asset.sha256 || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - expectedDuration) > Math.max(1 / 24, 1024 / 8000) + 0.001002 || result.width !== 720 || result.height !== 1280 || result.fps !== 24 || result.videoCodec !== 'h264' || result.audioCodec !== 'aac') throw new Error('Invalid probe result');
         checked = { sha256: result.sha256, duration: result.duration, width: result.width, height: result.height, fps: result.fps, videoCodec: result.videoCodec, audioCodec: result.audioCodec };
       } catch { throw new Error('Video verification failed'); }
       return transact(db => {
         const current = read(db, snapshot.id, ownerId);
         const latest = current?.videoAssets?.find(value => value.segmentIndex === segmentIndex);
-        if (!current || current.status !== 'video_pending' || JSON.stringify(latest) !== JSON.stringify(asset) || JSON.stringify(current.audioAssembly?.segments[segmentIndex]) !== JSON.stringify(segment)) throw new Error('Task changed during probe');
+        if (!current || current.status !== 'video_pending' || JSON.stringify(latest) !== JSON.stringify(asset) || JSON.stringify(current.videoJobs?.at(-1)) !== JSON.stringify(job) || JSON.stringify(current.audioAssembly?.segments[segmentIndex]) !== JSON.stringify(segment)) throw new Error('Task changed during probe');
         current.videoChecks = [...(current.videoChecks ?? []).filter(value => value.segmentIndex !== segmentIndex), { segmentIndex, ...checked }];
         // A probe report is evidence, not a complete decode or course acceptance.
         save(db, current); return current;

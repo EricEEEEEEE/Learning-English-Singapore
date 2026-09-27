@@ -352,3 +352,5 @@
 - T61B 编码视频查询与私有收集接线：2项新红转绿、T61B领域211 passed、typecheck exit0、diff通过；只读复核无阻断。本轮未重跑完整verify，无付费调用；下一项AAC实际提交时长探测绑定。
 - [audit] phase → test-writing @ 2026-09-27T12:14:39+08:00
 - T61B AAC实际提交时长红题：2条新增失败、原14条通过，exit1；当前探测仍传PCM的2秒而非AAC的2.08秒，1.94秒错误视频被放行。离线合成数据、无付费，日志t61b-encoded-probe-red.log。
+- [audit] phase → implementing @ 2026-09-27T12:15:10+08:00
+- T61B AAC实际提交时长校验：2条红转绿，领域213 passed、typecheck exit0、diff通过；只读复核无阻断。本轮未重跑完整verify，无收费；下一步核查多段累计时长与成片边界。
