@@ -380,14 +380,17 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       }
       const audio = snapshot.audioAssembly;
       if (snapshot.status !== 'video_pending' || !audio || snapshot.videoJobs?.length !== audio.segments.length || snapshot.videoAssets?.length !== audio.segments.length || snapshot.videoChecks?.length !== audio.segments.length) throw new Error('Incomplete video sources');
-      const sources = [], segments = [];
+      const sources = [], segments = [], audioStages = [];
       for (let i = 0; i < audio.segments.length; i++) {
         const job = snapshot.videoJobs[i], asset = snapshot.videoAssets.find(a => a.segmentIndex === i), check = snapshot.videoChecks.find(c => c.segmentIndex === i);
         if (job.segmentIndex !== i || job.status !== 'completed' || !asset || !check || check.sha256 !== asset.sha256) throw new Error('Unverified video source');
         const stored = await mediaStore.get({ ...locator, assetId: asset.assetId });
         if (!stored || stored.sha256 !== asset.sha256 || stored.size !== asset.size || createHash('sha256').update(stored.bytes).digest('hex') !== asset.sha256) throw new Error('Video source unavailable');
+        const submittedAudioDuration = job.audioSha256 !== undefined ? job.audioDuration : audio.segments[i].duration;
+        if (typeof submittedAudioDuration !== 'number' || !Number.isFinite(submittedAudioDuration)) throw new Error('Missing submitted duration');
+        audioStages.push({ sourceDuration: audio.segments[i].duration, submittedDuration: submittedAudioDuration });
         sources.push({ bytes: stored.bytes, sha256: asset.sha256 });
-        segments.push({ segmentIndex: i, assetId: asset.assetId, sha256: asset.sha256, duration: check.duration });
+        segments.push({ segmentIndex: i, assetId: asset.assetId, sha256: asset.sha256, duration: check.duration, submittedAudioDuration });
       }
       const timeline = planVideoTimeline({ segments, audioAssembly: audio });
       const token = randomUUID();
@@ -408,7 +411,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (!(joined?.bytes instanceof Uint8Array) || !joined.bytes.length || joined.bytes.length > 100_000_000) throw new Error('Invalid assembled video');
         const bytes = Buffer.from(joined.bytes), sha256 = createHash('sha256').update(bytes).digest('hex');
         if (sha256 !== joined.sha256) throw new Error('Invalid assembled integrity');
-        const checked = await finalVideoVerify({ bytes: Buffer.from(bytes), sha256, plan: { sourceDuration: audio.duration, segmentDurations: segments.map(s => s.duration) } });
+        const checked = await finalVideoVerify({ bytes: Buffer.from(bytes), sha256, plan: { sourceDuration: audio.duration, segmentDurations: segments.map(s => s.duration), ...(snapshot.videoJobs.some(job => job.audioSha256 !== undefined) ? { audioStages } : {}) } });
         if (!checked || checked.sha256 !== sha256 || checked.decoded !== true || !Number.isFinite(checked.duration) || Math.abs(checked.duration - timeline.duration) > 0.001001 || checked.width !== 720 || checked.height !== 1280 || !Number.isFinite(checked.fps) || Math.abs(checked.fps - 24) > 0.001 || checked.videoCodec !== 'h264' || checked.audioCodec !== 'aac') throw new Error('Invalid final verification');
         const assetId = `final-${sha256}`;
         const metadata = await mediaStore.put({ ...locator, assetId, bytes, sha256 });
@@ -419,7 +422,9 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
           if (!current || current.status !== 'video_pending' || JSON.stringify(current.audioAssembly) !== JSON.stringify(audio) || JSON.stringify(current.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(current.videoAssets) !== JSON.stringify(snapshot.videoAssets) || JSON.stringify(current.videoChecks) !== JSON.stringify(snapshot.videoChecks)) throw new Error('Task changed during final assembly');
           current.finalVideo = { assetId, size: metadata.size, sha256, decoded: true, duration: checked.duration, width: checked.width, height: checked.height, fps: checked.fps, videoCodec: checked.videoCodec, audioCodec: checked.audioCodec };
           current.videoTimeline = timeline;
-          current.status = 'video_assembled'; save(db, current); return current;
+          current.status = 'video_assembled';
+          buildGeneratedCourse(current);
+          save(db, current); return current;
         });
       } finally {
         transact(db => db.prepare('DELETE FROM final_assembly_locks WHERE task=? AND owner=? AND token=?').run(snapshot.id, ownerId, token));

@@ -5,10 +5,19 @@ function positive(value: unknown) {
 }
 
 // Final report only; trusted caller must bind report to output hash and separately decode.
-export function validateFinalVideoProbe(report: unknown, plan: { sourceDuration: number; segmentDurations: number[] }) {
+export function validateFinalVideoProbe(report: unknown, plan: { sourceDuration: number; segmentDurations: number[]; audioStages?: { sourceDuration: number; submittedDuration: number }[] }) {
   if (!plan || typeof plan.sourceDuration !== 'number' || !Number.isFinite(plan.sourceDuration) || plan.sourceDuration <= 0 || plan.sourceDuration > 60 || !Array.isArray(plan.segmentDurations) || !plan.segmentDurations.length || plan.segmentDurations.length > 4 || plan.segmentDurations.some(n => typeof n !== 'number' || !Number.isFinite(n) || n <= 0 || n > 20)) throw new Error('Invalid final plan');
   const expected = plan.segmentDurations.reduce((sum, n) => sum + n, 0);
-  if (Math.abs(expected - plan.sourceDuration) > plan.segmentDurations.length * 0.129002) throw new Error('Inconsistent final plan');
+  if (plan.audioStages !== undefined) {
+    if (!Array.isArray(plan.audioStages) || plan.audioStages.length !== plan.segmentDurations.length) throw new Error('Invalid audio stages');
+    let sourceTotal = 0;
+    for (let i = 0; i < plan.audioStages.length; i++) {
+      const stage = plan.audioStages[i];
+      if (!stage || [stage.sourceDuration, stage.submittedDuration].some(n => typeof n !== 'number' || !Number.isFinite(n) || n <= 0 || n > 20) || Math.abs(stage.sourceDuration - stage.submittedDuration) > 0.129001 || Math.abs(plan.segmentDurations[i] - stage.submittedDuration) > 0.129002) throw new Error('Inconsistent audio stage');
+      sourceTotal += stage.sourceDuration;
+    }
+    if (Math.abs(sourceTotal - plan.sourceDuration) > 0.000001) throw new Error('Inconsistent source duration');
+  } else if (Math.abs(expected - plan.sourceDuration) > plan.segmentDurations.length * 0.129002) throw new Error('Inconsistent final plan');
   if (!object(report) || !object(report.format) || !Array.isArray(report.streams) || report.streams.length !== 2 || !report.streams.every(object)) throw new Error('Invalid final report');
   const format = report.format, video = report.streams.find(s => s.codec_type === 'video'), audio = report.streams.find(s => s.codec_type === 'audio');
   if (typeof format.format_name !== 'string' || !format.format_name.split(',').includes('mp4') || !video || !audio || video.codec_name !== 'h264' || audio.codec_name !== 'aac' || audio.profile !== 'LC' || video.width !== 720 || video.height !== 1280 || !object(video.disposition) || video.disposition.attached_pic !== 0) throw new Error('Unsupported final media');

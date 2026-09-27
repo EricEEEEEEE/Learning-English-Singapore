@@ -9,7 +9,7 @@ import { validateFinalVideoProbe } from './final-video-probe';
 type Settings = { shell: false; timeout: number; maxBuffer: number; encoding: 'utf8' };
 type Execute = (executable: string, args: string[], options: Settings) => Promise<{ stdout: string; stderr: string }>;
 const run = promisify(execFile);
-export async function verifyFinalVideo(input: { bytes: Uint8Array; sha256: string; plan: { sourceDuration: number; segmentDurations: number[] } }, options: { ffprobe: string; ffmpeg: string; execute?: Execute }) {
+export async function verifyFinalVideo(input: { bytes: Uint8Array; sha256: string; plan: Parameters<typeof validateFinalVideoProbe>[1] }, options: { ffprobe: string; ffmpeg: string; execute?: Execute }) {
   if (!input || !(input.bytes instanceof Uint8Array) || !input.bytes.length || input.bytes.length > 100_000_000 || !options || [options.ffprobe, options.ffmpeg].some(p => typeof p !== 'string' || !isAbsolute(p) || p.includes('\0'))) throw new Error('Invalid final verification input');
   const bytes = Buffer.from(input.bytes), plan = structuredClone(input.plan);
   const sha256 = createHash('sha256').update(bytes).digest('hex');
