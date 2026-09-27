@@ -231,3 +231,40 @@ for (const actualDuration of [2.08, 1.94]) test(`T61B encoded probe: submitted A
   }
   expect(observed).toEqual([2.08]);
 });
+
+test('T61B encoded final: independently valid AAC and video rounding survives final assembly and same-version course read', async () => {
+  const { validateFinalVideoProbe } = await import('../../lib/final-video-probe.ts');
+  const bytes = Buffer.from('synthetic verified video');
+  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  let concatenations = 0, verifications = 0;
+  const c = await ready(async input => ({ ...encoded(input), duration: 2.08 }), {
+    encodedVideoProvider: { reservedMicros: 90000,
+      submit: async () => ({ status: 'pending', jobId: 'aac-final' }),
+      query: async id => ({ jobId: id, status: 'completed', videoUrl: 'https://media.example.invalid/final.mp4' }) },
+    videoDownload: async () => ({ bytes, sha256 }),
+    videoProbe: async () => ({ sha256, duration: 2.16, width: 720, height: 1280, fps: 24, videoCodec: 'h264', audioCodec: 'aac' }),
+    videoConcat: async sources => { concatenations++; expect(sources).toHaveLength(1); return { bytes, sha256 }; },
+    finalVideoVerify: async input => {
+      verifications++;
+      const report = { format: { format_name: 'mov,mp4,m4a,3gp,3g2,mj2', start_time: '0', duration: '2.16' }, streams: [
+        { codec_type: 'video', codec_name: 'h264', width: 720, height: 1280, avg_frame_rate: '24/1', duration: '2.16', start_time: '0', disposition: { attached_pic: 0 } },
+        { codec_type: 'audio', codec_name: 'aac', profile: 'LC', sample_rate: '8000', channels: 1, duration: '2.16', start_time: '0' },
+      ] };
+      return { ...validateFinalVideoProbe(report, input.plan), sha256, decoded: true };
+    },
+  });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  await c.store.runVideo(c.input); await c.store.collectVideo(c.input);
+  const before = await c.store.probeVideo(c.input);
+  const result = await c.reopen().assembleVideo(c.input);
+  expect(result.status).toBe('video_assembled');
+  expect(result.videoTimeline.lines).toEqual([{ lineId: 'a', start: 0, end: 1 }, { lineId: 'b', start: 1, end: 2 }]);
+  expect(result.finalVideo.duration).toBe(2.16);
+  expect(result.providerCalls).toBe(before.providerCalls);
+  expect(result.reservedMicros).toBe(before.reservedMicros);
+  expect(await c.reopen().assembleVideo(c.input)).toEqual(result);
+  const course = await c.reopen().getCourse({ ...c.input, revision: 1 });
+  expect(course.revision).toBe(1);
+  expect({ concatenations, verifications }).toEqual({ concatenations: 1, verifications: 1 });
+});

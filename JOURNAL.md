@@ -354,3 +354,5 @@
 - T61B AAC实际提交时长红题：2条新增失败、原14条通过，exit1；当前探测仍传PCM的2秒而非AAC的2.08秒，1.94秒错误视频被放行。离线合成数据、无付费，日志t61b-encoded-probe-red.log。
 - [audit] phase → implementing @ 2026-09-27T12:15:10+08:00
 - T61B AAC实际提交时长校验：2条红转绿，领域213 passed、typecheck exit0、diff通过；只读复核无阻断。本轮未重跑完整verify，无收费；下一步核查多段累计时长与成片边界。
+- [audit] phase → test-writing @ 2026-09-27T12:17:07+08:00
+- T61B 编码音轨成片串联红题：PCM2s→AAC2.08s→视频2.16s逐级合法，却被时间轴直接对PCM比较拒绝。新增1题失败Invalid timeline segment、原16题通过，exit1；覆盖后续实际成片报告校验器和课程读取，全部合成离线，不收费。日志t61b-encoded-final-red.log。
