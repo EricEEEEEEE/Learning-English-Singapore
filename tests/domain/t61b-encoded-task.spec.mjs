@@ -200,3 +200,34 @@ test('T61B encoded retrieval: missing encoded query cannot fall back to legacy q
   expect(legacyCalls).toBe(0);
   expect(await c.reopen().get(c.input)).toEqual(before);
 });
+
+for (const actualDuration of [2.08, 1.94]) test(`T61B encoded probe: submitted AAC duration controls verification for video duration ${actualDuration}`, async () => {
+  const bytes = Buffer.from('synthetic encoded video probe');
+  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  const observed = [];
+  const c = await ready(async input => ({ ...encoded(input), duration: 2.08 }), {
+    encodedVideoProvider: { reservedMicros: 90000,
+      submit: async () => ({ status: 'pending', jobId: 'aac-probe' }),
+      query: async id => ({ jobId: id, status: 'completed', videoUrl: 'https://media.example.invalid/probe.mp4' }) },
+    videoDownload: async () => ({ bytes, sha256 }),
+    videoProbe: async input => {
+      observed.push(input.expectedDuration);
+      return { sha256, duration: actualDuration, width: 720, height: 1280, fps: 24, videoCodec: 'h264', audioCodec: 'aac' };
+    },
+  });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  await c.store.runVideo(c.input);
+  const before = await c.store.collectVideo(c.input);
+  if (actualDuration === 2.08) {
+    const result = await c.reopen().probeVideo(c.input);
+    expect(result.videoChecks).toEqual([{ segmentIndex: 0, sha256, duration: 2.08, width: 720, height: 1280, fps: 24, videoCodec: 'h264', audioCodec: 'aac' }]);
+    expect(result.providerCalls).toBe(before.providerCalls);
+    expect(result.reservedMicros).toBe(before.reservedMicros);
+  } else {
+    // 1.94s fits the original 2s PCM tolerance, but not the submitted 2.08s AAC tolerance.
+    await expect(c.reopen().probeVideo(c.input)).rejects.toThrow();
+    expect((await c.reopen().get(c.input)).videoChecks).toBeUndefined();
+  }
+  expect(observed).toEqual([2.08]);
+});
