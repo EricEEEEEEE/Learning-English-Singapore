@@ -27,7 +27,7 @@ type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['se
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type VideoJob = { audioSha256?: string; audioDuration?: number; segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
-type EncodedVideoProvider = { reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string }) => Promise<{ status: string; jobId?: string }> };
+type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
@@ -288,14 +288,16 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async queryVideo(input: Session & { id: string }) {
-      if (simulation !== true || !videoProvider?.query) throw new Error('Video query disabled');
+      if (simulation !== true) throw new Error('Video query disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
       const job = snapshot?.videoJobs?.at(-1);
       if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job) throw new Error('Query prohibited');
+      const provider = job.audioSha256 !== undefined ? encodedVideoProvider : videoProvider;
+      if (!provider?.query) throw new Error('Video query disabled');
       if (job.status === 'completed' || job.status === 'failed') return snapshot;
       let result;
-      try { result = await videoProvider.query(job.jobId); } catch { throw new Error('Video status unavailable'); }
+      try { result = await provider.query(job.jobId); } catch { throw new Error('Video status unavailable'); }
       if (!result || result.jobId !== job.jobId || !['pending', 'processing', 'failed', 'completed'].includes(result.status)) throw new Error('Invalid video status');
       return transact(db => {
         const current = read(db, snapshot.id, ownerId), latest = current?.videoJobs?.find(value => value.segmentIndex === job.segmentIndex);
@@ -306,16 +308,18 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async collectVideo(input: Session & { id: string }) {
-      if (simulation !== true || !videoProvider?.query || !videoDownload || !mediaStore) throw new Error('Video collection disabled');
+      if (simulation !== true || !videoDownload || !mediaStore) throw new Error('Video collection disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
       const job = snapshot?.videoJobs?.at(-1);
       if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job || job.status === 'failed') throw new Error('Collection prohibited');
+      const provider = job.audioSha256 !== undefined ? encodedVideoProvider : videoProvider;
+      if (!provider?.query) throw new Error('Video collection disabled');
       if (snapshot.videoAssets?.some(asset => asset.segmentIndex === job.segmentIndex)) return snapshot;
       let metadata;
       try {
         // Query afresh for a temporary URL; never persist the URL or provider error details.
-        const result = await videoProvider.query(job.jobId);
+        const result = await provider.query(job.jobId);
         if (result?.jobId !== job.jobId || result.status !== 'completed' || typeof result.videoUrl !== 'string') throw new Error('Video unavailable');
         const url = new URL(result.videoUrl);
         if (result.videoUrl.length > 8192 || url.protocol !== 'https:' || url.username || url.password || url.hash) throw new Error('Invalid media URL');

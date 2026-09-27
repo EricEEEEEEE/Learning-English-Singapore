@@ -348,3 +348,5 @@
 - T61B 已确认AAC持久提交接线：新增3项与领域209项通过，完整verify exit 0、786 passed；只读审查无本切片阻断。查询收集和AAC时长后续接线，未真实收费，T61B未勾完成。
 - [audit] phase → test-writing @ 2026-09-27T12:11:54+08:00
 - T61B AAC查询收集红题：新增2条实际失败、原12条通过，exit 1；当前queryVideo误用legacy，缺encoded query会错误回退并改变状态。仅离线替身，日志t61b-encoded-retrieval-red.log；等待红回执后实现。
+- [audit] phase → implementing @ 2026-09-27T12:12:53+08:00
+- T61B 编码视频查询与私有收集接线：2项新红转绿、T61B领域211 passed、typecheck exit0、diff通过；只读复核无阻断。本轮未重跑完整verify，无付费调用；下一项AAC实际提交时长探测绑定。
