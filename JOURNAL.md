@@ -346,3 +346,5 @@
 - T61B已确认AAC提交三项红题exit1，既有9项通过；新provider未接导致正常/未知路径disabled，且双provider时旧flag可绕过缺失review。考题覆盖私有AAC精确提交、先持久预留、job绑定音轨hash/时长、禁止旧路径回退和未知不重试。仅替身无费用，日志t61b-reviewed-video-red.log。
 - [audit] phase → implementing @ 2026-09-26T11:49:51+08:00
 - T61B 已确认AAC持久提交接线：新增3项与领域209项通过，完整verify exit 0、786 passed；只读审查无本切片阻断。查询收集和AAC时长后续接线，未真实收费，T61B未勾完成。
+- [audit] phase → test-writing @ 2026-09-27T12:11:54+08:00
+- T61B AAC查询收集红题：新增2条实际失败、原12条通过，exit 1；当前queryVideo误用legacy，缺encoded query会错误回退并改变状态。仅离线替身，日志t61b-encoded-retrieval-red.log；等待红回执后实现。

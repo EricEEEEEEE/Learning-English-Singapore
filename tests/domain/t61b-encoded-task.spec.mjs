@@ -153,3 +153,50 @@ test('T61B encoded video task: uncertain submission remains reserved and cannot 
   expect(result).toMatchObject({ status: 'submission_unknown', providerCalls: 4, reservedMicros: 90500 });
   await expect(c.reopen().runVideo(c.input)).rejects.toThrow(); expect(calls).toBe(1);
 });
+
+test('T61B encoded retrieval: reopened task queries encoded provider and privately collects once without another reservation', async () => {
+  let submissions = 0, queries = 0, downloads = 0, legacyCalls = 0;
+  const bytes = Buffer.from('synthetic private video');
+  const sha256 = createHash('sha256').update(bytes).digest('hex');
+  const c = await ready(async input => encoded(input), {
+    encodedVideoProvider: { reservedMicros: 90000,
+      submit: async () => { submissions++; return { status: 'pending', jobId: 'aac-job' }; },
+      query: async id => { queries++; expect(id).toBe('aac-job'); return { jobId: id, status: 'completed', videoUrl: 'https://media.example.invalid/private.mp4?temporary=synthetic' }; } },
+    videoProvider: { reservedMicros: 90000, audioReviewed: true,
+      submit: async () => { legacyCalls++; throw new Error('wrong provider'); },
+      query: async () => { legacyCalls++; throw new Error('wrong provider'); } },
+    videoDownload: async url => { downloads++; expect(url).toContain('media.example.invalid'); return { bytes, sha256 }; },
+  });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  const submitted = await c.store.runVideo(c.input);
+  const queried = await c.reopen().queryVideo(c.input);
+  expect(queried.videoJobs[0].status).toBe('completed');
+  const collected = await c.reopen().collectVideo(c.input);
+  expect(collected.status).toBe('video_pending');
+  expect(collected.videoAssets).toHaveLength(1);
+  const saved = await c.mediaStore.get({ ...c.input, courseId: c.input.id, revision: 1, assetId: collected.videoAssets[0].assetId });
+  expect(Buffer.from(saved.bytes)).toEqual(bytes);
+  expect(collected.providerCalls).toBe(submitted.providerCalls);
+  expect(collected.reservedMicros).toBe(submitted.reservedMicros);
+  expect(JSON.stringify(collected)).not.toContain('temporary=');
+  expect(await c.reopen().collectVideo(c.input)).toEqual(collected);
+  expect({ submissions, queries, downloads, legacyCalls }).toEqual({ submissions: 1, queries: 2, downloads: 1, legacyCalls: 0 });
+});
+
+test('T61B encoded retrieval: missing encoded query cannot fall back to legacy query', async () => {
+  let legacyCalls = 0;
+  const c = await ready(async input => encoded(input), {
+    encodedVideoProvider: { reservedMicros: 90000, submit: async () => ({ status: 'pending', jobId: 'aac-job' }) },
+    videoProvider: { reservedMicros: 90000, audioReviewed: true, submit: async () => ({ status: 'pending', jobId: 'wrong' }),
+      query: async id => { legacyCalls++; return { jobId: id, status: 'processing' }; } },
+    videoDownload: async () => { throw new Error('must not download'); },
+  });
+  await c.store.encodeAudio(c.input);
+  await c.store.confirmEncodedAudio({ ...c.input, revision: 1, segmentIndex: 0, sha256: encodedHash });
+  const before = await c.store.runVideo(c.input);
+  await expect(c.reopen().queryVideo(c.input)).rejects.toThrow();
+  await expect(c.reopen().collectVideo(c.input)).rejects.toThrow();
+  expect(legacyCalls).toBe(0);
+  expect(await c.reopen().get(c.input)).toEqual(before);
+});

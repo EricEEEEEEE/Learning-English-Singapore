@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "db804263e499dfd5c33ff941d1e0548ff418827c",
+  "last_round_commit": "c561cfbae78712adcda318ee13b982505aeaac7e",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-27T12:11:16+08:00",
+  "last_session": "2026-09-27T12:12:31+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 823648,
+  "audit_bytes": 829131,
   "blocks_seen": 977,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_development_ready_paid_amount_pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T61B已确认AAC提交接线与786项完整回归"
+    "kind": "red",
+    "msg": "存档: T61B编码视频查询与私有收集红考题"
   }
 }
