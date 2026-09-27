@@ -31,7 +31,7 @@ type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: nu
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; maxReservedMicros?: number; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -42,6 +42,25 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       db.exec('PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, owner TEXT NOT NULL, fingerprint TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(owner,fingerprint)); CREATE TABLE IF NOT EXISTS requests (owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, PRIMARY KEY(owner,key)); CREATE TABLE IF NOT EXISTS final_assembly_locks (task TEXT PRIMARY KEY, owner TEXT NOT NULL, token TEXT NOT NULL, pid INTEGER NOT NULL); BEGIN IMMEDIATE;');
       const result = work(db); db.exec('COMMIT'); return result;
     } finally { db.close(); }
+  }
+  // A local durable reservation ceiling, not a provider billing guarantee.
+  // Called only inside the same write transaction that reserves a submission.
+  function checkReservation(db: DatabaseSync, additional: number) {
+    db.exec('CREATE TABLE IF NOT EXISTS reservation_limit (id INTEGER PRIMARY KEY CHECK(id=1), micros INTEGER NOT NULL)');
+    const saved = db.prepare('SELECT micros FROM reservation_limit WHERE id=1').get();
+    if (maxReservedMicros !== undefined && (!Number.isSafeInteger(maxReservedMicros) || maxReservedMicros < 0)) throw new Error('Invalid total reservation limit');
+    if (saved && maxReservedMicros !== undefined && Number(saved.micros) !== maxReservedMicros) throw new Error('Reservation limit configuration conflict');
+    const limit = saved ? Number(saved.micros) : maxReservedMicros;
+    if (limit === undefined) return; // Existing offline fixtures may omit a ceiling.
+    if (!Number.isSafeInteger(limit) || limit < 0) throw new Error('Invalid stored reservation limit');
+    let total = 0;
+    for (const row of db.prepare('SELECT body FROM jobs').all()) {
+      const value = JSON.parse(String(row.body)).reservedMicros;
+      if (!Number.isSafeInteger(value) || value < 0 || !Number.isSafeInteger(total + value)) throw new Error('Invalid reservation ledger');
+      total += value;
+    }
+    if (!Number.isSafeInteger(additional) || additional <= 0 || !Number.isSafeInteger(total + additional) || total + additional > limit) throw new Error('Total reservation limit exceeded');
+    if (!saved) db.prepare('INSERT INTO reservation_limit VALUES(1,?)').run(limit);
   }
   async function owner(input: Session) {
     const value = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
@@ -101,6 +120,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
         if (!value || !value.simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+        checkReservation(db, reservedMicros);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = reservedMicros; value.providerCalls = 1;
         save(db, value); return value;
       });
@@ -126,6 +146,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (!value || !value.simulation || value.status !== 'script_ready' || !value.script) throw new Error('Submission prohibited');
         const count = value.audioAssets?.length ?? 0;
         if (count >= value.script.lines.length || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        checkReservation(db, reservation);
         value.status = 'submitting'; value.pid = process.pid;
         value.reservedMicros += reservation; value.providerCalls++;
         save(db, value); return value;
@@ -271,6 +292,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
         if (!value || value.status !== snapshot.status || JSON.stringify(value.encodedAudio) !== JSON.stringify(snapshot.encodedAudio) || JSON.stringify(value.audioReviews) !== JSON.stringify(snapshot.audioReviews) || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        checkReservation(db, reservation);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros += reservation; value.providerCalls++;
         save(db, value); return value;
       });
@@ -437,6 +459,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
         if (!value || !value.simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+        checkReservation(db, input.reservedMicros);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = input.reservedMicros; value.providerCalls = 1; save(db, value); return value;
       });
       let jobId: string | undefined;
