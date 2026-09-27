@@ -25,12 +25,13 @@ type VideoCheck = Awaited<ReturnType<typeof probeVideoBytes>>;
 type Assembly = ReturnType<typeof assembleCourseAudio>;
 type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
-type VideoJob = { segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
+type VideoJob = { audioSha256?: string; audioDuration?: number; segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
+type EncodedVideoProvider = { reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
@@ -241,9 +242,9 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async runVideo(input: Session & { id: string }) {
-      if (simulation !== true || !videoProvider || videoProvider.audioReviewed !== true || !mediaStore) throw new Error('Video submission disabled');
+      if (simulation !== true || (!encodedVideoProvider && (!videoProvider || videoProvider.audioReviewed !== true)) || !mediaStore) throw new Error('Video submission disabled');
       const ownerId = await owner(input);
-      const reservation = videoProvider.reservedMicros;
+      const reservation = (encodedVideoProvider ?? videoProvider!).reservedMicros;
       if (!Number.isSafeInteger(reservation) || reservation <= 0) throw new Error('Invalid reservation');
       const snapshot = transact(db => read(db, input.id, ownerId));
       if (!snapshot || !snapshot.simulation || !['audio_assembled', 'video_pending'].includes(snapshot.status) || !snapshot.audioAssembly) throw new Error('Submission prohibited');
@@ -258,20 +259,31 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (!segment) throw new Error('Missing segment');
       const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: segment.assetId });
       if (!media || media.sha256 !== segment.sha256 || wavDuration(media.bytes) !== segment.duration) throw new Error('Invalid segment media');
+      let encoded: EncodedAudio | undefined;
+      if (encodedVideoProvider) {
+        const saved = snapshot.encodedAudio?.find(audio => audio.segmentIndex === segmentIndex);
+        const review = snapshot.audioReviews?.find(value => value.segmentIndex === segmentIndex);
+        if (!saved || saved.sourceSha256 !== segment.sha256 || saved.sourceDuration !== segment.duration || !review || review.revision !== snapshot.revision || review.sha256 !== saved.sha256 || review.sourceSha256 !== segment.sha256) throw new Error('Confirmed encoded audio required');
+        const stored = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: saved.assetId });
+        if (!stored || stored.size !== saved.size || stored.sha256 !== saved.sha256 || createHash('sha256').update(stored.bytes).digest('hex') !== saved.sha256) throw new Error('Encoded audio unavailable');
+        encoded = { bytes: Buffer.from(stored.bytes), sha256: saved.sha256, sourceSha256: saved.sourceSha256, sourceDuration: saved.sourceDuration, duration: saved.duration, mimeType: saved.mimeType, decoded: saved.decoded };
+      }
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
-        if (!value || value.status !== snapshot.status || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        if (!value || value.status !== snapshot.status || JSON.stringify(value.encodedAudio) !== JSON.stringify(snapshot.encodedAudio) || JSON.stringify(value.audioReviews) !== JSON.stringify(snapshot.audioReviews) || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros += reservation; value.providerCalls++;
         save(db, value); return value;
       });
       let id: string | undefined;
       try {
-        const response = await videoProvider.submit({ bytes: media.bytes, duration: segment.duration, goal: task.goal });
+        const response = encodedVideoProvider && encoded
+          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal })
+          : await videoProvider!.submit({ bytes: media.bytes, duration: segment.duration, goal: task.goal });
         if (response?.status === 'pending' && typeof response.jobId === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(response.jobId)) id = response.jobId;
       } catch { /* Unknown submission: retain reservation and never resubmit automatically. */ }
       return transact(db => {
         task.status = id ? 'video_pending' : 'submission_unknown';
-        if (id) task.videoJobs = [...(task.videoJobs ?? []), { segmentIndex, jobId: id, status: 'pending' }];
+        if (id) task.videoJobs = [...(task.videoJobs ?? []), { segmentIndex, jobId: id, status: 'pending', ...(encoded ? { audioSha256: encoded.sha256, audioDuration: encoded.duration } : {}) }];
         save(db, task); return task;
       });
     },

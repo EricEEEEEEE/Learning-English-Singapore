@@ -344,3 +344,5 @@
 - T61B音轨确认记录：红e35cbc7225后实现simulation-only confirmEncodedAudio，owner/revision/段hash/源hash及实际私有字节核对后CAS登记，重复复用；206项领域/typecheck/diff通过，静态审查无阻断。只证明确认调用、不等于真人听审；未来接口用服务端时间，runVideo尚未消费，无费用，未全量verify。
 - [audit] phase → test-writing @ 2026-09-26T11:46:38+08:00
 - T61B已确认AAC提交三项红题exit1，既有9项通过；新provider未接导致正常/未知路径disabled，且双provider时旧flag可绕过缺失review。考题覆盖私有AAC精确提交、先持久预留、job绑定音轨hash/时长、禁止旧路径回退和未知不重试。仅替身无费用，日志t61b-reviewed-video-red.log。
+- [audit] phase → implementing @ 2026-09-26T11:49:51+08:00
+- T61B 已确认AAC持久提交接线：新增3项与领域209项通过，完整verify exit 0、786 passed；只读审查无本切片阻断。查询收集和AAC时长后续接线，未真实收费，T61B未勾完成。
