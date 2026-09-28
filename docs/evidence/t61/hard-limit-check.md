@@ -12,3 +12,9 @@
 
 - b8c7daa9f6回执已核对。账户Active项目列表仅显示Default project，月支出0.23美元；可归属Default project，但不能据此全部归属本产品。未见独立Learning English Singapore项目。
 - 尝试页面现有项目名称及行入口后页面未进入详情；项目级硬限额实际状态仍未读到，不推测已启用或不存在。组织配置保持原样；新增费用0。需用户打开目标项目的Limits页面后继续只读核验，无需再次批准25美元预算。
+
+## 项目限额页面已恢复
+
+- 用户重新打开后台后，成功读取Default project的Limits：No spend limit set。打开Set spend limit弹窗，存在Monthly spend limit及Enforce a hard limit（关闭）。未填写、未保存；已刷新退出。此前页面阻塞解除。
+- Default project同时承载其他应用密钥，因此不能未经授权设置低额度影响其他应用。本产品命名密钥本月显示0.00（两位小数，不代表零实际费用），其他应用有0.23显示；没有读取完整密钥。
+- 建议下一步授权创建独立Learning English Singapore项目，后续确认专属限额、密钥安全保存及实际执行状态；不修改默认项目和组织自动充值。创建独立项目本身不证明跨供应商25美元累计上限已满足。新增请求0、费用0、配置修改0。
