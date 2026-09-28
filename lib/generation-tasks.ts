@@ -31,8 +31,9 @@ type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: nu
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; maxReservedMicros?: number; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
+  const budget = liveBudget ? { ...liveBudget } : undefined;
   function transact<T>(work: (db: DatabaseSync) => T): T {
     mkdirSync(directory, { recursive: true, mode: 0o700 });
     const path = join(directory, 'generation.sqlite');
@@ -51,9 +52,20 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     if (maxReservedMicros !== undefined && (!Number.isSafeInteger(maxReservedMicros) || maxReservedMicros < 0)) throw new Error('Invalid total reservation limit');
     if (saved && maxReservedMicros !== undefined && Number(saved.micros) !== maxReservedMicros) throw new Error('Reservation limit configuration conflict');
     const limit = saved ? Number(saved.micros) : maxReservedMicros;
-    if (limit === undefined) return; // Existing offline fixtures may omit a ceiling.
+    if (limit === undefined) {
+      if (!simulation) throw new Error('Live budget configuration required');
+      return; // Existing offline fixtures may omit a ceiling.
+    }
     if (!Number.isSafeInteger(limit) || limit < 0) throw new Error('Invalid stored reservation limit');
-    let total = 0;
+    db.exec('CREATE TABLE IF NOT EXISTS live_budget (id INTEGER PRIMARY KEY CHECK(id=1), scope TEXT NOT NULL, prior_spent INTEGER NOT NULL)');
+    const storedBudget = db.prepare('SELECT scope, prior_spent FROM live_budget WHERE id=1').get();
+    if (storedBudget && simulation) throw new Error('Live budget cannot fund simulation');
+    if (!simulation) {
+      if (!budget || typeof budget.scope !== 'string' || !budget.scope.trim() || budget.scope.length > 128 || !Number.isSafeInteger(budget.priorSpentMicros) || budget.priorSpentMicros < 0 || maxReservedMicros === undefined) throw new Error('Live budget configuration required');
+      if (storedBudget && (storedBudget.scope !== budget.scope || Number(storedBudget.prior_spent) !== budget.priorSpentMicros)) throw new Error('Live budget configuration conflict');
+      if (!storedBudget) db.prepare('INSERT INTO live_budget VALUES(1,?,?)').run(budget.scope, budget.priorSpentMicros);
+    }
+    let total = simulation ? 0 : budget!.priorSpentMicros;
     for (const row of db.prepare('SELECT body FROM jobs').all()) {
       const value = JSON.parse(String(row.body)).reservedMicros;
       if (!Number.isSafeInteger(value) || value < 0 || !Number.isSafeInteger(total + value)) throw new Error('Invalid reservation ledger');
@@ -112,14 +124,14 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     async get(input: Session & { id: string }) { const id = await owner(input); return transact(db => read(db, input.id, id)); },
     async list(input: Session) { const id = await owner(input); return transact(db => db.prepare('SELECT id FROM jobs WHERE owner=? ORDER BY rowid DESC').all(id).map(row => read(db, String(row.id), id)!)); },
     async runScript(input: Session & { id: string }) {
-      // This runner is for offline integration only until the live budget gate is implemented.
-      if (simulation !== true || !scriptProvider) throw new Error('Script provider disabled');
+      // Real execution is opt-in through server configuration, never request fields.
+      if ((!simulation && !budget) || !scriptProvider) throw new Error('Script provider disabled');
       const ownerId = await owner(input);
       const reservedMicros = scriptProvider.reservedMicros;
       if (!Number.isSafeInteger(reservedMicros) || reservedMicros <= 0) throw new Error('Invalid reservation');
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
-        if (!value || !value.simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+        if (!value || value.simulation !== simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
         checkReservation(db, reservedMicros);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = reservedMicros; value.providerCalls = 1;
         save(db, value); return value;
