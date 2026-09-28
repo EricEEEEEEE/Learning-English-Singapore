@@ -62,3 +62,28 @@ for (const overrides of [{ liveBudget: undefined }, { maxReservedMicros: undefin
     expect(c.count()).toBe(0);
   });
 }
+
+// Successful output must remain usable after reopening without another provider call.
+test('T61B live entry: successful script persists and repeat request does not reserve or generate again', async () => {
+  const c = await setup();
+  const translations = Object.fromEntries(['zh-Hans', 'id', 'ja', 'ko', 'hi'].map(key => [key, 'synthetic']));
+  const script = { lines: [{ id: 'a', role: 'partner', text: 'Hello there', translations }, { id: 'b', role: 'learner', text: 'Hello', translations }], phrases: [{ id: 'p', text: 'Hello', lineId: 'a', translations }], turns: [{ partnerLineId: 'a', learnerLineId: 'b' }] };
+  let calls = 0;
+  const options = { scriptProvider: { reservedMicros: 100, generate: async () => { calls++; return { requestId: 'synthetic-success', script }; } } };
+  const input = await c.create(c.open(options), 'Hotel greeting');
+  await c.open(options).runScript(input);
+  expect(await c.open(options).get(input)).toMatchObject({ simulation: false, status: 'script_ready', script, providerJobId: 'synthetic-success', reservedMicros: 100, providerCalls: 1 });
+  expect(await c.create(c.open(options), 'Hotel greeting')).toEqual(input);
+  await expect(c.open(options).runScript(input)).rejects.toThrow();
+  expect(calls).toBe(1);
+  expect((await c.open(options).get(input)).reservedMicros).toBe(100);
+});
+
+for (const firstSimulation of [true, false]) test(`T61B live entry: same goal cannot silently reuse opposite-mode task ${firstSimulation}`, async () => {
+  const c = await setup();
+  const input = await c.create(c.open({ simulation: firstSimulation }), 'Hotel greeting');
+  const before = await c.open().get(input);
+  await expect(c.create(c.open({ simulation: !firstSimulation }), 'Hotel greeting')).rejects.toThrow();
+  expect(await c.open().get(input)).toEqual(before);
+  expect(c.count()).toBe(0);
+});
