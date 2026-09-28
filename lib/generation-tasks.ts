@@ -380,14 +380,14 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async probeVideo(input: Session & { id: string }) {
-      if (simulation !== true || !mediaStore || !videoProbe) throw new Error('Video probe disabled');
+      if ((!simulation && !budget) || !mediaStore || !videoProbe) throw new Error('Video probe disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
       const job = snapshot?.videoJobs?.at(-1);
       const segmentIndex = job?.segmentIndex;
       const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === segmentIndex);
       const segment = segmentIndex === undefined ? undefined : snapshot?.audioAssembly?.segments[segmentIndex];
-      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !asset || !segment || segmentIndex === undefined) throw new Error('Probe prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'video_pending' || !asset || !segment || segmentIndex === undefined) throw new Error('Probe prohibited');
       const expectedDuration = job?.audioSha256 !== undefined ? job.audioDuration : segment.duration;
       if (typeof expectedDuration !== 'number' || !Number.isFinite(expectedDuration) || expectedDuration <= 0 || expectedDuration > 20) throw new Error('Invalid submitted audio duration');
       let checked: VideoCheck;
@@ -408,10 +408,10 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async assembleVideo(input: Session & { id: string }) {
-      if (simulation !== true || !mediaStore || !videoConcat || !finalVideoVerify) throw new Error('Video assembly disabled');
+      if ((!simulation && !budget) || !mediaStore || !videoConcat || !finalVideoVerify) throw new Error('Video assembly disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
-      if (!snapshot?.simulation) throw new Error('Assembly prohibited');
+      if (!snapshot || snapshot.simulation !== simulation) throw new Error('Assembly prohibited');
       const locator = { cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision };
       if (snapshot.status === 'video_assembled') {
         const final = snapshot.finalVideo;
