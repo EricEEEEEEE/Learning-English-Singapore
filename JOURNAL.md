@@ -404,3 +404,5 @@
 - T61B统一运行入口实现：集中接现有适配器和媒体工具，配置快照、显式启用、同库预算及逐步操作；9项新题转绿，265项T61B与完整842项通过(verify exit0)，typecheck通过。只读审查有条件通过：付费前补工具可执行预检及工厂视频全链路验证；零API费用。
 - [audit] phase → test-writing @ 2026-09-28T16:37:32+08:00
 - T61B付费前工具预检5项红题均因prepareLiveGenerationRuntime尚不存在失败；覆盖两工具成功后才返回分步入口、ffmpeg/ffprobe失败、不可执行及缺失拒绝；全合成工具与凭据，零网络调用费用。
+- [audit] phase → implementing @ 2026-09-28T16:39:32+08:00
+- T61B媒体工具预检实现：两工具-version成功后才返回runtime，配置快照/超时/输出上限，错误无原始stderr。14项局部及完整847项通过(verify exit0)，typecheck通过，只读静态审查无阻断。版本检查不等于编解码验证，低层工厂保留；下一步prepare完整媒体链路。费用0。

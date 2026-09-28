@@ -1,3 +1,5 @@
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
 import { isAbsolute, join } from 'node:path';
 import { isIP } from 'node:net';
 import { createGenerationTaskStore } from './generation-tasks';
@@ -48,4 +50,21 @@ export function createLiveGenerationRuntime(options: Options) {
     videoConcat: inputs => concatVideoBytes(inputs, { executable: media.ffmpeg }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
   });
+}
+
+// Paid-run preparation entry: validate configuration and test the configured local tools
+// before returning any operation. No shell, provider calls, or ambient credentials.
+export async function prepareLiveGenerationRuntime(options: Options) {
+  const snapshot = { ...options, budget: options?.budget && { ...options.budget }, media: options?.media && { ...options.media, allowedHosts: [...(options.media.allowedHosts ?? [])] } };
+  const runtime = createLiveGenerationRuntime(snapshot);
+  const execute = promisify(execFile);
+  for (const name of ['ffmpeg', 'ffprobe'] as const) {
+    try {
+      const result = await execute(snapshot.media[name], ['-version'], { timeout: 10_000, maxBuffer: 1_000_000, encoding: 'utf8' });
+      if (!result.stdout.startsWith(`${name} version `)) throw new Error('Unexpected media tool');
+    } catch {
+      throw new Error(`Media tool preflight failed: ${name}`);
+    }
+  }
+  return runtime;
 }
