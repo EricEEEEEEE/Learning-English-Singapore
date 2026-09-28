@@ -13,3 +13,11 @@ OpenAI用量页 https://platform.openai.com/usage 跳转登录页，当前浏览
 官方 https://docs.ltx.io/pricing 于本日复核：audio-to-video按输入音频时长计费，ltx-2-5-fast 720p标价USD0.09/秒。该标价尚未说明之前1.08估算与1.09扣减差异原因，不能单独视为含税、取整等最终费用硬上界。Async Jobs文档也已打开核查，本轮未获得关闭全部费用不确定性的证据。
 
 真实调用继续关闭，授权本身有效；真实执行模式隔离等离线开发不受登录阻塞。
+
+## 2026-09-28 OpenAI登录后续核对
+
+用户完成登录后只读查看Usage及Audio Speeches。筛选为Default project、All API sources、All API keys、Last 7 days（Sep21—Sep28）：首页Audio Speeches显示2 requests / 40 characters；语音分类页按Models显示tts-1、40 characters。与酒店样片记录的两次、40字符一致，但页面未提供逐请求关联证据。
+
+首页Total Spend显示USD0.00（两位小数），组织September spend显示USD0.23。不能将前者当成语音免费，也不能将组织整月费用全部归到本项目。语音分类页显示字符用量，尚未取得精确费用账单；此前USD0.000600仍是估算。核对入口：https://platform.openai.com/usage/audio-speeches 。
+
+本轮未生成、未充值、未修改账户设置；共用USD25绝对上限授权继续有效，无需用户再次批准相同额度。已消除登录阻塞，未消除实际收费上界与真实执行入口隔离的剩余工作。

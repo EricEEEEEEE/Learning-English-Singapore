@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "49d31d6e65485fb711ef6eab7713da57b578fc52",
+  "last_round_commit": "616515c7d7bbe48a699a5690bef5a43128bfe5b2",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-27T20:27:51+08:00",
+  "last_session": "2026-09-28T15:35:19+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 852820,
-  "blocks_seen": 1000,
+  "audit_bytes": 854118,
+  "blocks_seen": 1009,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61B账单只读核对与OpenAI登录接续"
+    "msg": "存档: T61B OpenAI语音用量核对与费用精度边界"
   }
 }
