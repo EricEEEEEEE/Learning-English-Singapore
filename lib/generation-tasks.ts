@@ -194,10 +194,10 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async assembleAudio(input: Session & { id: string }) {
-      if (simulation !== true || !mediaStore) throw new Error('Audio assembly disabled');
+      if ((!simulation && !budget) || !mediaStore) throw new Error('Audio assembly disabled');
       const ownerId = await owner(input);
       const task = transact(db => read(db, input.id, ownerId));
-      if (!task || !task.simulation || task.status !== 'audio_ready' || !task.script || !task.audioAssets || task.audioAssets.length !== task.script.lines.length) throw new Error('Assembly prohibited');
+      if (!task || task.simulation !== simulation || task.status !== 'audio_ready' || !task.script || !task.audioAssets || task.audioAssets.length !== task.script.lines.length) throw new Error('Assembly prohibited');
       const sources = [];
       for (let i = 0; i < task.audioAssets.length; i++) {
         const asset = task.audioAssets[i], line = task.script.lines[i];
@@ -223,10 +223,10 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async encodeAudio(input: Session & { id: string }) {
-      if (simulation !== true || !mediaStore || !audioEncoder) throw new Error('Audio encoding disabled');
+      if ((!simulation && !budget) || !mediaStore || !audioEncoder) throw new Error('Audio encoding disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
-      if (!snapshot?.simulation || snapshot.status !== 'audio_assembled' || !snapshot.audioAssembly) throw new Error('Encoding prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'audio_assembled' || !snapshot.audioAssembly) throw new Error('Encoding prohibited');
       const locator = { cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision };
       const segments = snapshot.audioAssembly.segments;
       const count = snapshot.encodedAudio?.length ?? 0;
@@ -259,13 +259,13 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async confirmEncodedAudio(input: Session & { id: string; revision: number; segmentIndex: number; sha256: string }) {
-      if (simulation !== true || !mediaStore) throw new Error('Audio confirmation disabled');
+      if ((!simulation && !budget) || !mediaStore) throw new Error('Audio confirmation disabled');
       const ownerId = await owner(input);
       if (!Number.isSafeInteger(input.revision) || input.revision < 1 || !Number.isSafeInteger(input.segmentIndex) || input.segmentIndex < 0 || typeof input.sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(input.sha256)) throw new Error('Invalid audio confirmation');
       const snapshot = transact(db => read(db, input.id, ownerId));
       const encoded = snapshot?.encodedAudio?.[input.segmentIndex];
       const source = snapshot?.audioAssembly?.segments[input.segmentIndex];
-      if (!snapshot?.simulation || snapshot.status !== 'audio_assembled' || snapshot.revision !== input.revision || !encoded || !source || encoded.segmentIndex !== input.segmentIndex || encoded.sha256 !== input.sha256 || encoded.sourceSha256 !== source.sha256 || encoded.sourceDuration !== source.duration) throw new Error('Audio confirmation prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'audio_assembled' || snapshot.revision !== input.revision || !encoded || !source || encoded.segmentIndex !== input.segmentIndex || encoded.sha256 !== input.sha256 || encoded.sourceSha256 !== source.sha256 || encoded.sourceDuration !== source.duration) throw new Error('Audio confirmation prohibited');
       const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: encoded.assetId });
       if (!media || media.sha256 !== encoded.sha256 || media.size !== encoded.size || createHash('sha256').update(media.bytes).digest('hex') !== encoded.sha256) throw new Error('Audio confirmation media unavailable');
       const confirmedAt = input.now ?? Date.now();
