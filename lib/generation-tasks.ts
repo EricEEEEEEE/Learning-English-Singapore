@@ -280,12 +280,12 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async runVideo(input: Session & { id: string }) {
-      if (simulation !== true || (!encodedVideoProvider && (!videoProvider || videoProvider.audioReviewed !== true)) || !mediaStore) throw new Error('Video submission disabled');
+      if ((!simulation && (!budget || !encodedVideoProvider)) || (!encodedVideoProvider && (!videoProvider || videoProvider.audioReviewed !== true)) || !mediaStore) throw new Error('Video submission disabled');
       const ownerId = await owner(input);
       const reservation = (encodedVideoProvider ?? videoProvider!).reservedMicros;
       if (!Number.isSafeInteger(reservation) || reservation <= 0) throw new Error('Invalid reservation');
       const snapshot = transact(db => read(db, input.id, ownerId));
-      if (!snapshot || !snapshot.simulation || !['audio_assembled', 'video_pending'].includes(snapshot.status) || !snapshot.audioAssembly) throw new Error('Submission prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || !['audio_assembled', 'video_pending'].includes(snapshot.status) || !snapshot.audioAssembly) throw new Error('Submission prohibited');
       const segmentIndex = snapshot.videoJobs?.length ?? 0;
       for (let i = 0; i < segmentIndex; i++) {
         const job = snapshot.videoJobs![i], asset = snapshot.videoAssets?.find(a => a.segmentIndex === i), check = snapshot.videoChecks?.find(c => c.segmentIndex === i);
@@ -329,11 +329,11 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async queryVideo(input: Session & { id: string }) {
-      if (simulation !== true) throw new Error('Video query disabled');
+      if (!simulation && (!budget || !encodedVideoProvider)) throw new Error('Video query disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
       const job = snapshot?.videoJobs?.at(-1);
-      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job) throw new Error('Query prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'video_pending' || !job) throw new Error('Query prohibited');
       const provider = job.audioSha256 !== undefined ? encodedVideoProvider : videoProvider;
       if (!provider?.query) throw new Error('Video query disabled');
       if (job.status === 'completed' || job.status === 'failed') return snapshot;
@@ -349,11 +349,11 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async collectVideo(input: Session & { id: string }) {
-      if (simulation !== true || !videoDownload || !mediaStore) throw new Error('Video collection disabled');
+      if ((!simulation && (!budget || !encodedVideoProvider)) || !videoDownload || !mediaStore) throw new Error('Video collection disabled');
       const ownerId = await owner(input);
       const snapshot = transact(db => read(db, input.id, ownerId));
       const job = snapshot?.videoJobs?.at(-1);
-      if (!snapshot?.simulation || snapshot.status !== 'video_pending' || !job || job.status === 'failed') throw new Error('Collection prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'video_pending' || !job || job.status === 'failed') throw new Error('Collection prohibited');
       const provider = job.audioSha256 !== undefined ? encodedVideoProvider : videoProvider;
       if (!provider?.query) throw new Error('Video collection disabled');
       if (snapshot.videoAssets?.some(asset => asset.segmentIndex === job.segmentIndex)) return snapshot;

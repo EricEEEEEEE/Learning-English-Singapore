@@ -391,3 +391,5 @@
 - T61B真实模式音轨组装、编码和确认接线：9项红题转绿，245项T61B回归及完整822项通过(verify exit0)，typecheck通过；只读静态审查无阻断。全程替身零API费用，真实视频仍关闭，确认记录不冒充真人听审。
 - [audit] phase → test-writing @ 2026-09-28T16:11:23+08:00
 - T61B真实视频接线红题8项：5失败3通过，失败均Video submission disabled。覆盖已确认AAC提交前占额、未知不重试、查询与私有收集复用、不回退legacy、含历史支出精确预算边界及legacy标记不可授权。全部替身无外部调用。
+- [audit] phase → implementing @ 2026-09-28T16:12:55+08:00
+- T61B真实视频提交查询私有保存内部接线：253项T61B回归及完整830项通过(verify exit0)，typecheck通过，只读静态审查无阻断。真实提交要求budget+encoded provider及全部音轨确认，复用原预算事务；全部替身零费用。下一步真实媒体探测和成片。
