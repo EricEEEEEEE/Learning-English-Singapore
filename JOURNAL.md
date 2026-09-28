@@ -412,3 +412,4 @@
 - T61B项目列表仅见Default project且月支出0.23；项目详情入口未响应，尚未读到项目限额；未修改账户或发起付费调用。
 - 核对cec81f65dd回执后继续只读项目限额核查；项目设置入口未响应，直接打开已识别项目限额地址停在Cloudflare请稍候页，尚未取得限额内容。未操作验证挑战、未改账户、未新增费用；等待用户正常浏览器接续。
 - T61B项目限额页恢复：Default project无限额且支持硬限额；共享其他应用，建议独立项目隔离，未保存任何配置、未新增费用。
+- 用户授权需要则重建并删除旧的；已创建并刷新确认独立OpenAI项目Learning English Singapore，ID proj_bU8YJY1MRYYGQV0Vf7pcN2vk，显示费用0。旧Default project承载其他应用，未删除；新密钥、专属限额及迁移尚未操作，旧密钥待新链路接通后点名确认撤销。截图outputs/t61-project-created.png。
