@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "d3a1b2c3440ac3fe8cd6014be81b59808d7d587d",
+  "last_round_commit": "502ad9554f0b7bb5e1dda979c3d5ce2c5dc7adde",
   "milestones": [
     "T01",
     "B2O"
@@ -16,11 +16,11 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-28T16:45:39+08:00",
+  "last_session": "2026-09-28T16:47:38+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 886242,
+  "audit_bytes": 888561,
   "blocks_seen": 1017,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
@@ -28,6 +28,6 @@
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61B媒体工具预检与847项完整回归"
+    "msg": "存档: T61B统一入口实际媒体与适配器全链路取证"
   }
 }
