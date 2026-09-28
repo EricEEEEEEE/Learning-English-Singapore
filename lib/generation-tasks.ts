@@ -154,13 +154,13 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async runAudio(input: Session & { id: string }) {
-      if (simulation !== true || !audioProvider || !mediaStore) throw new Error('Audio provider disabled');
+      if ((!simulation && !budget) || !audioProvider || !mediaStore) throw new Error('Audio provider disabled');
       const ownerId = await owner(input);
       const reservation = audioProvider.reservedMicros;
       if (!Number.isSafeInteger(reservation) || reservation <= 0) throw new Error('Invalid reservation');
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
-        if (!value || !value.simulation || value.status !== 'script_ready' || !value.script) throw new Error('Submission prohibited');
+        if (!value || value.simulation !== simulation || value.status !== 'script_ready' || !value.script) throw new Error('Submission prohibited');
         const count = value.audioAssets?.length ?? 0;
         if (count >= value.script.lines.length || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
         checkReservation(db, reservation);
