@@ -113,7 +113,12 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (previous && previous.fingerprint !== fingerprint) throw new Error('Request key conflict');
         if (!previous && Number(db.prepare('SELECT count(*) AS n FROM requests WHERE owner=?').get(ownerId)?.n) >= 500) throw new Error('Request limit');
         const existing = db.prepare('SELECT id FROM jobs WHERE owner=? AND fingerprint=?').get(ownerId, fingerprint);
-        if (existing) { db.prepare('INSERT OR IGNORE INTO requests VALUES(?,?,?)').run(ownerId, input.requestKey, fingerprint); return read(db, String(existing.id), ownerId)!; }
+        if (existing) {
+          const task = read(db, String(existing.id), ownerId)!;
+          if (task.simulation !== simulation) throw new Error('Task execution mode conflict');
+          db.prepare('INSERT OR IGNORE INTO requests VALUES(?,?,?)').run(ownerId, input.requestKey, fingerprint);
+          return task;
+        }
         const count = db.prepare('SELECT count(*) AS n FROM jobs WHERE owner=?').get(ownerId);
         if (Number(count?.n) >= 50) throw new Error('Task limit');
         const task: GenerationTask = { id: randomUUID(), ownerId, goal, revision: input.revision, status: 'awaiting_budget', reservedMicros: 0, providerCalls: 0, simulation };
