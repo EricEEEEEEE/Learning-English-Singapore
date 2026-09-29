@@ -18,3 +18,9 @@
 - 用户重新打开后台后，成功读取Default project的Limits：No spend limit set。打开Set spend limit弹窗，存在Monthly spend limit及Enforce a hard limit（关闭）。未填写、未保存；已刷新退出。此前页面阻塞解除。
 - Default project同时承载其他应用密钥，因此不能未经授权设置低额度影响其他应用。本产品命名密钥本月显示0.00（两位小数，不代表零实际费用），其他应用有0.23显示；没有读取完整密钥。
 - 建议下一步授权创建独立Learning English Singapore项目，后续确认专属限额、密钥安全保存及实际执行状态；不修改默认项目和组织自动充值。创建独立项目本身不证明跨供应商25美元累计上限已满足。新增请求0、费用0、配置修改0。
+
+## 独立项目硬限额已配置
+
+- 用户授权继续完成独立项目配置，已为Learning English Singapore设置每月1美元并启用Enforce a hard limit。保存后显示0.00/1.00及Requests will start to fail when limit is reached。截图outputs/t61-project-limit.png。默认项目、组织自动充值保持原样。
+- 重要：开启时平台明确提示enforcement is not instantaneous，最终用量可能少量超出。因此硬限额确实存在且已启用，但仍不能证明绝对零超额，也不是跨供应商累计总额保证。保留25美元绝对约束；尚未新增收费请求。
+- 新项目密钥迁移待安全设置流程，旧密钥未撤销；未宣称迁移完成。
