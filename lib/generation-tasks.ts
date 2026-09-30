@@ -28,9 +28,9 @@ type VideoCheck = Awaited<ReturnType<typeof probeVideoBytes>>;
 type Assembly = ReturnType<typeof assembleCourseAudio>;
 type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
-type VideoJob = { audioSha256?: string; audioDuration?: number; segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
+type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDuration?: number; segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
-type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string }) => Promise<{ status: string; jobId?: string }> };
+type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
@@ -311,9 +311,17 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
           if (index === segmentIndex) encoded = { bytes: Buffer.from(stored.bytes), sha256: saved.sha256, sourceSha256: saved.sourceSha256, sourceDuration: saved.sourceDuration, duration: saved.duration, mimeType: saved.mimeType, decoded: saved.decoded };
         }
       }
+      let referenceImage: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } | undefined;
+      if (snapshot.referenceImage) {
+        const ref = snapshot.referenceImage;
+        if (!encodedVideoProvider || ref.decoded !== true || ref.mimeType !== 'image/png' || ref.width !== 720 || ref.height !== 1280) throw new Error('Invalid reference submission');
+        const stored = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: ref.assetId });
+        if (!stored || !stored.bytes.length || stored.bytes.length > 5_249_982 || stored.sha256 !== ref.sha256 || createHash('sha256').update(stored.bytes).digest('hex') !== ref.sha256) throw new Error('Reference media unavailable');
+        referenceImage = { bytes: Buffer.from(stored.bytes), sha256: ref.sha256, mimeType: 'image/png' };
+      }
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
-        if (!value || value.status !== snapshot.status || JSON.stringify(value.encodedAudio) !== JSON.stringify(snapshot.encodedAudio) || JSON.stringify(value.audioReviews) !== JSON.stringify(snapshot.audioReviews) || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        if (!value || value.status !== snapshot.status || JSON.stringify(value.referenceImage) !== JSON.stringify(snapshot.referenceImage) || JSON.stringify(value.encodedAudio) !== JSON.stringify(snapshot.encodedAudio) || JSON.stringify(value.audioReviews) !== JSON.stringify(snapshot.audioReviews) || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
         checkReservation(db, reservation);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros += reservation; value.providerCalls++;
         save(db, value); return value;
@@ -321,13 +329,13 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       let id: string | undefined;
       try {
         const response = encodedVideoProvider && encoded
-          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal })
+          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal, ...(referenceImage ? { referenceImage } : {}) })
           : await videoProvider!.submit({ bytes: media.bytes, duration: segment.duration, goal: task.goal });
         if (response?.status === 'pending' && typeof response.jobId === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(response.jobId)) id = response.jobId;
       } catch { /* Unknown submission: retain reservation and never resubmit automatically. */ }
       return transact(db => {
         task.status = id ? 'video_pending' : 'submission_unknown';
-        if (id) task.videoJobs = [...(task.videoJobs ?? []), { segmentIndex, jobId: id, status: 'pending', ...(encoded ? { audioSha256: encoded.sha256, audioDuration: encoded.duration } : {}) }];
+        if (id) task.videoJobs = [...(task.videoJobs ?? []), { segmentIndex, jobId: id, status: 'pending', ...(referenceImage ? { referenceImageSha256: referenceImage.sha256 } : {}), ...(encoded ? { audioSha256: encoded.sha256, audioDuration: encoded.duration } : {}) }];
         save(db, task); return task;
       });
     },
