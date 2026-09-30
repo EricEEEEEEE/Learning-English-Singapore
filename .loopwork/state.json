@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "883cd44fa0ed9e68aebd840a918c82632a0c9fda",
+  "last_round_commit": "c87f4aab39c63db71719abae9a55a729b8ee2db8",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T11:32:08+08:00",
+  "last_session": "2026-09-30T11:32:57+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 906488,
-  "blocks_seen": 1095,
+  "audit_bytes": 909680,
+  "blocks_seen": 1096,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61B首个真实聚会样片与供应商时长偏差取证"
+    "msg": "存档: T61B样片本地尾差修复与严格探测验证"
   }
 }

@@ -15,3 +15,9 @@
 同一job已completed并下载私有保存，未重新提交。原始样片outputs/t61-paid-first/party-unverified.mp4，720x1280、24fps、H264/AAC，完整FFmpeg解码exit0。画面抽帧见party-frame.jpg，呈现成人家长面对镜头与聚会气球背景；抽帧不证明全片口型及听说角色正确。
 
 供应商视频流16.041667秒、音频16.042秒，均从0开始，输入音轨16.25秒。输出缩短约0.208秒，现有probe拒绝（Video verification failed），因此任务保持video_pending，不发布课程ready，不改冻结测试或静默放宽时长。需要进一步检查供应商帧数/音轨尾部，优先本地修复而非付费重生成。未输出签名下载URL、未公开发布。
+
+## 零费用本地修复实验
+
+原始供应商输出保留；新增party-local-repaired.mp4，替换为用户听审通过的完整party-listen.wav，视频末帧延长约0.208333秒，16.25秒截定。音画流均从0开始、均16.25秒。既有probeVideoBytes严格校验通过，完整FFmpeg解码exit0，sha256为184977368cb31b5c22e6dc39e9b579565588c46603a4d3a999753ace808cd141。结果local-repair-probe.json。
+
+这是独立本地修复实验，没有覆盖持久库原始素材、没有把任务标ready、没有改变考题/生产实现、没有新增API费用。未验证全片逐句口型同步；原始尾段是否截掉语音尚未听辨，不声称已证明。若接入自动课程链，应先红考题约束只修有限尾差、保留原音轨/来源哈希、不隐藏大幅时长偏差，再实现。
