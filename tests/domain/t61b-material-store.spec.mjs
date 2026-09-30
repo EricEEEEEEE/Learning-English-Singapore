@@ -147,3 +147,31 @@ test('T61B saved materials: explicit absent or invalid version never silently fa
     await expect(c.reopen().getCourse({ ...c.request, materialsRevision })).rejects.toThrow();
   }
 });
+
+test('T61B saved materials: reordered object keys and line translations remain an equivalent retry', async () => {
+  const c = await materialContext();
+  await c.store.saveLearningMaterials({ ...c.input, materials: c.revision });
+  const reverseKeys = value => Array.isArray(value) ? value.map(reverseKeys)
+    : value && typeof value === 'object' ? Object.fromEntries(Object.entries(value).reverse().map(([k, v]) => [k, reverseKeys(v)])) : value;
+  const retry = reverseKeys(c.revision);
+  retry.lineTranslations.reverse();
+  const result = await c.reopen().saveLearningMaterials({ ...c.input, materials: retry });
+  expect(result).toEqual(await c.reopen().getCourse({ ...c.request, materialsRevision: 1 }));
+  expect(await c.reopen().getCourse(c.request)).toEqual(c.original);
+});
+
+test('T61B saved materials: competing store instances accept only one differing payload for a version', async () => {
+  const c = await materialContext();
+  const second = structuredClone(c.revision);
+  second.lineTranslations[0].translations['zh-Hans'] = '另一份草稿';
+  const results = await Promise.allSettled([
+    c.store.saveLearningMaterials({ ...c.input, materials: c.revision }),
+    c.reopen().saveLearningMaterials({ ...c.input, materials: second }),
+  ]);
+  expect(results.filter(r => r.status === 'fulfilled')).toHaveLength(1);
+  expect(results.filter(r => r.status === 'rejected')).toHaveLength(1);
+  const winner = results.find(r => r.status === 'fulfilled').value;
+  expect(await c.reopen().getCourse({ ...c.request, materialsRevision: 1 })).toEqual(winner);
+  expect(await c.reopen().getCourse(c.request)).toEqual(c.original);
+  expect(c.finalCounts()).toEqual({ concats: 1, verifies: 1 });
+});
