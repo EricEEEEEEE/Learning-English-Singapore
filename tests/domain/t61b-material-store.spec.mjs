@@ -175,3 +175,35 @@ test('T61B saved materials: competing store instances accept only one differing 
   expect(await c.reopen().getCourse(c.request)).toEqual(c.original);
   expect(c.finalCounts()).toEqual({ concats: 1, verifies: 1 });
 });
+
+test('T61B material listing: advertises highest saved material version after reopen without modifying original task', async () => {
+  const c = await materialContext();
+  const before = await c.store.get(c.input);
+  expect((await c.store.list(c.input))[0]).not.toHaveProperty('materialsRevision');
+  await c.store.saveLearningMaterials({ ...c.input, materials: { ...c.revision, materialsRevision: 3 } });
+  await c.store.saveLearningMaterials({ ...c.input, materials: c.revision });
+  const listed = await c.reopen().list(c.input);
+  expect(listed).toHaveLength(1);
+  expect(listed[0]).toEqual({ ...before, materialsRevision: 3 });
+  const selected = await c.reopen().getCourse({ ...c.request, materialsRevision: listed[0].materialsRevision });
+  expect(selected.materialsRevision).toBe(3);
+  expect(await c.store.get(c.input)).toEqual(before);
+  expect(await c.reopen().list({ ...c.input, cookie: c.other })).toEqual([]);
+});
+
+test('T61B material listing: actual HTTP list exposes material version but no private script or owner', async () => {
+  const c = await materialContext();
+  const { handleGenerationTasks } = await import('../../app/api/generation-tasks/route.ts');
+  const { GOOGLE_SESSION_COOKIE } = await import('../../lib/google-auth.ts');
+  await c.store.saveLearningMaterials({ ...c.input, materials: { ...c.revision, materialsRevision: 3 } });
+  const response = await handleGenerationTasks(new Request('http://localhost/api/generation-tasks', {
+    headers: { cookie: `${GOOGLE_SESSION_COOKIE}=${c.input.cookie}` },
+  }), { store: c.reopen(), now: c.input.now });
+  expect(response.status).toBe(200);
+  const body = await response.json();
+  expect(body.tasks).toHaveLength(1);
+  expect(body.tasks[0].materialsRevision).toBe(3);
+  expect(body.tasks[0]).not.toHaveProperty('ownerId');
+  expect(body.tasks[0]).not.toHaveProperty('script');
+  expect(body.tasks[0]).not.toHaveProperty('finalVideo');
+});

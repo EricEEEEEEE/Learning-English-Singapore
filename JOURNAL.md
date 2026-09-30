@@ -517,3 +517,5 @@
 - 确认8a074bc556后新增页面材料版本2项红题：模拟任务列表提供materialsRevision=2，实际入口到四页和重开需透传且媒体仍原版本；返回材料版不符应拒绝。desktop实跑exit1：新增2失败、原2通过，失败证据请求版本null而非2（t61b-material-ui-red.log）。全部合成数据/本地媒体；仅tests修改，未改实现/费用0。此fixture只证明前端合同，后端任务列表尚需提供已保存材料版本元数据，不能冒称真实列表已接通。
 - [audit] phase → implementing @ 2026-09-30T21:44:05+08:00
 - 确认c68d907fe1后接入generation-panel打开状态/key及RealSceneCourse请求/响应/依赖materialsRevision，非法版本请求前拒绝、错版拒绝、清空旧材料并取消旧请求，媒体仍原版。最初专项用旧构建导致2失败不作新实现结论；完整verify重建exit0，952/952（verify-20260930-214454.log），三视口新增6项通过。独立静态审查无阻断，快速切换竞态未专测。后端列表仍未输出材料版本，真实普通入口未完整接通，下一步补列表元数据红题。未改考题，费用0。
+- [audit] phase → test-writing @ 2026-09-30T21:50:11+08:00
+- 确认aff89a0187后补列表元数据2项红题：保存3再1应提供最高材料版本3、原任务不变/其他账号不可见；实际handleGenerationTasks列表需输出材料版本且不泄漏owner/script/finalVideo。最终实跑exit1新增2失败、原7通过（t61b-material-list-red.log），复现store.list与HTTP白名单缺字段。仅考题、费用0，下一步同时接store及HTTP列表，不另拆遗漏接口。
