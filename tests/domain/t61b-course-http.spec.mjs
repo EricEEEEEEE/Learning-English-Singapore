@@ -44,3 +44,39 @@ test('T61B course HTTP: authentication and internal failures produce uncached ge
     expect(body).not.toContain(message); expect(body).not.toContain('secret-owner');
   }
 });
+
+test('T61B course HTTP: forwards explicit learning material version with source version', async () => {
+  const { handleGeneratedCourse } = await import('../../app/api/generated-courses/route.ts');
+  let calls = 0;
+  const revised = { ...course, materialsRevision: 3 };
+  const response = await handleGeneratedCourse(request(`${url}&materialsRevision=3`), { now: 1234, store: { getCourse: async input => {
+    calls++;
+    expect(input).toEqual({ cookie: 'synthetic-sealed-session', now: 1234, id: 'synthetic-course', revision: 2, materialsRevision: 3 });
+    return revised;
+  } } });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual(revised);
+  expect(response.headers.get('cache-control')).toBe('private, no-store, max-age=0');
+  expect(calls).toBe(1);
+});
+
+test('T61B course HTTP: malformed or duplicate material version rejects before reading any course', async () => {
+  const { handleGeneratedCourse } = await import('../../app/api/generated-courses/route.ts');
+  let calls = 0;
+  for (const suffix of ['materialsRevision=', 'materialsRevision=0', 'materialsRevision=-1', 'materialsRevision=1.5', 'materialsRevision=1e2', 'materialsRevision=01', 'materialsRevision=9007199254740992', 'materialsRevision=1&materialsRevision=2']) {
+    const response = await handleGeneratedCourse(request(`${url}&${suffix}`), { now: 1, store: { getCourse: async () => { calls++; return course; } } });
+    expect(response.status, suffix).toBe(400);
+  }
+  expect(calls).toBe(0);
+});
+
+test('T61B course HTTP: missing material revision is not retried as original', async () => {
+  const { handleGeneratedCourse } = await import('../../app/api/generated-courses/route.ts');
+  const seen = [];
+  const response = await handleGeneratedCourse(request(`${url}&materialsRevision=7`), { now: 1, store: { getCourse: async input => {
+    seen.push(input.materialsRevision); throw new Error('Course unavailable');
+  } } });
+  expect(response.status).toBe(404);
+  expect(seen).toEqual([7]);
+  expect(await response.json()).toEqual({ error: 'not_found' });
+});
