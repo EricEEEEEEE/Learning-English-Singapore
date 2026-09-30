@@ -490,3 +490,5 @@
 - T61B拼接CFR能力：红档d9b13cfddd后实现可选normalizeDuration合法性与24fps重编码，未传参数保留原流拷贝。13项定向通过，完整verify exit0、919/919（verify-20260930-205855.log）；实际两段素材经新能力再经原严格成片验证，24fps/34.017秒/decoded通过。独立静态审查有条件通过，可信时长须由任务层绑定，runtime尚未接线不声称全链路自动修复。未动测试、无付费调用。
 - [audit] phase → test-writing @ 2026-09-30T21:04:33+08:00
 - 确认c6089b9c01后新红题t61b-cfr-task.spec.mjs：要求拼接收到已验证片段总时长22秒，调用者伪造normalizeDuration=1无效，严格成片复验失败不发布且必须实际到达复验。实跑exit1两项失败，现有回调未传可信时长；证据t61b-cfr-task-red.log。仅考题，零API费用；后续先接任务层，再接runtime。
+- [audit] phase → implementing @ 2026-09-30T21:05:14+08:00
+- 确认3ce78b7582红回执，任务层videoConcat回调新增verifiedDuration，由已验证源片段planVideoTimeline.duration传入，页面normalizeDuration字段不参与。定向10/10通过（t61b-cfr-task-green.log），包括严格复验失败不发布、原成片读取及并发保护。本次只登记接线检查点，不宣称全量回归或T61B完成；runtime尚未转发normalizeDuration，下一步补入口红题，完成后统一全量验证。实现未动考题，无API费用。
