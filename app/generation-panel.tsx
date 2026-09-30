@@ -10,9 +10,9 @@ const copy = {
   hi: ['दृश्य निर्माण कार्य', 'मनचाहा दृश्य', 'कार्य बनाएँ', 'खर्च की अनुमति की प्रतीक्षा · अभी नहीं बना', 'पहले साइन इन करें; स्थानीय सेवा का सेटअप ज़रूरी है।', 'वापस', 'सहेज रहे हैं', 'पुष्टि नहीं हुई। फिर कोशिश करें; वही अनुरोध दोहराया नहीं जाएगा।', 'परिणाम अज्ञात है। अपने आप दोबारा नहीं भेजेंगे।', 'यह अनुकरण है, वास्तविक निर्माण नहीं'],
 };
 export const generationTitle = (language: EntryLanguage) => copy[language][0];
-type Task = { id: string; goal: string; status: string; revision?: number; simulation?: boolean };
+type Task = { id: string; goal: string; status: string; revision?: number; materialsRevision?: number; simulation?: boolean };
 export default function GenerationPanel({ language, onBack }: { language: EntryLanguage; onBack: () => void }) {
-  const [opened, setOpened] = useState<{ id: string; revision: number } | null>(null);
+  const [opened, setOpened] = useState<{ id: string; revision: number; materialsRevision?: number } | null>(null);
   const openLabel = { 'zh-Hans': '打开已保存课程', id: 'Buka pelajaran tersimpan', ja: '保存済み教材を開く', ko: '저장된 수업 열기', hi: 'सहेजा गया पाठ खोलें' }[language];
   const text = copy[language]; const [goal, setGoal] = useState(''); const [tasks, setTasks] = useState<Task[]>([]);
   const [busy, setBusy] = useState(false); const [error, setError] = useState<number | null>(null);
@@ -36,11 +36,11 @@ export default function GenerationPanel({ language, onBack }: { language: EntryL
     } catch { if (live.current) setError(7); }
     finally { inFlight.current = false; if (live.current) setBusy(false); }
   }
-  if (opened) return <RealSceneCourse key={`${opened.id}-${opened.revision}`} language={language} saved={opened} onBack={() => setOpened(null)} />;
+  if (opened) return <RealSceneCourse key={`${opened.id}-${opened.revision}-${opened.materialsRevision ?? "original"}`} language={language} saved={opened} onBack={() => setOpened(null)} />;
   return <section className="real-scene"><h1>{text[0]}</h1>
     <form onSubmit={e => { e.preventDefault(); void submit(); }}><label htmlFor="generation-goal">{text[1]}</label><textarea id="generation-goal" value={goal} maxLength={2000} disabled={busy} onChange={e => { setGoal(e.target.value); key.current = ''; }} style={{ width: '100%', minHeight: 120 }} /><button disabled={busy || !goal.trim()}>{busy ? text[6] : text[2]}</button></form>
     {error !== null && <p role="alert">{text[error]}</p>}
-    <div role="status">{tasks.map(task => <article className="scene-card" key={task.id}><p>{task.goal}</p><p>{task.simulation ? text[9] : ''} {task.status === 'video_assembled' ? openLabel : task.status === 'awaiting_budget' ? text[3] : text[8]}</p>{task.status === 'video_assembled' && Number.isSafeInteger(task.revision) && task.revision! > 0 && <button type="button" data-testid="generated-course-open" onClick={() => setOpened({ id: task.id, revision: task.revision! })}>{openLabel}</button>}</article>)}</div>
+    <div role="status">{tasks.map(task => <article className="scene-card" key={task.id}><p>{task.goal}</p><p>{task.simulation ? text[9] : ''} {task.status === 'video_assembled' ? openLabel : task.status === 'awaiting_budget' ? text[3] : text[8]}</p>{task.status === 'video_assembled' && Number.isSafeInteger(task.revision) && task.revision! > 0 && <button type="button" data-testid="generated-course-open" onClick={() => setOpened({ id: task.id, revision: task.revision!, ...(task.materialsRevision !== undefined ? { materialsRevision: task.materialsRevision } : {}) })}>{openLabel}</button>}</article>)}</div>
     <button onClick={onBack}>{text[5]}</button>
   </section>;
 }

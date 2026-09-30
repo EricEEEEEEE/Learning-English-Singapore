@@ -12,7 +12,7 @@ export const realSceneCopy: Record<EntryLanguage, Copy> = {
   ko: { title: '호텔 상황 영상 샘플', steps: ['영상', '표현', '문장', '답을 보며 응답'], notice: '12초 AI 샘플 · 완성된 수업이나 실시간 생성이 아님 · 보조 언어는 원어민 검토 전입니다', play: '재생', replay: '다시 듣기', pause: '일시 정지', back: '로그인 선택으로 돌아가기', listen: '영상 속 문장 듣기', answer: '답변 예시 듣기', hint: '상대가 말한 후 답을 보며 따라 말하세요. 녹음, 인식, 채점은 하지 않습니다. 자유 대화와 계정 저장은 아직 지원하지 않습니다.', error: '재생 실패. 다시 시도하세요.' },
   hi: { title: 'होटल दृश्य का नमूना', steps: ['वीडियो', 'वाक्यांश', 'वाक्य', 'उत्तर देखकर बोलें'], notice: '12 सेकंड का AI नमूना · पूरा पाठ या रीयल-टाइम निर्माण नहीं · सहायक भाषा की मूल वक्ता से समीक्षा बाकी है', play: 'चलाएँ', replay: 'फिर सुनें', pause: 'रोकें', back: 'साइन इन विकल्पों पर वापस जाएँ', listen: 'वीडियो का वाक्य सुनें', answer: 'उत्तर का उदाहरण सुनें', hint: 'सामने वाले के बोलने के बाद उत्तर देखकर बोलें। रिकॉर्डिंग, पहचान या अंक नहीं दिए जाते। खुली बातचीत और खाते में सहेजना अभी उपलब्ध नहीं है।', error: 'वीडियो नहीं चला। फिर कोशिश करें।' },
 };
-export default function RealSceneCourse({ language, onBack, saved }: { language: EntryLanguage; onBack: () => void; saved?: { id: string; revision: number } }) {
+export default function RealSceneCourse({ language, onBack, saved }: { language: EntryLanguage; onBack: () => void; saved?: { id: string; revision: number; materialsRevision?: number } }) {
   const savedCopy = {
     'zh-Hans': ['已保存场景课程', '本地课程 · 辅助语言尚未经母语审查', '返回生成任务', '听对方说话，再看答案跟读；尚无录音、识别、评分或自由对话。'],
     id: ['Pelajaran tersimpan', 'Pelajaran lokal · Terjemahan belum ditinjau', 'Kembali ke tugas', 'Dengarkan lalu ikuti jawaban. Belum ada rekaman, penilaian atau percakapan bebas.'],
@@ -33,12 +33,15 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
   const wantsPlayback = useRef(false);
   useEffect(() => {
     const controller = new AbortController();
-    fetch(saved ? `/api/generated-courses?${new URLSearchParams({ id: saved.id, revision: String(saved.revision) })}` : '/media/hotel-course.json', { signal: controller.signal, cache: 'no-store' })
+    setCourse(null); setLoadFailed(false);
+    if (saved?.materialsRevision !== undefined && (!Number.isSafeInteger(saved.materialsRevision) || saved.materialsRevision < 1)) { setLoadFailed(true); return () => controller.abort(); }
+    fetch(saved ? `/api/generated-courses?${new URLSearchParams({ id: saved.id, revision: String(saved.revision), ...(saved.materialsRevision !== undefined ? { materialsRevision: String(saved.materialsRevision) } : {}) })}` : '/media/hotel-course.json', { signal: controller.signal, cache: 'no-store' })
       .then(response => { if (!response.ok) throw new Error('course'); return response.json(); })
       .then(data => {
         let source = data;
         let privateUrl: string | undefined;
         if (saved) {
+          if (data?.materialsRevision !== saved.materialsRevision) throw new Error('materials version');
           if (data?.id !== saved.id || data?.revision !== saved.revision || data?.media?.courseId !== saved.id || data?.media?.revision !== saved.revision || !['test-fixture', 'ai-generated'].includes(data?.source) || !Array.isArray(data?.lines) || data.lines.some((line: { revision?: number }) => line.revision !== saved.revision)) throw new Error('course');
           const version = String(saved.revision);
           // Validate learning materials through the existing contract; the media URL is constructed locally.
@@ -49,7 +52,7 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
         if (result.ok && privateUrl) result.value.media.src = privateUrl; if (!result.ok) throw new Error('course'); if (!controller.signal.aborted) setCourse(result.value); })
       .catch(() => { if (!controller.signal.aborted) setLoadFailed(true); });
     return () => controller.abort();
-  }, [saved?.id, saved?.revision]);
+  }, [saved?.id, saved?.revision, saved?.materialsRevision]);
   useEffect(() => {
     const media = video.current;
     return () => { wantsPlayback.current = false; request.current++; media?.pause(); };
