@@ -470,3 +470,5 @@
 - T61B真实入口参考图接线红考题：确认5249edf6aa回执后新增两条合成离线测试，真实运行工厂复用私有持久任务；HTTP请求image_uri必须等于已保存图片，提帧必须接入配置工具且工具失败不增费用。首跑本地端口EPERM不算红；授权本地服务重跑exit 1，2/2预期失败：image_uri undefined、Reference preparation disabled（应抵达提帧执行器）。证据.loopwork/logs/t61b-reference-runtime-red.log；无真实网络与新增费用，未修改实现。
 - [audit] phase → implementing @ 2026-09-30T20:23:04+08:00
 - T61B真实入口接线实现检查点：新增extractReferenceImage注入并透传referenceImage，定向测试1/2通过，HTTP image_uri与已存图片精确一致。另一条测试预期写错：generation-tasks.ts既有catch固定返回Reference preparation failed，红题误期望底层Reference extraction failed；不改实现错误边界迁就测试，下一轮进入test-writing纠错并加强本地工具到达证据。完整verify启动遇本地3210 EPERM，未形成全量结果。未改考题，无真实API调用及费用，T61B不勾选、不登记绿档。
+- [audit] phase → test-writing @ 2026-09-30T20:24:17+08:00
+- T61B考题纠错：确认7cbe941aa5后转test-writing，仅调整真实入口测试，错误提示按既有任务接口Reference preparation failed精确匹配；新增临时合成ffprobe记录实际参数后退出失败，断言mov本地源探测参数、任务不变、网络零次，避免只靠错误文案判断接线。两项复测exit 0（2/2，.loopwork/logs/t61b-reference-runtime-corrected.log），不声称本轮新红；原断线红证据见90c76ce87f及t61b-reference-runtime-red.log。实现未动，无付费调用。纠错考题独立登记后继续完整验证。

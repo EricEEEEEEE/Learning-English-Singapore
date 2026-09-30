@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, writeFile, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
@@ -74,12 +74,12 @@ async function prepared() {
 }
 
 
-async function runtime(c, fetch) {
+async function runtime(c, fetch, mediaOverrides = {}) {
   const { createLiveGenerationRuntime } = await import('../../lib/live-generation-runtime.ts');
   return createLiveGenerationRuntime({ enabled: true, directory: c.directory, sessionSecret: secret,
     openaiKey: 'synthetic-only', ltxKey: 'synthetic-only',
     budget: { scope: 'reference-runtime', priorSpentMicros: 0, maxReservedMicros: 1000000, scriptMicros: 100, audioMicros: 200, videoMicros: 90000 },
-    media: { ffmpeg: '/synthetic/missing-ffmpeg', ffprobe: '/synthetic/missing-ffprobe', allowedHosts: ['media.example.invalid'], maxBytes: 1000000 }, fetch });
+    media: { ffmpeg: '/synthetic/missing-ffmpeg', ffprobe: '/synthetic/missing-ffprobe', allowedHosts: ['media.example.invalid'], maxBytes: 1000000, ...mediaOverrides }, fetch });
 }
 
 test('T61B reference runtime: persisted reference reaches actual adapter HTTP body', async () => {
@@ -101,8 +101,14 @@ test('T61B reference runtime: extractor reaches configured local tool and fails 
   await c.store.collectVideo(c.input); const source = await c.store.get(c.input);
   const target = await c.store.create({ cookie: c.input.cookie, now: c.input.now, goal: 'Party continuation', revision: 1, requestKey: 'extract-runtime' });
   const request = { ...c.input, id: target.id }; let calls = 0;
-  const live = await runtime(c, async () => { calls++; throw new Error('Unexpected network'); });
-  await expect(live.prepareReferenceImage({ ...request, sourceCourseId: source.id, sourceRevision: 1, sourceAssetId: source.videoAssets[0].assetId, timeSeconds: 0.5 })).rejects.toThrow('Reference extraction failed');
+  const marker = join(c.directory, 'probe-arguments.json');
+  const probe = join(c.directory, 'synthetic-probe.cjs');
+  await writeFile(probe, `#!${process.execPath}\nrequire('node:fs').writeFileSync(${JSON.stringify(marker)}, JSON.stringify(process.argv.slice(2))); process.exit(1);\n`, { mode: 0o700 });
+  const live = await runtime(c, async () => { calls++; throw new Error('Unexpected network'); }, { ffprobe: probe });
+  await expect(live.prepareReferenceImage({ ...request, sourceCourseId: source.id, sourceRevision: 1, sourceAssetId: source.videoAssets[0].assetId, timeSeconds: 0.5 })).rejects.toThrow('Reference preparation failed');
+  const args = JSON.parse(await readFile(marker, 'utf8'));
+  expect(args.slice(0, -1)).toEqual(['-v', 'error', '-protocol_whitelist', 'file', '-f', 'mov', '-show_streams', '-show_format', '-of', 'json']);
+  expect(args.at(-1)).toMatch(/\/source\.mp4$/);
   expect(await live.get(request)).toEqual(target);
   expect(calls).toBe(0);
 });
