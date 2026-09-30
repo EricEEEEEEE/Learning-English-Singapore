@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "7ddf66e45279e833e72674f0c59d9cc263b9f64d",
+  "last_round_commit": "5565954643c4d0185961ad23abc72ec56f5ec4c2",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T11:46:35+08:00",
+  "last_session": "2026-09-30T11:47:41+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 917551,
+  "audit_bytes": 920605,
   "blocks_seen": 1108,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T61B本地尾差修复执行器与真实样片验证"
+    "kind": "red",
+    "msg": "存档: T61B尾差修复实测绑定与输出复验红考题"
   }
 }
