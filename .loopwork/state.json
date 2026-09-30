@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "2408e40bfa45f19c7b0a5b4256eff51f3c777242",
+  "last_round_commit": "af9c2137004d468d8b8c376cf3dce06090ad3ca9",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T12:07:20+08:00",
+  "last_session": "2026-09-30T12:09:41+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 933261,
-  "blocks_seen": 1135,
+  "audit_bytes": 936719,
+  "blocks_seen": 1136,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61B真实修复成片课程读取与882项完整回归"
+    "msg": "存档: T61B真实短课网页播放与四页学习取证"
   }
 }
