@@ -468,3 +468,5 @@
 - T61B参考图提交来源保护：红档69714d9443后实现私有参考图读取、字节哈希与来源快照校验，缺失/损坏在预算预留及供应商调用前拒绝，成功提交记录参考图哈希；3/3定向通过，verify.sh exit 0，910/910通过（.loopwork/logs/verify-20260930-134829.log）。独立静态审查有条件通过；真实运行入口的参考图透传与提帧器注入尚未接入，不宣称供应商已收到参考图；本轮零新增付费调用，T61B继续未勾选。
 - [audit] phase → test-writing @ 2026-09-30T20:22:18+08:00
 - T61B真实入口参考图接线红考题：确认5249edf6aa回执后新增两条合成离线测试，真实运行工厂复用私有持久任务；HTTP请求image_uri必须等于已保存图片，提帧必须接入配置工具且工具失败不增费用。首跑本地端口EPERM不算红；授权本地服务重跑exit 1，2/2预期失败：image_uri undefined、Reference preparation disabled（应抵达提帧执行器）。证据.loopwork/logs/t61b-reference-runtime-red.log；无真实网络与新增费用，未修改实现。
+- [audit] phase → implementing @ 2026-09-30T20:23:04+08:00
+- T61B真实入口接线实现检查点：新增extractReferenceImage注入并透传referenceImage，定向测试1/2通过，HTTP image_uri与已存图片精确一致。另一条测试预期写错：generation-tasks.ts既有catch固定返回Reference preparation failed，红题误期望底层Reference extraction failed；不改实现错误边界迁就测试，下一轮进入test-writing纠错并加强本地工具到达证据。完整verify启动遇本地3210 EPERM，未形成全量结果。未改考题，无真实API调用及费用，T61B不勾选、不登记绿档。

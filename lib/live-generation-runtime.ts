@@ -13,6 +13,7 @@ import { probeVideoBytes } from './probe-video-bytes';
 import { concatVideoBytes } from './concat-video-bytes';
 import { verifyFinalVideo } from './verify-final-video';
 import { repairAndVerifyVideoTail } from './repair-and-verify-video-tail';
+import { extractReferenceImage } from './extract-reference-image';
 
 type Options = {
   enabled?: boolean; directory: string; sessionSecret: string; openaiKey: string; ltxKey: string;
@@ -43,12 +44,13 @@ export function createLiveGenerationRuntime(options: Options) {
     audioEncoder: input => encodeVideoAudio(input, media),
     encodedVideoProvider: {
       reservedMicros: b.videoMicros,
-      submit: input => submitEncodedVideoSegment({ audio: input.audio, prompt: input.goal }, { ...video, reviewedSha256: input.reviewedSha256 }),
+      submit: input => submitEncodedVideoSegment({ audio: input.audio, prompt: input.goal, referenceImage: input.referenceImage }, { ...video, reviewedSha256: input.reviewedSha256 }),
       query: id => queryVideoSegment(id, video),
     },
     videoDownload: url => downloadGeneratedMedia(url, { allowedHosts: media.allowedHosts, maxBytes: media.maxBytes, fetch: transport }),
     videoProbe: input => probeVideoBytes(input, { executable: media.ffprobe }),
     videoRepair: input => repairAndVerifyVideoTail(input, media),
+    referenceExtractor: input => extractReferenceImage(input, media),
     videoConcat: inputs => concatVideoBytes(inputs, { executable: media.ffmpeg }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
   });
