@@ -51,3 +51,48 @@ test('T61B private course UI: expired access shows failure without fallback to p
   await expect(page.locator('video')).toHaveCount(0);
   expect(context.counts()).toEqual({ creates: 0, reads: 1 });
 });
+
+async function revisedSetup(page, returnedVersion = 2) {
+  const context = await setup(page);
+  const course = structuredClone(context.course);
+  course.materialsRevision = returnedVersion;
+  course.lines[0].translations['zh-Hans'] = '合成修订句子';
+  course.phrases[0].translations['zh-Hans'] = '合成修订词组';
+  const versions = [];
+  await page.route('**/api/generation-tasks', route => route.fulfill({ json: { tasks: [{ id: course.id, revision: 1, materialsRevision: 2, goal: '合成修订材料', status: 'video_assembled', simulation: true }] } }));
+  await page.route('**/api/generated-courses?**', route => {
+    versions.push(new URL(route.request().url()).searchParams.get('materialsRevision'));
+    return route.fulfill({ json: course });
+  });
+  // Re-enter to fetch the advertised material revision through the actual task list.
+  await page.reload();
+  await page.getByTestId('generation-entry').click();
+  return { versions };
+}
+
+test('T61B material UI: carries advertised revision through four pages and reopening without changing media version', async ({ page }) => {
+  const c = await revisedSetup(page);
+  await page.getByTestId('generated-course-open').click();
+  await expect(page.getByTestId('scene-step-1')).toBeVisible();
+  expect(c.versions).toEqual(['2']);
+  await expect(page.locator('video')).toHaveAttribute('src', /revision=1/);
+  await expect(page.getByTestId('scene-panel-1')).not.toContainText('合成修订句子');
+  await page.getByTestId('scene-step-2').click();
+  await expect(page.getByTestId('scene-term').first()).toContainText('合成修订词组');
+  await page.getByTestId('scene-step-3').click();
+  await expect(page.getByTestId('scene-sentence').first()).toContainText('合成修订句子');
+  await page.getByTestId('scene-step-4').click();
+  await expect(page.getByTestId('scene-answer')).toBeVisible();
+  await page.getByTestId('scene-back').click();
+  await page.getByTestId('generated-course-open').click();
+  await expect(page.getByTestId('scene-step-1')).toBeVisible();
+  expect(c.versions).toEqual(['2', '2']);
+});
+
+test('T61B material UI: mismatched material response rejects without playing an older course', async ({ page }) => {
+  const c = await revisedSetup(page, 1);
+  await page.getByTestId('generated-course-open').click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.locator('video')).toHaveCount(0);
+  expect(c.versions).toEqual(['2']);
+});
