@@ -486,3 +486,5 @@
 - 确认8e50673019回执，本地24fps归一化候选成功，源对白34秒保留、尾补0.017秒匹配分段总时长。固定已验收输入与输出哈希，经既有assembleVideo/verifyFinalVideo严格检查及全片解码，通过私有保存getCourse，任务video_assembled、10句5回合。证据docs/evidence/t61/party-normalized-course.md；零新增API费用。生产拼接代码未更改，自动修复该类时基仍需红题接入；内容词组及翻译未冒称审校完成。
 - [audit] phase → test-writing @ 2026-09-30T20:57:44+08:00
 - 确认fc7aeb9cce后进入test-writing。新增t61b-concat-cfr.spec.mjs七项：显式已核验时长控制24fps归一化与原输入不变、六类非法时长必须工具前拒绝。实跑exit1，7/7失败（现有拼接忽略normalizeDuration）；证据.loopwork/logs/t61b-concat-cfr-red.log。仅考题，不改实现。此为内部执行器首步，后续仍需由持久任务已验证分段时长驱动且严格成片复验，不接受客户端任意裁剪时长；无付费调用。
+- [audit] phase → implementing @ 2026-09-30T20:58:36+08:00
+- T61B拼接CFR能力：红档d9b13cfddd后实现可选normalizeDuration合法性与24fps重编码，未传参数保留原流拷贝。13项定向通过，完整verify exit0、919/919（verify-20260930-205855.log）；实际两段素材经新能力再经原严格成片验证，24fps/34.017秒/decoded通过。独立静态审查有条件通过，可信时长须由任务层绑定，runtime尚未接线不声称全链路自动修复。未动测试、无付费调用。

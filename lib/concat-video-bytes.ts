@@ -10,9 +10,12 @@ type Execute = (executable: string, args: string[], options: Settings) => Promis
 const run = promisify(execFile);
 const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 
-// Stream-copy only. Caller must probe inputs and re-probe/decode the final output.
-export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: string }[], options: { executable: string; execute?: Execute }) {
+// Trusted caller supplies the verified timeline duration for optional CFR output.
+// Caller must probe inputs and re-probe/decode the final output in either mode.
+export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: string }[], options: { executable: string; execute?: Execute; normalizeDuration?: number }) {
   if (!Array.isArray(inputs) || !inputs.length || inputs.length > 4 || !options || typeof options.executable !== 'string' || !isAbsolute(options.executable) || options.executable.includes('\0')) throw new Error('Invalid concat configuration');
+  const duration = options.normalizeDuration;
+  if (duration !== undefined && (typeof duration !== 'number' || !Number.isFinite(duration) || duration <= 0 || duration > 60 + 4 * 0.129002)) throw new Error('Invalid normalization duration');
   let total = 0;
   const segments = inputs.map(input => {
     if (!input || !(input.bytes instanceof Uint8Array) || !input.bytes.length || input.bytes.length > 100_000_000) throw new Error('Invalid concat input');
@@ -31,7 +34,8 @@ export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: stri
     for (let i = 0; i < segments.length; i++) await writeFile(files[i], segments[i], { flag: 'wx', mode: 0o600 });
     await writeFile(manifest, names.map(name => `file '${name}'\n`).join(''), { flag: 'wx', mode: 0o600 });
     const execute: Execute = options.execute ?? ((executable, args, settings) => run(executable, args, settings));
-    const result = await execute(options.executable, ['-nostdin', '-v', 'error', '-n', '-copyts', '-protocol_whitelist', 'file', '-f', 'concat', '-safe', '1', '-i', manifest, '-map', '0:v:0', '-map', '0:a:0', '-c', 'copy', '-avoid_negative_ts', 'disabled', '-movflags', '+faststart', '-fs', '100000000', output], { shell: false, timeout: 60_000, maxBuffer: 1_000_000, encoding: 'utf8' });
+    const encoding = duration === undefined ? ['-c', 'copy'] : ['-vf', 'fps=24', '-af', 'apad', '-t', String(duration), '-c:v', 'libx264', '-preset', 'fast', '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k'];
+    const result = await execute(options.executable, ['-nostdin', '-v', 'error', '-n', '-copyts', '-protocol_whitelist', 'file', '-f', 'concat', '-safe', '1', '-i', manifest, '-map', '0:v:0', '-map', '0:a:0', ...encoding, '-avoid_negative_ts', 'disabled', '-movflags', '+faststart', '-fs', '100000000', output], { shell: false, timeout: 60_000, maxBuffer: 1_000_000, encoding: 'utf8' });
     if (typeof result.stderr !== 'string' || result.stderr.trim()) throw new Error('Concat reported errors');
     const info = await lstat(output);
     // Reaching the ffmpeg size cap may produce truncated media even with exit 0.

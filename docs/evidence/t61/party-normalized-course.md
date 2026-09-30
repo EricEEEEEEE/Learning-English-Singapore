@@ -9,3 +9,9 @@
 范围：已有真实素材的本地处理已成功，生产concatVideoBytes仍是原流拷贝代码；不能宣称自动生成链路已修复相同问题。后续产品化应补红题并接入可验证的时间戳归一化。未新增API请求或费用。
 
 课程内容尚有词组整句化与五语文案问题，当前结构有效不代表母语审查完成，尚未对外发布或迁移真实用户账号。
+
+## 可复用拼接能力接续
+
+在红档d9b13cfddd后，concatVideoBytes新增可选normalizeDuration，未传参数仍保持原流拷贝。13项定向测试通过。实际两段素材调用新能力后，经既有verifyFinalVideo验证返回24fps、34.017秒、decoded=true；结果outputs/t61-party-multi/automatic-cfr-check.json，输出automatic-cfr.mp4。
+
+目前仍需任务层与runtime接入已验证时长；函数不自行决定可信时长，不能接受浏览器任意值，也不能以参数测试代替声画同步验收。独立静态审查有条件通过；未增加任何付费调用。
