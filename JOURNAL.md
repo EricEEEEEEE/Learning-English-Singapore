@@ -521,3 +521,4 @@
 - 确认aff89a0187后补列表元数据2项红题：保存3再1应提供最高材料版本3、原任务不变/其他账号不可见；实际handleGenerationTasks列表需输出材料版本且不泄漏owner/script/finalVideo。最终实跑exit1新增2失败、原7通过（t61b-material-list-red.log），复现store.list与HTTP白名单缺字段。仅考题、费用0，下一步同时接store及HTTP列表，不另拆遗漏接口。
 - [audit] phase → implementing @ 2026-09-30T21:51:12+08:00
 - 确认6569669ac5后store.list按owner/任务/源版本查最高已保存材料版本，只给video_assembled列表投影附materialsRevision，不改任务；HTTP列表白名单透传该字段。专项9/9，完整verify exit0且954/954（verify-20260930-215130.log），未改考题/费用0。普通列表到页面的代码接线具备；真实聚会修订尚未写入，下一步通过正式保存方法写本地材料草稿并验证实际读取和四页，不声称五语母语审校或公网已发布。单任务GET仍保留原任务视图，无新增字段承诺。
+- 确认6bda65498e后经正式saveLearningMaterials将实际聚会课程5词组/10中文释义保存为材料版1，新实例读取/列表通过；原任务原课程媒体深比较不变、调用费用增量0。实际页面以路由注入已存JSON和原视频及合成登录验证词组句子提示回复/视频播放，截图已目视；不是实际HTTP全链Google验收。证据party-materials-revision.md。无产品代码变更，沿用上轮954全绿不重复全套；下一步真实本地HTTP集成取证，保持待母语审查声明。
