@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "8e50673019aef8b00bee47e678e6fb27fcf9f0cf",
+  "last_round_commit": "fc7aeb9cce7c680e8fdab9d457e05e7b9802b676",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T20:56:51+08:00",
+  "last_session": "2026-09-30T20:58:10+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 996438,
+  "audit_bytes": 998438,
   "blocks_seen": 1209,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: 聚会成片本地帧率归一化与同版课程读取"
+    "kind": "red",
+    "msg": "存档: T61B拼接恒定帧率与显式时长红考题"
   }
 }
