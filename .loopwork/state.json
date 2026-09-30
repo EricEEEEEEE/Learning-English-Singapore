@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "6f335e5ce002f50804b2dc747dfd765ebb59ed53",
+  "last_round_commit": "8e50673019aef8b00bee47e678e6fb27fcf9f0cf",
   "milestones": [
     "T01",
     "B2O"
@@ -16,11 +16,11 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T20:55:37+08:00",
+  "last_session": "2026-09-30T20:56:51+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 994919,
+  "audit_bytes": 996438,
   "blocks_seen": 1209,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
@@ -28,6 +28,6 @@
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 聚会合并预览验收与成片帧率校验诊断"
+    "msg": "存档: 聚会成片本地帧率归一化与同版课程读取"
   }
 }
