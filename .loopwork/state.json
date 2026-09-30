@@ -7,7 +7,7 @@
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "67c5c086a90464b2ee15075a3a66b8163d578077",
+  "last_round_commit": "0c8f971d7b88c4c22373e33de1817966e28b4197",
   "milestones": [
     "T01",
     "B2O"
@@ -16,11 +16,11 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T20:45:13+08:00",
+  "last_session": "2026-09-30T20:46:03+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 986369,
+  "audit_bytes": 988872,
   "blocks_seen": 1206,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
@@ -28,6 +28,6 @@
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 聚会首段参考图生成与尾差超限取证"
+    "msg": "存档: 聚会首段尾部诊断与独立预览例外提案"
   }
 }
