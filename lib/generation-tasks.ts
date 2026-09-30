@@ -19,6 +19,8 @@ import type { concatVideoBytes } from './concat-video-bytes';
 import type { repairAndVerifyVideoTail } from './repair-and-verify-video-tail';
 import type { probeVideoBytes } from './probe-video-bytes';
 
+type ReferenceResult = { bytes: Uint8Array; sha256: string; sourceVideoSha256: string; timeSeconds: number; mimeType: 'image/png'; width: number; height: number; decoded: true };
+type SavedReference = Omit<ReferenceResult, 'bytes'> & { assetId: string; sourceCourseId: string; sourceRevision: number; sourceAssetId: string };
 type EncodedAudio = Awaited<ReturnType<typeof encodeVideoAudio>>;
 type SavedEncodedAudio = Omit<EncodedAudio, 'bytes'> & { segmentIndex: number; assetId: string; size: number };
 type FinalCheck = Awaited<ReturnType<typeof verifyFinalVideo>>;
@@ -30,9 +32,9 @@ type VideoJob = { audioSha256?: string; audioDuration?: number; segmentIndex: nu
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair }: { directory: string; sessionSecret: string; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   const budget = liveBudget ? { ...liveBudget } : undefined;
   function transact<T>(work: (db: DatabaseSync) => T): T {
@@ -378,6 +380,36 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         current.videoAssets = [...(current.videoAssets ?? []), { segmentIndex: job.segmentIndex, assetId: metadata.assetId, sha256: metadata.sha256, size: metadata.size }];
         // Stored bytes are not yet a probed, playable video or an accepted course.
         save(db, current); return current;
+      });
+    },
+    async prepareReferenceImage(input: Session & { id: string; sourceCourseId: string; sourceRevision: number; sourceAssetId: string; timeSeconds: number }) {
+      if ((!simulation && !budget) || !mediaStore || !referenceExtractor) throw new Error('Reference preparation disabled');
+      const ownerId = await owner(input);
+      if (!Number.isFinite(input.timeSeconds) || input.timeSeconds < 0 || input.timeSeconds >= 20 || !Number.isSafeInteger(input.sourceRevision) || input.sourceRevision < 1) throw new Error('Invalid reference source');
+      const { target, source } = transact(db => ({ target: read(db, input.id, ownerId), source: read(db, input.sourceCourseId, ownerId) }));
+      if (!target || !source || target.simulation !== simulation || source.simulation !== simulation || source.revision !== input.sourceRevision || !['awaiting_budget', 'script_ready', 'audio_ready', 'audio_assembled'].includes(target.status) || target.videoJobs?.length) throw new Error('Reference prohibited');
+      const sourceAsset = source.finalVideo?.assetId === input.sourceAssetId ? source.finalVideo : source.videoAssets?.find(asset => asset.assetId === input.sourceAssetId);
+      if (!sourceAsset) throw new Error('Reference source unavailable');
+      const previous = target.referenceImage;
+      if (previous) {
+        if (previous.sourceCourseId !== source.id || previous.sourceRevision !== source.revision || previous.sourceAssetId !== sourceAsset.assetId || previous.sourceVideoSha256 !== sourceAsset.sha256 || previous.timeSeconds !== input.timeSeconds) throw new Error('Reference conflict');
+        const saved = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: target.id, revision: target.revision, assetId: previous.assetId });
+        if (!saved || saved.sha256 !== previous.sha256 || createHash('sha256').update(saved.bytes).digest('hex') !== previous.sha256) throw new Error('Reference unavailable');
+        return target;
+      }
+      let reference: SavedReference;
+      try {
+        const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: source.id, revision: source.revision, assetId: sourceAsset.assetId });
+        if (!media || media.sha256 !== sourceAsset.sha256 || media.size !== sourceAsset.size || createHash('sha256').update(media.bytes).digest('hex') !== sourceAsset.sha256) throw new Error('Invalid reference source media');
+        const result = await referenceExtractor({ bytes: media.bytes, sha256: sourceAsset.sha256, timeSeconds: input.timeSeconds });
+        if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length > 5_249_982 || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256 || result.sourceVideoSha256 !== sourceAsset.sha256 || result.timeSeconds !== input.timeSeconds || result.mimeType !== 'image/png' || result.width !== 720 || result.height !== 1280 || result.decoded !== true) throw new Error('Invalid extracted reference');
+        const metadata = await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: target.id, revision: target.revision, assetId: `reference-${result.sha256}`, bytes: result.bytes, sha256: result.sha256 });
+        reference = { assetId: metadata.assetId, sha256: result.sha256, sourceCourseId: source.id, sourceRevision: source.revision, sourceAssetId: sourceAsset.assetId, sourceVideoSha256: sourceAsset.sha256, timeSeconds: input.timeSeconds, mimeType: 'image/png', width: 720, height: 1280, decoded: true };
+      } catch { throw new Error('Reference preparation failed'); }
+      return transact(db => {
+        const current = read(db, target.id, ownerId), currentSource = read(db, source.id, ownerId);
+        if (!current || JSON.stringify(current) !== JSON.stringify(target) || JSON.stringify(currentSource) !== JSON.stringify(source)) throw new Error('Task changed during reference preparation');
+        current.referenceImage = reference; save(db, current); return current;
       });
     },
     async repairVideo(input: Session & { id: string }) {
