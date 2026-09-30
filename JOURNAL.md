@@ -496,3 +496,4 @@
 - 确认bf25b27306后补真实runtime入口红题t61b-cfr-runtime.spec.mjs，合成真实模式任务完整编码/确认/下载/探测后调用运行工厂；临时工具记录实际参数并失败，断言fps24与可信22秒、忽略调用者1秒、任务不发布及网络0。初始fixture误用legacy被拒已在红题编写期修正；最终实跑exit1，缺少-vf导致预期fps24失败（t61b-cfr-runtime-red.log），有效复现runtime未透传时长。无实现修改及付费调用。
 - [audit] phase → implementing @ 2026-09-30T21:07:19+08:00
 - 确认6514381762红回执后，真实runtime将任务层可信timeline.duration透传normalizeDuration。专项11/11、完整verify exit0且922/922（verify-20260930-210915.log）；独立只读静态审查三项对上，无阻断，未重复全量测试。成片严格复验和失败不发布保留，未改考题；本轮API调用0、费用0。证据party-normalized-course.md已续记。T61B整体未收口，下一步处理课程短语及翻译质量，不重复已获用户认可的预览验收。
+- 确认9e4b1f85f6回执。只读核对实际34秒course.json，发现10条phrases整句化、中文直译、印尼语称呼不一和印地语说话者性别问题。已写party-learning-materials-review.md：5条五语词组候选、10句中文修订、5回复映射及保留原媒体的版本化接入边界。脚本核验5/5短语来源、10/10中文ID完整；未声称母语审查，未修改数据库/既有课程/实现/考题，API费用0。下一步补材料修订来源与不可变边界红题，按新版本投影接入，不重生成已验收媒体。
