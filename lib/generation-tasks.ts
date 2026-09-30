@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { validateGeneratedScript, type GeneratedScript } from './generated-script';
-import { buildGeneratedCourse } from './generated-course';
+import { buildGeneratedCourse, buildRevisedLearningCourse } from './generated-course';
 
 import { wavDuration, planAudioSegments, type AudioAsset } from './generated-audio';
 import type { createPrivateMediaStore } from './private-media-store';
@@ -93,18 +93,44 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     }
     return task;
   }
-  async function readCourse(input: Session & { id: string; revision: number }) {
+  async function readCourse(input: Session & { id: string; revision: number; materialsRevision?: number }) {
     const ownerId = await owner(input);
     if (!mediaStore || !Number.isSafeInteger(input.revision) || input.revision < 1) throw new Error('Course unavailable');
-    const task = transact(db => read(db, input.id, ownerId));
+    if (input.materialsRevision !== undefined && (!Number.isSafeInteger(input.materialsRevision) || input.materialsRevision < 1)) throw new Error('Course unavailable');
+    const { task, materials } = transact(db => {
+      const task = read(db, input.id, ownerId);
+      if (input.materialsRevision === undefined) return { task, materials: undefined };
+      db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
+      const row = db.prepare('SELECT body FROM learning_materials WHERE owner=? AND task=? AND source_revision=? AND version=?').get(ownerId, input.id, input.revision, input.materialsRevision);
+      if (!row) throw new Error('Course unavailable');
+      return { task, materials: JSON.parse(String(row.body)) };
+    });
     if (!task || task.revision !== input.revision) throw new Error('Course unavailable');
-    const course = buildGeneratedCourse(task);
+    const course = materials === undefined ? buildGeneratedCourse(task) : buildRevisedLearningCourse(task, materials);
     const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId: course.media.assetId });
     if (!media || media.sha256 !== course.media.sha256 || media.size !== task.finalVideo!.size || createHash('sha256').update(media.bytes).digest('hex') !== course.media.sha256) throw new Error('Course media unavailable');
     return { course, media };
   }
   return {
-    async getCourse(input: Session & { id: string; revision: number }) { return (await readCourse(input)).course; },
+    async getCourse(input: Session & { id: string; revision: number; materialsRevision?: number }) { return (await readCourse(input)).course; },
+    async saveLearningMaterials(input: Session & { id: string; materials: unknown }) {
+      const ownerId = await owner(input);
+      return transact(db => {
+        const task = read(db, input.id, ownerId);
+        if (!task || task.simulation !== simulation) throw new Error('Course unavailable');
+        const course = buildRevisedLearningCourse(task, input.materials);
+        // Store only validated fields, in stable order, so retries cannot overwrite content.
+        const body = JSON.stringify({ courseId: course.id, sourceRevision: course.revision, mediaSha256: course.media.sha256,
+          materialsRevision: course.materialsRevision,
+          lineTranslations: course.lines.map(line => ({ lineId: line.id, translations: line.translations })), phrases: course.phrases });
+        db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
+        const keys = [ownerId, task.id, task.revision, course.materialsRevision] as const;
+        const previous = db.prepare('SELECT body FROM learning_materials WHERE owner=? AND task=? AND source_revision=? AND version=?').get(...keys);
+        if (previous && previous.body !== body) throw new Error('Material revision conflict');
+        if (!previous) db.prepare('INSERT INTO learning_materials VALUES(?,?,?,?,?)').run(...keys, body);
+        return course;
+      });
+    },
     async getCourseMedia(input: Session & { id: string; revision: number }) { return (await readCourse(input)).media; },
     async create(input: Session & { goal: string; revision: number; requestKey: string }) {
       const ownerId = await owner(input);
