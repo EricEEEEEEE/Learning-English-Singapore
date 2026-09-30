@@ -474,3 +474,4 @@
 - T61B考题纠错：确认7cbe941aa5后转test-writing，仅调整真实入口测试，错误提示按既有任务接口Reference preparation failed精确匹配；新增临时合成ffprobe记录实际参数后退出失败，断言mov本地源探测参数、任务不变、网络零次，避免只靠错误文案判断接线。两项复测exit 0（2/2，.loopwork/logs/t61b-reference-runtime-corrected.log），不声称本轮新红；原断线红证据见90c76ce87f及t61b-reference-runtime-red.log。实现未动，无付费调用。纠错考题独立登记后继续完整验证。
 - [audit] phase → implementing @ 2026-09-30T20:24:53+08:00
 - T61B参考图运行接线收口检查点：确认dc3a5977e4纠错回执后保持考题与实现不变，完整verify.sh exit 0，912/912通过（.loopwork/logs/verify-20260930-202459.log）。真实入口透传参考图及注入提帧器；独立只读审查两项对上、无静态阻断，纠错非放宽断言。候选方案同步接线现状；盲区为同一入口实际工具成功提帧到请求体的组合证据、真实供应商接受及多段人物连续性，均不冒称验收。零新增付费调用，未扩大授权，T61B整体仍未勾选。
+- 确认b04524b909回执。T61B参考图完整衔接零费用取证：已有聚会视频第4秒原生提帧、私有保存、runtime真实适配器请求图片哈希、任务持久记录、重开一致、重复拒绝共6/6通过，操作脚本exit 0；真实网络0、付费0，音轨及身份合成，原账本不动。证据docs/evidence/t61/reference-runtime-chain.md与outputs/t61-reference-chain/result.json。未改实现/考题，不重复全量验证，最近完整回归912通过仍适用；人物连续性与新付费请求未验收/未执行。
