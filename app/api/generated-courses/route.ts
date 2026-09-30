@@ -13,10 +13,13 @@ export async function handleGeneratedCourse(request: Request, { store, now }: { 
   if (request.method !== 'GET') return reply({ error: 'method' }, 405, { allow: 'GET' });
   const params = new URL(request.url).searchParams;
   const id = params.get('id'), rawRevision = params.get('revision');
+  const materialVersions = params.getAll('materialsRevision');
+  if (materialVersions.length > 1 || (materialVersions.length === 1 && (!/^[1-9][0-9]*$/.test(materialVersions[0]) || !Number.isSafeInteger(Number(materialVersions[0]))))) return reply({ error: 'invalid' }, 400);
   if (params.getAll('id').length !== 1 || params.getAll('revision').length !== 1 || !id || !/^[a-zA-Z0-9_-]{1,120}$/.test(id) || !rawRevision || !/^[1-9][0-9]*$/.test(rawRevision) || !Number.isSafeInteger(Number(rawRevision))) return reply({ error: 'invalid' }, 400);
   const cookie = (request.headers.get('cookie') ?? '').split(';').map(s => s.trim()).find(s => s.startsWith(`${GOOGLE_SESSION_COOKIE}=`))?.slice(GOOGLE_SESSION_COOKIE.length + 1);
   try {
-    return reply(await store.getCourse({ cookie, now, id, revision: Number(rawRevision) }));
+    return reply(await store.getCourse({ cookie, now, id, revision: Number(rawRevision),
+      ...(materialVersions.length ? { materialsRevision: Number(materialVersions[0]) } : {}) }));
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     if (message === 'Authenticated session required') return reply({ error: 'unauthenticated' }, 401);
