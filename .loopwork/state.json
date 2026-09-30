@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "69714d9443d5166d785eba89d137b5bd196b1999",
+  "last_round_commit": "5249edf6aabf79709ab14c2de26219486187896a",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T20:21:26+08:00",
+  "last_session": "2026-09-30T20:22:48+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 969512,
+  "audit_bytes": 972220,
   "blocks_seen": 1199,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: T61B参考图提交来源保护与910项完整回归"
+    "kind": "red",
+    "msg": "存档: T61B真实入口参考图透传与提帧接线红考题"
   }
 }
