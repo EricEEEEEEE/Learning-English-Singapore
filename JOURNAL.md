@@ -454,3 +454,5 @@
 - T61B参考PNG完整解码7条红考题实跑失败exit1，缺verify-reference-image模块；覆盖字节与哈希绑定、单PNG视频流/720x1280尺寸、解码与工具错误拒绝及临时清理。仅工具替身，尚非真实PNG解码证据，无费用。
 - [audit] phase → implementing @ 2026-09-30T13:26:33+08:00
 - T61B参考PNG完整解码实现：7定向及verify.sh完整896项通过exit0；既有成片4秒提取720x1280 PNG，真实ffprobe n4.4.1与ffmpeg4.4解码通过，哈希af7daecc55f00b51b58bef7d4229ec1a23f8d8ba31e2092e3ece9453ab228df5，报告位于outputs/t61-paid-first/reference-verification.json。独立静态审查无阻断；未持久绑定/付费提交，不宣称任意上传安全或单帧计数完成。
+- [audit] phase → test-writing @ 2026-09-30T13:32:49+08:00
+- T61B参考图持久来源绑定4条红考题实际失败exit1，缺prepareReferenceImage方法；覆盖同账号源视频读取/目标任务私有图保存、来源哈希时间点记录、恢复不重复提取、来源冲突拒绝及无费用变化。仅合成提取器，真实提帧适配及提交绑定后续验证。
