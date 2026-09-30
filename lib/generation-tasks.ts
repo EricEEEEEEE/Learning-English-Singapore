@@ -2,6 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { validateGeneratedScript, type GeneratedScript } from './generated-script';
 import { buildGeneratedCourse, buildRevisedLearningCourse } from './generated-course';
@@ -119,14 +120,14 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         const task = read(db, input.id, ownerId);
         if (!task || task.simulation !== simulation) throw new Error('Course unavailable');
         const course = buildRevisedLearningCourse(task, input.materials);
-        // Store only validated fields, in stable order, so retries cannot overwrite content.
+        // Store only validated fields; compare validated projections for equivalent retries.
         const body = JSON.stringify({ courseId: course.id, sourceRevision: course.revision, mediaSha256: course.media.sha256,
           materialsRevision: course.materialsRevision,
           lineTranslations: course.lines.map(line => ({ lineId: line.id, translations: line.translations })), phrases: course.phrases });
         db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
         const keys = [ownerId, task.id, task.revision, course.materialsRevision] as const;
         const previous = db.prepare('SELECT body FROM learning_materials WHERE owner=? AND task=? AND source_revision=? AND version=?').get(...keys);
-        if (previous && previous.body !== body) throw new Error('Material revision conflict');
+        if (previous && !isDeepStrictEqual(buildRevisedLearningCourse(task, JSON.parse(String(previous.body))), course)) throw new Error('Material revision conflict');
         if (!previous) db.prepare('INSERT INTO learning_materials VALUES(?,?,?,?,?)').run(...keys, body);
         return course;
       });
