@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 2,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "9e4b1f85f60124dca46fbe1cadeefd84bdc0ddd7",
+  "last_round_commit": "0da0e833c60fe84e8c8337063bb6ba76057ea68d",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T21:15:40+08:00",
+  "last_session": "2026-09-30T21:17:02+08:00",
   "authorized_batch": "C2D_T61B_integration_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 1010505,
+  "audit_bytes": 1012383,
   "blocks_seen": 1215,
   "red_commit_pending": true,
   "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
-    "kind": "note",
-    "msg": "存档: 聚会学习材料实际核对与五语短语修订稿"
+    "kind": "red",
+    "msg": "存档: T61B学习材料独立修订与来源保护红考题"
   }
 }
