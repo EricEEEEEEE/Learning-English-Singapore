@@ -29,3 +29,28 @@ export function buildGeneratedCourse(task: GenerationTask) {
 }
 
 export type GeneratedCourse = ReturnType<typeof buildGeneratedCourse>;
+
+// Internal, server-owned editing projection; this does not grant access or save a revision.
+export function buildRevisedLearningCourse(task: GenerationTask, revision: unknown) {
+  const course = buildGeneratedCourse(task);
+  const record = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);
+  const fields = (v: unknown, keys: string[]): v is Record<string, unknown> => record(v) && Object.keys(v).length === keys.length && keys.every(k => Object.hasOwn(v, k));
+  if (!fields(revision, ['courseId', 'sourceRevision', 'mediaSha256', 'materialsRevision', 'lineTranslations', 'phrases']) || revision.courseId !== course.id || revision.sourceRevision !== course.revision || revision.mediaSha256 !== course.media.sha256 || !Number.isSafeInteger(revision.materialsRevision) || (revision.materialsRevision as number) < 1 || !Array.isArray(revision.lineTranslations) || revision.lineTranslations.length !== course.lines.length) throw new Error('Invalid material revision');
+  const translations = new Map<string, unknown>();
+  for (const entry of revision.lineTranslations) {
+    if (!fields(entry, ['lineId', 'translations']) || typeof entry.lineId !== 'string' || translations.has(entry.lineId) || !course.lines.some(line => line.id === entry.lineId)) throw new Error('Invalid material line');
+    translations.set(entry.lineId, entry.translations);
+  }
+  const checked = validateGeneratedScript({
+    lines: course.lines.map(line => ({ id: line.id, role: line.role, text: line.text, translations: translations.get(line.id) })),
+    phrases: revision.phrases,
+    turns: course.turns,
+  });
+  if (!checked.ok) throw new Error('Invalid revised materials');
+  return {
+    ...course,
+    materialsRevision: revision.materialsRevision as number,
+    lines: course.lines.map((line, index) => ({ ...line, translations: checked.value.lines[index].translations })),
+    phrases: checked.value.phrases,
+  };
+}
