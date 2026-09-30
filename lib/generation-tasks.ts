@@ -16,6 +16,7 @@ import type { verifyFinalVideo } from './verify-final-video';
 import type { encodeVideoAudio } from './encode-video-audio';
 import type { concatVideoBytes } from './concat-video-bytes';
 
+import type { repairAndVerifyVideoTail } from './repair-and-verify-video-tail';
 import type { probeVideoBytes } from './probe-video-bytes';
 
 type EncodedAudio = Awaited<ReturnType<typeof encodeVideoAudio>>;
@@ -29,9 +30,9 @@ type VideoJob = { audioSha256?: string; audioDuration?: number; segmentIndex: nu
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder }: { directory: string; sessionSecret: string; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair }: { directory: string; sessionSecret: string; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0]) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   const budget = liveBudget ? { ...liveBudget } : undefined;
   function transact<T>(work: (db: DatabaseSync) => T): T {
@@ -376,6 +377,41 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         latest.status = 'completed';
         current.videoAssets = [...(current.videoAssets ?? []), { segmentIndex: job.segmentIndex, assetId: metadata.assetId, sha256: metadata.sha256, size: metadata.size }];
         // Stored bytes are not yet a probed, playable video or an accepted course.
+        save(db, current); return current;
+      });
+    },
+    async repairVideo(input: Session & { id: string }) {
+      if ((!simulation && !budget) || !mediaStore || !videoRepair) throw new Error('Video repair disabled');
+      const ownerId = await owner(input);
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      const job = snapshot?.videoJobs?.at(-1), index = job?.segmentIndex;
+      const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === index);
+      const segment = index === undefined ? undefined : snapshot?.audioAssembly?.segments[index];
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'video_pending' || job?.status !== 'completed' || index === undefined || !asset || !segment) throw new Error('Repair prohibited');
+      const locator = { cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision };
+      const video = await mediaStore.get({ ...locator, assetId: asset.assetId });
+      if (!video || video.sha256 !== asset.sha256 || video.size !== asset.size || createHash('sha256').update(video.bytes).digest('hex') !== asset.sha256) throw new Error('Repair media unavailable');
+      const previous = snapshot.videoRepairs?.find(value => value.segmentIndex === index);
+      if (previous) {
+        if (previous.repairedSha256 !== asset.sha256 || previous.sourceAudioSha256 !== segment.sha256) throw new Error('Repair provenance mismatch');
+        return snapshot;
+      }
+      let result: Awaited<ReturnType<typeof repairAndVerifyVideoTail>>;
+      let metadata;
+      try {
+        const audio = await mediaStore.get({ ...locator, assetId: segment.assetId });
+        if (!audio || audio.sha256 !== segment.sha256 || createHash('sha256').update(audio.bytes).digest('hex') !== segment.sha256 || wavDuration(audio.bytes) !== segment.duration) throw new Error('Invalid repair audio');
+        result = await videoRepair({ video: { bytes: video.bytes, sha256: asset.sha256 }, audio: { bytes: audio.bytes, sha256: segment.sha256 } });
+        if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length >= 100_000_000 || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256 || result.sourceVideoSha256 !== asset.sha256 || result.sourceAudioSha256 !== segment.sha256 || result.decoded !== true || !Number.isFinite(result.duration) || Math.abs(result.duration - segment.duration) > 1 / 24 + 0.001001 || result.width !== 720 || result.height !== 1280 || result.fps !== 24 || result.videoCodec !== 'h264' || result.audioCodec !== 'aac') throw new Error('Invalid repair result');
+        metadata = await mediaStore.put({ ...locator, assetId: `video-repair-${index}-${result.sha256}`, bytes: result.bytes, sha256: result.sha256 });
+      } catch { throw new Error('Video repair failed'); }
+      return transact(db => {
+        const current = read(db, snapshot.id, ownerId);
+        const latest = current?.videoAssets?.find(value => value.segmentIndex === index);
+        if (!current || current.status !== 'video_pending' || JSON.stringify(latest) !== JSON.stringify(asset) || JSON.stringify(current.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(current.audioAssembly) !== JSON.stringify(snapshot.audioAssembly)) throw new Error('Task changed during repair');
+        current.videoAssets = current.videoAssets!.map(value => value.segmentIndex === index ? { segmentIndex: index, assetId: metadata.assetId, sha256: metadata.sha256, size: metadata.size } : value);
+        current.videoChecks = [...(current.videoChecks ?? []).filter(value => value.segmentIndex !== index), { segmentIndex: index, sha256: result.sha256, duration: result.duration, width: result.width, height: result.height, fps: result.fps, videoCodec: result.videoCodec, audioCodec: result.audioCodec }];
+        current.videoRepairs = [...(current.videoRepairs ?? []), { segmentIndex: index, originalAssetId: asset.assetId, sourceVideoSha256: asset.sha256, sourceAudioSha256: segment.sha256, repairedSha256: result.sha256 }];
         save(db, current); return current;
       });
     },
