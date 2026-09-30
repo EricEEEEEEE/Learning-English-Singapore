@@ -462,3 +462,5 @@
 - T61B原生参考提帧7条红考题实际失败exit1，缺extract-reference-image模块；覆盖源视频实际字节/探测、时间点越界与错误格式拒绝、单帧提取及PNG完整解码、来源绑定和临时清理。仅替身验证，无付费调用。
 - [audit] phase → implementing @ 2026-09-30T13:40:43+08:00
 - T61B原生参考提帧实现：7定向及verify.sh完整907项通过exit0；真实party成片4秒提帧并完整PNG解码通过，源哈希939af8b6fc5c3a55a6b100ede828dc1a849786de27cad8fe66ac1dcec8253857，图哈希af7daecc55f00b51b58bef7d4229ec1a23f8d8ba31e2092e3ece9453ab228df5。独立静态审查无阻断；限20秒短片，时间为请求位置非帧精确时间，runtime/提交尚未接，无新增费用。
+- [audit] phase → test-writing @ 2026-09-30T13:47:15+08:00
+- T61B参考图提交来源3条红考题实跑失败exit1：已存参考图未传provider，缺图/损坏仍提交且预留，证实接线缺口；全部合成HTTP/素材，无真实费用。要求收费前校验、随已确认音轨传图、job记录图哈希及拒绝重复提交。
