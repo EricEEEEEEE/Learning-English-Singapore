@@ -439,3 +439,5 @@
 - T61B修复版私有保存与来源绑定实现：6定向通过，verify.sh完整881项通过exit0；原片保留，新素材保存后事务对账更新引用，保存源哈希与校验记录，恢复不重修且费用不变。独立静态审查无阻断；尚未live runtime接线，真实AAC修复至成片链路待验。无新增费用。
 - [audit] phase → test-writing @ 2026-09-30T12:01:03+08:00
 - T61B真实运行入口修复接线红考题1项实际失败exit1：预期进入本地工具后安全失败，实际Video repair disabled，证实尚未注入修复器。准备流程已修正为真实模式AAC编码确认，使用合成provider，零网络调用；非完整成片验收。
+- [audit] phase → implementing @ 2026-09-30T12:02:09+08:00
+- T61B真实运行入口已接修复器；1定向及verify.sh完整882项通过exit0。复用既有真实任务，由无密钥无供应商的本地操作器跑通修复、探测、拼接、私有课程与媒体读取，状态video_assembled，16.25秒；providerCalls仍8，reservedMicros仍2650000。合成操作身份，网页及真实账号展示未验，详见first-course-local-repair.md。

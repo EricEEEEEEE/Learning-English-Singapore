@@ -12,6 +12,7 @@ import { encodeVideoAudio } from './encode-video-audio';
 import { probeVideoBytes } from './probe-video-bytes';
 import { concatVideoBytes } from './concat-video-bytes';
 import { verifyFinalVideo } from './verify-final-video';
+import { repairAndVerifyVideoTail } from './repair-and-verify-video-tail';
 
 type Options = {
   enabled?: boolean; directory: string; sessionSecret: string; openaiKey: string; ltxKey: string;
@@ -47,6 +48,7 @@ export function createLiveGenerationRuntime(options: Options) {
     },
     videoDownload: url => downloadGeneratedMedia(url, { allowedHosts: media.allowedHosts, maxBytes: media.maxBytes, fetch: transport }),
     videoProbe: input => probeVideoBytes(input, { executable: media.ffprobe }),
+    videoRepair: input => repairAndVerifyVideoTail(input, media),
     videoConcat: inputs => concatVideoBytes(inputs, { executable: media.ffmpeg }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
   });
