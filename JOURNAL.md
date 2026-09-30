@@ -519,3 +519,5 @@
 - 确认c68d907fe1后接入generation-panel打开状态/key及RealSceneCourse请求/响应/依赖materialsRevision，非法版本请求前拒绝、错版拒绝、清空旧材料并取消旧请求，媒体仍原版。最初专项用旧构建导致2失败不作新实现结论；完整verify重建exit0，952/952（verify-20260930-214454.log），三视口新增6项通过。独立静态审查无阻断，快速切换竞态未专测。后端列表仍未输出材料版本，真实普通入口未完整接通，下一步补列表元数据红题。未改考题，费用0。
 - [audit] phase → test-writing @ 2026-09-30T21:50:11+08:00
 - 确认aff89a0187后补列表元数据2项红题：保存3再1应提供最高材料版本3、原任务不变/其他账号不可见；实际handleGenerationTasks列表需输出材料版本且不泄漏owner/script/finalVideo。最终实跑exit1新增2失败、原7通过（t61b-material-list-red.log），复现store.list与HTTP白名单缺字段。仅考题、费用0，下一步同时接store及HTTP列表，不另拆遗漏接口。
+- [audit] phase → implementing @ 2026-09-30T21:51:12+08:00
+- 确认6569669ac5后store.list按owner/任务/源版本查最高已保存材料版本，只给video_assembled列表投影附materialsRevision，不改任务；HTTP列表白名单透传该字段。专项9/9，完整verify exit0且954/954（verify-20260930-215130.log），未改考题/费用0。普通列表到页面的代码接线具备；真实聚会修订尚未写入，下一步通过正式保存方法写本地材料草稿并验证实际读取和四页，不声称五语母语审校或公网已发布。单任务GET仍保留原任务视图，无新增字段承诺。

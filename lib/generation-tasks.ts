@@ -157,7 +157,17 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async get(input: Session & { id: string }) { const id = await owner(input); return transact(db => read(db, input.id, id)); },
-    async list(input: Session) { const id = await owner(input); return transact(db => db.prepare('SELECT id FROM jobs WHERE owner=? ORDER BY rowid DESC').all(id).map(row => read(db, String(row.id), id)!)); },
+    async list(input: Session) {
+      const id = await owner(input);
+      return transact(db => {
+        db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
+        return db.prepare('SELECT id FROM jobs WHERE owner=? ORDER BY rowid DESC').all(id).map(row => {
+          const task = read(db, String(row.id), id)!;
+          const latest = db.prepare('SELECT version FROM learning_materials WHERE owner=? AND task=? AND source_revision=? ORDER BY version DESC LIMIT 1').get(id, task.id, task.revision);
+          return latest && task.status === 'video_assembled' ? { ...task, materialsRevision: Number(latest.version) } : task;
+        });
+      });
+    },
     async runScript(input: Session & { id: string }) {
       // Real execution is opt-in through server configuration, never request fields.
       if ((!simulation && !budget) || !scriptProvider) throw new Error('Script provider disabled');

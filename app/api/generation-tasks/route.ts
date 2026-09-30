@@ -4,7 +4,8 @@ import { createGenerationTaskStore, type GenerationTask } from '../../../lib/gen
 export const runtime = 'nodejs';
 type Store = ReturnType<typeof createGenerationTaskStore>;
 const reply = (body: object, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'private, no-store, max-age=0' } });
-const view = (task: GenerationTask) => ({ id: task.id, goal: task.goal, revision: task.revision, status: task.status, providerCalls: task.providerCalls, simulation: task.simulation });
+const view = (task: GenerationTask & { materialsRevision?: number }) => ({ id: task.id, goal: task.goal, revision: task.revision, status: task.status, providerCalls: task.providerCalls, simulation: task.simulation,
+  ...(task.materialsRevision !== undefined ? { materialsRevision: task.materialsRevision } : {}) });
 export async function handleGenerationTasks(request: Request, { store, now }: { store: Store; now: number }) {
   const cookie = (request.headers.get('cookie') ?? '').split(';').map(s => s.trim()).find(s => s.startsWith(`${GOOGLE_SESSION_COOKIE}=`))?.slice(GOOGLE_SESSION_COOKIE.length + 1);
   const session = { cookie, now };
