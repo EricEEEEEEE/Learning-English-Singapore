@@ -494,3 +494,5 @@
 - 确认3ce78b7582红回执，任务层videoConcat回调新增verifiedDuration，由已验证源片段planVideoTimeline.duration传入，页面normalizeDuration字段不参与。定向10/10通过（t61b-cfr-task-green.log），包括严格复验失败不发布、原成片读取及并发保护。本次只登记接线检查点，不宣称全量回归或T61B完成；runtime尚未转发normalizeDuration，下一步补入口红题，完成后统一全量验证。实现未动考题，无API费用。
 - [audit] phase → test-writing @ 2026-09-30T21:06:07+08:00
 - 确认bf25b27306后补真实runtime入口红题t61b-cfr-runtime.spec.mjs，合成真实模式任务完整编码/确认/下载/探测后调用运行工厂；临时工具记录实际参数并失败，断言fps24与可信22秒、忽略调用者1秒、任务不发布及网络0。初始fixture误用legacy被拒已在红题编写期修正；最终实跑exit1，缺少-vf导致预期fps24失败（t61b-cfr-runtime-red.log），有效复现runtime未透传时长。无实现修改及付费调用。
+- [audit] phase → implementing @ 2026-09-30T21:07:19+08:00
+- 确认6514381762红回执后，真实runtime将任务层可信timeline.duration透传normalizeDuration。专项11/11、完整verify exit0且922/922（verify-20260930-210915.log）；独立只读静态审查三项对上，无阻断，未重复全量测试。成片严格复验和失败不发布保留，未改考题；本轮API调用0、费用0。证据party-normalized-course.md已续记。T61B整体未收口，下一步处理课程短语及翻译质量，不重复已获用户认可的预览验收。

@@ -51,7 +51,7 @@ export function createLiveGenerationRuntime(options: Options) {
     videoProbe: input => probeVideoBytes(input, { executable: media.ffprobe }),
     videoRepair: input => repairAndVerifyVideoTail(input, media),
     referenceExtractor: input => extractReferenceImage(input, media),
-    videoConcat: inputs => concatVideoBytes(inputs, { executable: media.ffmpeg }),
+    videoConcat: (inputs, verifiedDuration) => concatVideoBytes(inputs, { executable: media.ffmpeg, normalizeDuration: verifiedDuration }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
   });
 }
