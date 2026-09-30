@@ -452,3 +452,5 @@
 - T61B可选PNG首帧传输实现：7定向通过，verify.sh完整889项通过exit0；哈希、签名、MIME及编码体积检查，原纯音轨兼容，legacy不接受旁路imageUri。独立静态审查无阻断。仅传输完整性，完整解码/持久来源绑定/实际连续性未验；无新增付费。
 - [audit] phase → test-writing @ 2026-09-30T13:25:44+08:00
 - T61B参考PNG完整解码7条红考题实跑失败exit1，缺verify-reference-image模块；覆盖字节与哈希绑定、单PNG视频流/720x1280尺寸、解码与工具错误拒绝及临时清理。仅工具替身，尚非真实PNG解码证据，无费用。
+- [audit] phase → implementing @ 2026-09-30T13:26:33+08:00
+- T61B参考PNG完整解码实现：7定向及verify.sh完整896项通过exit0；既有成片4秒提取720x1280 PNG，真实ffprobe n4.4.1与ffmpeg4.4解码通过，哈希af7daecc55f00b51b58bef7d4229ec1a23f8d8ba31e2092e3ece9453ab228df5，报告位于outputs/t61-paid-first/reference-verification.json。独立静态审查无阻断；未持久绑定/付费提交，不宣称任意上传安全或单帧计数完成。
