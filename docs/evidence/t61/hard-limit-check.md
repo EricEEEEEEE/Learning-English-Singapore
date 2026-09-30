@@ -24,3 +24,10 @@
 - 用户授权继续完成独立项目配置，已为Learning English Singapore设置每月1美元并启用Enforce a hard limit。保存后显示0.00/1.00及Requests will start to fail when limit is reached。截图outputs/t61-project-limit.png。默认项目、组织自动充值保持原样。
 - 重要：开启时平台明确提示enforcement is not instantaneous，最终用量可能少量超出。因此硬限额确实存在且已启用，但仍不能证明绝对零超额，也不是跨供应商累计总额保证。保留25美元绝对约束；尚未新增收费请求。
 - 新项目密钥迁移待安全设置流程，旧密钥未撤销；未宣称迁移完成。
+
+## 2026-09-30新密钥本地迁移验证
+
+- 用户自行创建新密钥并通过本机一次性输入页保存，服务返回SAVED_OK后退出；.env.local更新时间2026-09-30 11:04:19，权限0600，Git忽略。未输出密钥。
+- GET https://api.openai.com/v1/models，携带新密钥和独立项目OpenAI-Project头，实际HTTP200；脚本及语音目标模型均在列表。证明当前鉴权请求被接受，不等于生成接口、费用或媒体质量已验收。未调用推理/语音/视频生成。
+- 原Default project未删除，服务端旧密钥未撤销；本地OPENAI_API_KEY已替换为用户输入的新值。旧密钥撤销仍须点名确认目标，避免误伤其他应用。
+- 月度1美元保护不能代替跨供应商25美元累计绝对上限，真实试跑边界仍按既有证据处理。

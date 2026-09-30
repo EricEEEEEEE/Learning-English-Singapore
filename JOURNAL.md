@@ -414,3 +414,4 @@
 - T61B项目限额页恢复：Default project无限额且支持硬限额；共享其他应用，建议独立项目隔离，未保存任何配置、未新增费用。
 - 用户授权需要则重建并删除旧的；已创建并刷新确认独立OpenAI项目Learning English Singapore，ID proj_bU8YJY1MRYYGQV0Vf7pcN2vk，显示费用0。旧Default project承载其他应用，未删除；新密钥、专属限额及迁移尚未操作，旧密钥待新链路接通后点名确认撤销。截图outputs/t61-project-created.png。
 - 独立OpenAI项目1美元月硬限额保存核验通过；平台明确提示非即时执行可能少量超出，不能当绝对上界。准备通过官方安全密钥流程迁移，旧密钥保留，新增费用0。
+- 新密钥安全保存SAVED_OK、0600且Git忽略；携带独立项目头的模型查询HTTP200，两个目标模型列出。无生成调用，旧服务端密钥未撤销。
