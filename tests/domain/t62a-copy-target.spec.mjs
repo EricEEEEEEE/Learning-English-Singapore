@@ -88,3 +88,13 @@ test('T62A target library: conflicting content for same approved source cannot r
  expect(await t.open().getCourse({...t.session,id:copy.id,revision:1,materialsRevision:1})).toEqual(copy);
  expect(await t.open().list(t.session)).toHaveLength(1);
 });
+
+test('T62A target library: video reader authenticates owner without requiring material selector',async()=>{
+ const t=await targetFixture();const copy=await t.library.importCopy({...t.session,bundle:t.bundle});
+ expect(typeof t.library.getCourseMedia).toBe('function');
+ const media=await t.open().getCourseMedia({...t.session,id:copy.id,revision:1});
+ expect(Buffer.from(media.bytes)).toEqual(Buffer.from(t.bundle.media.bytes));
+ const other=await sealGoogleSession(identity('unrelated-target'),targetSecret,now);
+ await expect(t.open().getCourseMedia({cookie:other,now,id:copy.id,revision:1})).rejects.toThrow();
+ await expect(t.open().getCourseMedia({...t.session,id:copy.id,revision:2})).rejects.toThrow();
+});
