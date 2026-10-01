@@ -1,4 +1,7 @@
 import { ownerIdFromSessionCookie } from './private-owner';
+import { createHash } from 'node:crypto';
+import { validateSceneCourse } from './scene-course';
+import type { createGenerationTaskStore } from './generation-tasks';
 
 type CopyApproval = {
   sourceOwner: string;
@@ -35,4 +38,35 @@ export async function authorizeLocalCourseCopy(input: {
   ]);
   if (!sourceOwner || !targetOwner || sourceOwner !== approved.sourceOwner || targetOwner !== approved.targetOwner) throw new Error('Copy identity mismatch');
   return approved;
+}
+
+export async function readApprovedCourseCopy(
+  input: Parameters<typeof authorizeLocalCourseCopy>[0],
+  sourceStore: Pick<ReturnType<typeof createGenerationTaskStore>, 'getCourse' | 'getCourseMedia'>,
+) {
+  const captured = { source: { ...input.source }, target: { ...input.target }, now: input.now, approval: { ...input.approval } };
+  const approval = await authorizeLocalCourseCopy(captured);
+  const request = { cookie: captured.source.cookie, now: captured.now, id: approval.courseId, revision: approval.revision };
+  const course = structuredClone(await sourceStore.getCourse({ ...request, materialsRevision: approval.materialsRevision }));
+  if (course.id !== approval.courseId || course.revision !== approval.revision
+    || !('materialsRevision' in course) || course.materialsRevision !== approval.materialsRevision
+    || course.media.courseId !== approval.courseId || course.media.revision !== approval.revision
+    || course.media.sha256 !== approval.mediaSha256
+    || !/^[a-zA-Z0-9_-]{1,120}$/.test(course.media.assetId)
+    || !['ai-generated', 'test-fixture'].includes(course.source)
+    || !Array.isArray(course.lines) || course.lines.some(line => line.revision !== approval.revision)) throw new Error('Copy source mismatch');
+  const version = String(approval.revision);
+  const checked = validateSceneCourse({ ...course, version,
+    source: course.source === 'test-fixture' ? 'test-fixture' : 'ai-sample',
+    media: { src: '/media/copy-validation.mp4', duration: course.media.duration, version },
+    lines: course.lines.map(line => ({ ...line, version })),
+  });
+  if (!checked.ok) throw new Error('Invalid copy materials');
+  const media = structuredClone(await sourceStore.getCourseMedia(request));
+  if (media.courseId !== approval.courseId || media.revision !== approval.revision
+    || media.assetId !== course.media.assetId || media.sha256 !== approval.mediaSha256
+    || !(media.bytes instanceof Uint8Array) || !Number.isSafeInteger(media.size)
+    || media.size <= 0 || media.size > 100_000_000 || media.bytes.length !== media.size
+    || createHash('sha256').update(media.bytes).digest('hex') !== approval.mediaSha256) throw new Error('Invalid copy media');
+  return { approval, course, media };
 }
