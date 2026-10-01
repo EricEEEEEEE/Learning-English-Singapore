@@ -543,3 +543,5 @@
 - 确认e2d195bd23后新增副本读取整合红题：列表含材料版本且不暴露正文、副本课程/媒体只走目标库、失败不回退、旧生成课程路由不变；目标媒体按owner与源版本读取不要求材料选择器。实跑exit1新增5失败、原4通过（t62a-course-access-red.log），缺access模块及库媒体方法。仅考题/合成临时库、费用0，下一步内部统一读适配后还需默认路由接线验证。
 - [audit] phase → implementing @ 2026-10-01T11:21:55+08:00
 - T62A统一读取实现检查点：收到红档68f8ce816d后实现local-course-access副本/生成课程分流与合并列表，副本读取失败不回退；local-course-library共享鉴权读取并提供getCourseMedia，严格源版本和材料版本校验。首次完整验证类型检查发现可选now不匹配已修复。完整verify exit0，日志verify-20261001-112308.log；只读独立审查未发现本组阻断问题，尚未接默认HTTP/UI入口，真实Google账号恢复仍待验证；零新增付费调用，T62A不勾选。
+- [audit] phase → test-writing @ 2026-10-01T11:29:24+08:00
+- T62A默认读取入口红考题：新增t62a-configured-routes三项，用临时项目目录及合成会话调用真实导出GET，不注入handler store；覆盖副本列表和单项可用标签、同版课程及Range媒体、跨账号/匿名/错材料版本拒绝。专项exit1，2失败1通过：默认列表缺副本，课程GET返回404（预期200）；日志t62a-configured-red.log。未修改实现，零收费调用，未使用真实凭据。
