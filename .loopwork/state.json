@@ -7,7 +7,7 @@
   "round_count": 3,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "ab74bd8259a9f4e324d51b7494ea43c5583bccee",
+  "last_round_commit": "80378f3a415b3d95e6cbc654b51db60783dce208",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-09-30T22:07:25+08:00",
-  "authorized_batch": "C2D_T61B_integration_approved",
+  "last_session": "2026-10-01T10:57:46+08:00",
+  "authorized_batch": "C2E_T62A_local_account_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 1046611,
+  "audit_bytes": 1047809,
   "blocks_seen": 1258,
   "red_commit_pending": false,
-  "acceptance_status": "C2B_T61A_technical_green_receipt_verified",
+  "acceptance_status": "T61B_green_receipt_ab74bd8259_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T61B绿回执对账与真实账号本地课程库方案"
+    "msg": "存档: T62A零费用授权与本地账号接入前置核对"
   }
 }
