@@ -1,10 +1,11 @@
 import { join } from 'node:path';
 import { GOOGLE_SESSION_COOKIE } from '../../../lib/google-auth';
-import { createGenerationTaskStore, type GenerationTask } from '../../../lib/generation-tasks';
+import type { GenerationTask } from '../../../lib/generation-tasks';
+import { createLocalCourseStore } from '../../../lib/local-course-store';
 export const runtime = 'nodejs';
-type Store = ReturnType<typeof createGenerationTaskStore>;
+type Store = ReturnType<typeof createLocalCourseStore>;
 const reply = (body: object, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'private, no-store, max-age=0' } });
-const view = (task: GenerationTask & { materialsRevision?: number }) => ({ id: task.id, goal: task.goal, revision: task.revision, status: task.status, providerCalls: task.providerCalls, simulation: task.simulation,
+const view = (task: Pick<GenerationTask, 'id' | 'goal' | 'revision' | 'status' | 'providerCalls' | 'simulation'> & { materialsRevision?: number }) => ({ id: task.id, goal: task.goal, revision: task.revision, status: task.status, providerCalls: task.providerCalls, simulation: task.simulation,
   ...(task.materialsRevision !== undefined ? { materialsRevision: task.materialsRevision } : {}) });
 export async function handleGenerationTasks(request: Request, { store, now }: { store: Store; now: number }) {
   const cookie = (request.headers.get('cookie') ?? '').split(';').map(s => s.trim()).find(s => s.startsWith(`${GOOGLE_SESSION_COOKIE}=`))?.slice(GOOGLE_SESSION_COOKIE.length + 1);
@@ -38,7 +39,7 @@ function configured(request: Request) {
   const secret = process.env.AUTH_SESSION_SECRET;
   // Local-only milestone: never pretend ephemeral serverless disks are durable storage.
   if (!secret || process.env.VERCEL) return reply({ error: 'local_setup_required' }, 503);
-  const store = createGenerationTaskStore({ directory: join(process.cwd(), 'tmp', 'generation-tasks'), sessionSecret: secret });
+  const store = createLocalCourseStore(join(process.cwd(), 'tmp', 'generation-tasks'), secret);
   return handleGenerationTasks(request, { store, now: Date.now() });
 }
 export const GET = configured;

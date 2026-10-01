@@ -14,7 +14,8 @@ export function createLocalCourseAccess({ generationStore, library }: {
       const [generated, copies] = await Promise.all([generationStore.list(input), library.list({ ...input, now: input.now ?? Date.now() })]);
       return [...generated, ...copies.map(course => ({
         id: course.id, revision: course.revision,
-        materialsRevision: 'materialsRevision' in course ? course.materialsRevision : undefined,
+        goal: course.lines[0]?.text || 'Saved course', providerCalls: 0,
+        materialsRevision: 'materialsRevision' in course && typeof course.materialsRevision === 'number' ? course.materialsRevision : undefined,
         status: 'video_assembled' as const, simulation: course.source === 'test-fixture',
       }))];
     },

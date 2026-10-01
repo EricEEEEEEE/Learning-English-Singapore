@@ -1,7 +1,7 @@
 import { join } from 'node:path';
 import { GOOGLE_SESSION_COOKIE } from '../../../lib/google-auth';
 import { createGenerationTaskStore } from '../../../lib/generation-tasks';
-import { createPrivateMediaStore } from '../../../lib/private-media-store';
+import { createLocalCourseStore } from '../../../lib/local-course-store';
 
 export const runtime = 'nodejs';
 type Reader = Pick<ReturnType<typeof createGenerationTaskStore>, 'getCourseMedia'>;
@@ -53,8 +53,7 @@ async function configured(request: Request) {
   if (!sessionSecret || process.env.VERCEL) return error(request, 'local_setup_required', 503);
   try {
     const directory = join(process.cwd(), 'tmp', 'generation-tasks');
-    const mediaStore = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret });
-    const store = createGenerationTaskStore({ directory, sessionSecret, mediaStore });
+    const store = createLocalCourseStore(directory, sessionSecret);
     return await handleGeneratedMedia(request, { store, now: Date.now() });
   } catch { return error(request, 'temporarily_unavailable', 503); }
 }
