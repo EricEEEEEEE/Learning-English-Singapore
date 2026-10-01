@@ -531,3 +531,5 @@
 - 确认2bacd7728e后T62A先建立内部复制授权边界13项红题：源目标各自会话及secret独立验证、精确绑定批准owner/课程/源版/媒体hash/材料版、结果不泄露cookie或secret；匿名/过期/篡改/错owner/无批准/错secret/非法locator拒绝。实跑exit1，13/13缺local-course-copy模块（t62a-copy-authorization-red.log）。仅考题，未改实际身份或配置，费用0。批准对象须后续由服务端本地显式操作提供，不接受浏览器自称批准；复制事务与失败不发布仍待下一步考题，不声称本组覆盖完整复制。
 - [audit] phase → implementing @ 2026-10-01T10:59:29+08:00
 - 确认9f1f1c00d9后实现authorizeLocalCourseCopy：源目标会话分别校验，批准owner精确匹配，课程/版本/hash格式验证，异步前快照，不返回凭据。13专项通过；完整verify exit0且967/967（verify-20261001-105951.log）。独立静态审查有条件通过：审批/secret/now仅可信本地输入，后续仍须读取真实课程核对hash，不把函数通过当存在或复制成功。无写库/网络/费用副作用，未改考题。下一步实际源课程绑定和复制失败不发布红题。
+- [audit] phase → test-writing @ 2026-10-01T11:05:21+08:00
+- 确认8225529525后补T62A来源读取12项红题：双身份先验再精确读取源课程/材料及媒体，快照输出不含会话，10类课程版/材料版/hash/locator/字节/大小/缺译/不存在拒绝，无效目标零来源读取。实跑exit1，12失败因缺readApprovedCourseCopy（t62a-copy-source-red.log）。仅考题，尚无复制写入；批准须可信本地，数据适配器不是浏览器传入。无真实账号/费用变更。
