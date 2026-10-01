@@ -34,6 +34,17 @@ export function createLocalCourseLibrary({ directory, sessionSecret, mediaStore 
     if (!id) throw new Error('Authenticated session required');
     return id;
   }
+  async function read(input: Session & { id: string; revision: number }) {
+    const request = { ...input };
+    const id = await owner(request);
+    const row = transaction(db => db.prepare('SELECT body FROM copies WHERE owner=? AND id=?').get(id, request.id));
+    if (!row) throw new Error('Course unavailable');
+    const course = JSON.parse(String(row.body)) as Course;
+    if (course.revision !== request.revision) throw new Error('Course unavailable');
+    const media = await mediaStore.get({ cookie: request.cookie, now: request.now, courseId: course.id, revision: course.revision, assetId: course.media.assetId });
+    if (!media || media.sha256 !== course.media.sha256 || hash(media.bytes) !== course.media.sha256) throw new Error('Course media unavailable');
+    return { course, media };
+  }
   return {
     async importCopy(input: Session & { bundle: Bundle }) {
       const { cookie, now } = input;
@@ -74,14 +85,13 @@ export function createLocalCourseLibrary({ directory, sessionSecret, mediaStore 
       return transaction(db => db.prepare('SELECT body FROM copies WHERE owner=? ORDER BY rowid DESC').all(id).map(row => JSON.parse(String(row.body))));
     },
     async getCourse(input: Session & { id: string; revision: number; materialsRevision: number }): Promise<Course> {
-      const id = await owner(input);
-      const row = transaction(db => db.prepare('SELECT body FROM copies WHERE owner=? AND id=?').get(id, input.id));
-      if (!row) throw new Error('Course unavailable');
-      const course = JSON.parse(String(row.body)) as Course;
-      if (course.revision !== input.revision || !('materialsRevision' in course) || course.materialsRevision !== input.materialsRevision) throw new Error('Course unavailable');
-      const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: course.id, revision: course.revision, assetId: course.media.assetId });
-      if (!media || media.sha256 !== course.media.sha256 || hash(media.bytes) !== course.media.sha256) throw new Error('Course media unavailable');
+      const request = { ...input };
+      const { course } = await read(request);
+      if (!('materialsRevision' in course) || course.materialsRevision !== request.materialsRevision) throw new Error('Course unavailable');
       return course;
+    },
+    async getCourseMedia(input: Session & { id: string; revision: number }) {
+      return (await read(input)).media;
     },
   };
 }
