@@ -32,6 +32,14 @@ export async function handleGoogleStart(request: Request, options: { config: Goo
       now: options.now,
       random: options.random,
     });
+    // NextURL normalizes loopback aliases; Host still identifies the cookie host.
+    const configuredOrigin = new URL(options.config.origin);
+    const host = request.headers.get('host');
+    if (url.origin !== configuredOrigin.origin || (host !== null && host.toLowerCase() !== configuredOrigin.host.toLowerCase())) {
+      const canonical = new URL('/api/auth/google/start', configuredOrigin);
+      canonical.search = url.search;
+      return new Response(null, { status: 302, headers: { location: canonical.toString() } });
+    }
     const sealed = await sealGoogleTransaction(transaction, options.config.secret);
     const headers = new Headers({ location: buildGoogleAuthorizationUrl(transaction, options.config) });
     headers.append('set-cookie', `${GOOGLE_TRANSACTION_COOKIE}=${sealed}; Path=/api/auth/google; HttpOnly; Secure; SameSite=Lax; Max-Age=600`);
