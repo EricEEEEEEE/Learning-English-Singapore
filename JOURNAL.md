@@ -553,3 +553,5 @@
 - 2026-10-14用户要求刷新卡住的Google登录页：只读核验localhost:3000服务仍监听且本地登录配置具备；旧标签操作及重绑定超时，未宣称刷新成功。新建标签从本地start发起全新事务，已实际显示Google选择账号页面并保留。未选取用户账号，未修改代码、密钥或供应商设置；无新增费用。
 - 2026-10-15用户再次要求重开Google登录：localhost:3000仍正常监听；新建页面经本地start获得新事务，已确认Google选择账号正常显示并保留供用户操作。原页面为上一次事务的同意页，未将其视为登录成功；未修改代码、凭据或回调，未选择目标账号，无新增费用。
 - 2026-10-15 T62A选账号卡住诊断：用户要求查原因并选择继续内置浏览器。本地start实测302/32ms，正确localhost回调和S256；Google账号入口302/74ms、JWKS200/63ms，token端点GET404只证明HTTP可达不证明交换成功。旧Google同意页标题400；原当前标签AX和截图操作超时，不能读取后续错误；未据此断言根因。新建单次排查页正常显示账号列表；点击候选账号被自动审批拒绝，理由两个账号且目标未明确。已请求用户指定账号或自己选择，未绕过拒绝；尚未复现到授权确认/回调，未改代码或登录安全策略，无付费调用。
+- [audit] phase → test-writing @ 2026-10-15T10:45:45+08:00
+- T62A用户要求继续检查登录代码，未将内置浏览器直接定为根因。已复现确定缺陷：两次start共享单个事务Cookie，旧A回调携带当前B Cookie时invalid_state分支调用redirectFailure并清掉B Cookie，随后正确B回调变invalid_transaction，合法新登录被旧标签破坏。新增两条合成回归，并在test-writing阶段精确更正T43旧断言：invalid_state必须不写Cookie，其他当前事务失败仍须清理且不得发session；未削弱state/PKCE/nonce/签名/过期校验。专项t43-google-auth/routes+t62a-google-restart exit1，3失败16通过，日志t62a-google-restart-auth-red.log；当前未改实现。此缺陷不能单独证明Google页面无响应的直接原因，仍需修后实际内置浏览器验证。

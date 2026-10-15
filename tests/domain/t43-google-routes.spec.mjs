@@ -106,7 +106,7 @@ test('T43 / F1.2: verifier cryptographically rejects a structurally valid RS256 
   await expect(route.verifyGoogleIdToken({ idToken: `${header}.${payload}.${signature}`, clientId: config.clientId, nonce: random.nonce, now, jwks: { keys: [trustedJwk] } })).rejects.toThrow(/signature|token/i);
 });
 
-test('T43 / F1.3,F1.4: every callback failure clears transaction state and never creates a session', async () => {
+test('T43 / F1.3,F1.4: matching failures clear their transaction; unrelated callbacks preserve the pending login', async () => {
   const auth = await loadAuth();
   const route = await loadCallback();
   const { sealed } = await transactionCookie('id', '/');
@@ -125,9 +125,13 @@ test('T43 / F1.3,F1.4: every callback failure clears transaction state and never
     );
     expect(response.headers.get('location')).toBe(`${config.origin}/?auth=${item.reason}&language=id`);
     const setCookie = response.headers.get('set-cookie');
-    expect(setCookie).toContain(`${auth.GOOGLE_TRANSACTION_COOKIE}=;`);
-    expect(setCookie).toMatch(/Max-Age=0/i);
-    expect(setCookie).not.toContain(`${auth.GOOGLE_SESSION_COOKIE}=`);
+    if (item.reason === 'invalid_state') {
+      expect(setCookie).toBeNull();
+    } else {
+      expect(setCookie).toContain(`${auth.GOOGLE_TRANSACTION_COOKIE}=;`);
+      expect(setCookie).toMatch(/Max-Age=0/i);
+      expect(setCookie).not.toContain(`${auth.GOOGLE_SESSION_COOKIE}=`);
+    }
     expect(exchanges).toBe(item.exchangeFails || item.verifyFails ? 1 : 0);
   }
 });
