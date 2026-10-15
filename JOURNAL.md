@@ -551,3 +551,4 @@
 - T62A本地Google登录配置：2026-10-06用户明确批准。通过既有Vercel CLI只读取得Preview配置并核对对应既有客户端；安全保存GOOGLE_CLIENT_ID/SECRET至被Git忽略的.env.local，生成独立本地AUTH_SESSION_SECRET，APP_ORIGIN=http://localhost:3000，文件0600，原字段保持。Google控制台保留原Preview回调并新增localhost回调，保存成功且重新打开确认。实际本地start返回302到Google，openid email profile及S256参数正常；真实浏览器已到Google账号选择页，有多个账号，由用户选择目标后续验证；尚未登录成功、未复制给真实账号。无新增收费调用或部署，配置证据截图在忽略目录outputs/t62-local-login，不包含密钥。
 - T62A配置后核验：保存回调成功截图；本地首页普通Google入口到真实账号选择页，用户需选择账号。预览已独立持续运行且请求日志关闭；Next dev自动生成的AGENTS与next-env改动核对后恢复原基线，不接纳未经批准的规则更改。补证据local-google-configuration.md，配置授权缺口解除；实际登录及副本目标绑定尚待用户操作，无新增费用。
 - 2026-10-14用户要求刷新卡住的Google登录页：只读核验localhost:3000服务仍监听且本地登录配置具备；旧标签操作及重绑定超时，未宣称刷新成功。新建标签从本地start发起全新事务，已实际显示Google选择账号页面并保留。未选取用户账号，未修改代码、密钥或供应商设置；无新增费用。
+- 2026-10-15用户再次要求重开Google登录：localhost:3000仍正常监听；新建页面经本地start获得新事务，已确认Google选择账号正常显示并保留供用户操作。原页面为上一次事务的同意页，未将其视为登录成功；未修改代码、凭据或回调，未选择目标账号，无新增费用。
