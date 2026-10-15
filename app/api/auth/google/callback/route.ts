@@ -71,9 +71,9 @@ function clearTransaction(headers: Headers) {
   headers.append('set-cookie', `${GOOGLE_TRANSACTION_COOKIE}=; Path=/api/auth/google; HttpOnly; Secure; SameSite=Lax; Max-Age=0`);
 }
 
-function redirectFailure(config: GoogleAuthConfig, returnTo: string, language: string, reason: string) {
+function redirectFailure(config: GoogleAuthConfig, returnTo: string, language: string, reason: string, clearPending = true) {
   const headers = new Headers({ location: callbackLocation(config, returnTo, reason, language) });
-  clearTransaction(headers);
+  if (clearPending) clearTransaction(headers);
   return new Response(null, { status: 302, headers });
 }
 
@@ -96,7 +96,8 @@ export async function handleGoogleCallback(request: Request, dependencies: {
     state: url.searchParams.get('state') ?? undefined,
     error: url.searchParams.get('error') ?? undefined,
   }, transaction);
-  if (!callback.ok) return redirectFailure(dependencies.config, transaction.returnTo, transaction.language, callback.reason);
+  // An older tab must not clear the browser's newer, unrelated sign-in attempt.
+  if (!callback.ok) return redirectFailure(dependencies.config, transaction.returnTo, transaction.language, callback.reason, callback.reason !== 'invalid_state');
 
   let token: { idToken: string };
   try {
