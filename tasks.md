@@ -46,7 +46,9 @@
 
   **首组存储红阶段**：已核验T69绿9d6a51f614后test-writing；完整5项交付和存储→HTTP→UI三段红票顺序见tests/evidence/t70-library-progress-contract.md。当前只新增持久进度考题；初27项缺模块预期红后，独立审题补无materialsRevision原课、同毫秒3→4→3最近选择、未来版本同内容冲突3题，最终发现1399项105文件exit0，首组30/30缺lib/scene-progress.ts预期失败、exit1，未走后续分支断言，旧1369项本阶段未重跑。原27断言保留，app/lib/spec/rules/hooks/.codex及旧tests无变，diff检查0。当前真实IAB登录页，不能猜目标owner或自动复制；先完成零费用开发，再按T62A核验真实登录/明确绑定/重登。首组红回执400df35795已核验，不勾选T70、不声称完整接口/UI通过。
 
-  **首组存储实现检查点**：核验红400df35795后implementing，新增lib/scene-progress.ts，签名owner与课程/材料/媒体哈希复合键、严格位置、输入快照、事务CAS/等价重试、同毫秒单调最近选择及损坏数据拒绝已实现。专项30/30 exit0、850ms，typecheck exit0；独立只读5/5限定实现审查通过、8作弊未见命中，未亲跑；冻结题/规格/规则/hooks/.codex无改，diff检查0。本检查点未跑默认完整verify，不称1399全绿或完整T70通过。证据docs/evidence/t70/storage-checkpoint.md。NOW note归档，实际回执后test-writing补课程目录/HTTP及合法坏行、真实写失败红题；后续服务先实读授权课程，latest指针不授播放权。
+  **首组存储实现检查点**：核验红400df35795后implementing，新增lib/scene-progress.ts，签名owner与课程/材料/媒体哈希复合键、严格位置、输入快照、事务CAS/等价重试、同毫秒单调最近选择及损坏数据拒绝已实现。专项30/30 exit0、850ms，typecheck exit0；独立只读5/5限定实现审查通过、8作弊未见命中，未亲跑；冻结题/规格/规则/hooks/.codex无改，diff检查0。本检查点未跑默认完整verify，不称1399全绿或完整T70通过。证据docs/evidence/t70/storage-checkpoint.md。note回执32a88ae06d已核验后复位test-writing，继续课程目录/HTTP及合法坏行、真实写失败红题；后续服务先实读授权课程，latest指针不授播放权。
+
+  **第二组目录/HTTP红阶段**：新增service25、HTTP19、既有SQLite故障回归3，共47；最终清单1446项108文件exit0，定向exit1、44项缺新模块预期红/3回归通过、5.5秒（t70-stage2-reviewed-red.log），未进入新功能具体分支，旧1399未重跑。先实读同owner/同版课程材料媒体再进度读写；最近旧版不能悄悄换新版；缺背景兼容原生成课和copy并标neutral，不猜角色，present坏资料仍拒绝。目录源读错误不得伪空库；HTTP严格Cookie/Origin/选择器/2048字节/私有错误，默认copy持久与匿名/他人拒绝有考题。3绿实际SQLite坏JSON/非法位置不重置及UPDATE拒绝旧值保留/后续合法保存，不称磁盘满。独立只读四段5/5审题通过、8作弊未见命中，未亲跑；app/lib/旧tests/spec/rules/hooks/.codex无改，diff检查0。NOW登记第二组red待实际回执再实现；合同tests/evidence/t70-library-progress-contract.md；UI/真实网络/真人绑定及重登仍待，T70不勾选。
 
 - [ ] T71 · 从场景关键词自动生成新课程〔候选；K3.2/K4/T61B真实执行接入；另批方案与费用〕
 

@@ -37,3 +37,27 @@ NOW先执行首组确认实际红，记录发现/执行数量与exit；独立只
 - 该红证明新持久进度能力不存在；尚未走到后续位置、隔离、冲突或损坏断言，不把模块缺失当作这些分支已逐个验证。当前旧1369项未在本红阶段重复运行，沿用T69既有全绿历史，不称1399全绿。
 - app/lib/spec/rules/hooks/.codex与既有考题无改，diff检查exit0；当前只新增本组考题、合同及台账。没有新实现、模型调用、费用、凭据变更或发布。完整T70及真实目标身份仍待后续，不勾选T70。
 - 独立只读四段审题限定通过首组5/5，核对最终红日志，未亲跑verify；八项作弊未见命中。合法SQLite坏行、真实写入失败/界面误报保存及恢复提示页无自动发声仍须后续补证；当前store B命名空间隔离不代表B获得课程访问。NOW只登记首组red，等实际回执后实现。
+
+## 第二组：私有课程目录与进度HTTP合同
+
+已核验首组实现记事32a88ae06d后复位test-writing，首组30题保持不动。当前仍不接UI、不复制到真实账号、不勾T70。
+
+1. `createLearningLibrary({courseStore,progressStore})`仅接本地私有list/getCourse及进度latest/get/save。目录返回`{scenes:[{course,description,duration,requirement,contextSource}],unavailable}`；只列实际读到的非模拟成片。坏媒体/材料以unavailable计数，不伪装空库或换旧样片；列表读取失败向上传播，过程中鉴权拒绝不能变成可见的部分私人目录。只投影学习必需字段，不传owner、job、预算、Cookie或身份。
+2. 目录优先本人最近明确学习的材料/媒体指针，再实际getCourse核验；旧材料不可读或媒体SHA变化就不可用，不悄悄用新版。新任务带原历史requirement；有资料却非法/错版不能退成无资料。历史copy无完整背景则`contextSource=legacy-neutral`，用原记录可用标题及空角色生成仅供播放器读取的上下文投影，明确不是原始关键词资料，不读当前草稿或猜角色。
+3. `getProgress/saveProgress`先用Cookie及精确指针实际getCourse，验证course/revision/material/media/台词和翻译，再进度get/save；失败不得碰进度库或覆盖旧值。异步读课前复制调用参数。进度record不从客户端接媒体SHA或owner。目录/get/save均不提供生成执行方法。
+4. `/api/learning-library`只GET，无查询参数；`/api/scene-progress`GET以id/revision/可选materialsRevision精确读取，PUT只收`{course:{id,revision,materialsRevision?},expectedVersion,position:{page,time,turnIndex}}`。严格正整数/安全值/字段及重复参数，不允许owner、SHA、playing等字段。PUT必须同源Origin（NextURL loopback别名以真实Host核对），流式按UTF-8字节上限2048，不信Content-Length。返回private/no-store；401/404/409/400/413/503等仅通用错误，不泄内部内容/路径。网络停滞的客户端5秒读体期限由第三组验证，本组不声称服务端流式处理有独立时间上限。
+5. 默认配置仍用本机tmp/generation-tasks的既有生成/授权copy库、媒体库及新进度库，无新配置或密钥；缺secret/Vercel环境503不称云持久。配置函数考题用合成双身份授权copy、真实本地SQLite/字节哈希及新route调用验证默认接线和隔离，不当作真实Next网络/媒体解码/真人OAuth。后续实际HTTP和播放器QA仍必须。
+
+本组另补3条首组实现的永久回归：合法SQLite坏JSON、非法位置不被重置，及真实SQLite UPDATE触发器RAISE造成写入失败后旧值保留、随后合法保存可继续。该触发器只在新合成QA库内，不删除/重置原数据，不等同磁盘满/EIO。初步3项通过应称既有实现回归，不冒称新能力红；新增service/HTTP缺模块失败尚未到具体分支断言。
+
+服务协议fixture仅替代课程读取边界，实际签名会话与进度SQLite是真实的；源字节完整性沿用已有getCourse的实际验证，并在默认copy接线与最终真实HTTP另证。角色/字幕合成数据不算新生成内容或学习成效。
+
+审题澄清：既有GenerationTask.requirement本来可选，缺背景兼容范围包括原生成课与授权copy，不能仅按copy前缀猜是否历史。对完全未记录背景的课程提供同一种显式neutral投影，页面应说“角色背景未记录”，不据缺失断言年代或丢失原因；并非声称已恢复原始需求。资料存在但非法/错版仍拒绝。service.list本身的存储/鉴权错误必须继续reject；默认匿名目录GET、进度GET/PUT均验证401，不以mock错误映射代替实际Cookie边界。
+
+## 第二组实际红结果
+
+- 初版42项exit1：39项新service/HTTP缺模块预期红，3项既有SQLite保护回归通过，4.5秒；清单1441项/108文件exit0。补源数据错配与会话中途失效2题后44项exit1：41红3绿、4.8秒，日志`t70-stage2-final-red.log`。
+- 审题后再补service.list鉴权/存储错误不伪空库2题及旧生成课无背景中性兼容1题；另在既有新题中补实际缺Origin、默认匿名目录GET和进度PUT。最终47项（service25、HTTP19、存储故障3），exit1、44项缺新模块预期红、3回归通过、5.5秒，日志`.loopwork/logs/t70-stage2-reviewed-red.log`。清单1446项/108文件exit0，日志`t70-stage2-reviewed-list.log`；不同新增用例为47，不累计重复执行次数。
+- 44红均明确缺`lib/learning-library.ts`或`app/api/learning-library/route.ts`，尚未走到具体service/HTTP行为断言，不作这些分支已验的证据；3绿真实执行了既有存储保护。当前app/lib/spec/rules/hooks/.codex及所有旧考题无改，diff检查exit0；旧1399项本红阶段未重跑，不能称1446全绿。
+- NOW仅登记第二组red，实际回执到达才实现service/HTTP；T70不勾选，真实HTTP网络、UI、暂停恢复及真人绑定/重登仍待后续。不调用供应商、不增加费用、不碰密钥或发布。
+- 独立只读最终四段审题5/5通过，列表伪空库/默认匿名访问等条件已补齐，八项作弊未见命中；审查者核对新增断言、合同与日志，未亲跑测试。盲区仍包括恢复页误自动发声、网络停滞后误报保存及真人重登，第三组另补；本红卷不构成完整T70验收。
