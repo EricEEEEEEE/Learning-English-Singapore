@@ -1,9 +1,12 @@
 'use client';
 
-import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { entryCopy, languageChoices, type EntryLanguage } from './entry-copy';
 import { useAccountBoundary } from './use-account-boundary';
 import { sceneEntryCopy } from './scene-entry-copy';
+import { sceneRequirementCopy } from './scene-requirement-copy';
+import { useSceneRequirements, type SceneDraft } from './use-scene-requirements';
+import { sceneKeywordKeys } from '../lib/scene-requirement-content';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -20,14 +23,14 @@ function supportedLanguage(value: unknown): EntryLanguage | undefined {
   return languageChoices.find(choice => choice.code === value)?.code;
 }
 
-type SceneDraft = { owner: string; text: string; page: 'scene' | 'background' };
 type InputFocus = { owner: string; start: number; end: number; direction: 'forward' | 'backward' | 'none' };
 
-function SceneDescription({ draft, onChange, language, title, hint, focusMemory }: {
+function SceneDescription({ draft, onChange, language, title, hint, focusMemory, requirements }: {
   draft: SceneDraft; onChange: (next: SceneDraft) => void; language: EntryLanguage;
-  title: string; hint: string; focusMemory: RefObject<InputFocus | null>;
+  title: string; hint: string; focusMemory: RefObject<InputFocus | null>; requirements: ReturnType<typeof useSceneRequirements>;
 }) {
   const copy = sceneEntryCopy[language];
+  const requirementCopy = sceneRequirementCopy[language];
   const input = useRef<HTMLTextAreaElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const nextFocus = useRef<'input' | 'heading' | null>(null);
@@ -55,11 +58,22 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory 
     nextFocus.current = null;
   }, [draft.page, draft.text]);
 
-  if (draft.page === 'background') return <section className="scene-form">
+  if (draft.page === 'background') return <form className="scene-form" onSubmit={event => { event.preventDefault(); void requirements.save(); }}>
     <h1 ref={heading} tabIndex={-1}>{copy.background}</h1>
     <p className="scene-description">{draft.text}</p>
+    <p className="panel-copy" id="scene-keyword-hint">{requirementCopy.hint}</p>
+    <div className="scene-keywords">{sceneKeywordKeys.map(key => <div key={key}>
+      <label htmlFor={`scene-keyword-${key}`}>{requirementCopy.fields[key].label}</label>
+      <input id={`scene-keyword-${key}`} type="text" maxLength={200} value={draft.keywords[key]} aria-describedby="scene-keyword-hint"
+        placeholder={requirementCopy.fields[key].example} onChange={event => onChange({ ...draft, keywords: { ...draft.keywords, [key]: event.target.value } })} />
+    </div>)}</div>
+    {requirements.saveFailed || requirements.conflict ? <p className="scene-entry-error" role="alert">{requirements.conflict ? requirementCopy.conflict : requirementCopy.saveError}</p> : null}
+    {requirements.conflict ? <button className="text-button" type="button" onClick={requirements.retry}>{requirementCopy.loadSaved}</button> : null}
+    <button className="guide-primary" type="submit" disabled={requirements.saving || requirements.conflict}>{requirements.saving ? requirementCopy.saving : requirementCopy.save}</button>
+    {requirements.saved ? <p className="scene-save-status" role="status">{requirementCopy.saved}</p> : null}
+    <p className="scene-note">{requirementCopy.local}</p>
     <button className="text-button" type="button" onClick={() => { nextFocus.current = 'input'; onChange({ ...draft, page: 'scene' }); }}>{copy.back}</button>
-  </section>;
+  </form>;
 
   return <form className="scene-form" noValidate onSubmit={event => {
     event.preventDefault();
@@ -97,12 +111,21 @@ export default function LearningEntry() {
   const [embedded, setEmbedded] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [preferenceError, setPreferenceError] = useState<'read' | 'save' | null>(null);
-  const [draft, setDraft] = useState<SceneDraft | null>(null);
   const inputFocus = useRef<InputFocus | null>(null);
+  const verifiedOwner = useRef<string | null>(null);
   const initialized = useRef(false);
   const language = preferences.language;
   const copy = entryCopy[language];
   const journey = journeyCopy[language];
+  const restoreLanguage = useCallback((value: EntryLanguage) => setPreferences(previous => ({ ...previous, language: value })), []);
+  useLayoutEffect(() => {
+    if (account.ready && !account.failed) verifiedOwner.current = account.authenticated ? account.accountKey : null;
+  }, [account.ready, account.failed, account.authenticated, account.accountKey]);
+  // Retain only memory during an uncertain session check. The private UI below
+  // still requires a currently verified session; a confirmed logout clears it.
+  const requirementsOwner = !account.ready || account.failed ? verifiedOwner.current : account.authenticated ? account.accountKey : null;
+  const requirements = useSceneRequirements(requirementsOwner, language, restoreLanguage);
+  const requirementCopy = sceneRequirementCopy[language];
 
   useEffect(() => {
     if (initialized.current) return;
@@ -166,8 +189,12 @@ export default function LearningEntry() {
     </header>
     <main className="simple-main">
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
-        : account.authenticated && account.accountKey ? <SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
-          draft={draft?.owner === account.accountKey ? draft : { owner: account.accountKey, text: '', page: 'scene' }} onChange={setDraft} focusMemory={inputFocus} />
+        : account.authenticated && account.accountKey ? requirements.readFailed ? <section>
+          <p className="scene-entry-error" role="alert">{requirementCopy.readError}</p>
+          <button className="guide-primary" type="button" onClick={requirements.retry}>{requirementCopy.retry}</button>
+        </section> : requirements.loading || !requirements.draft ? <p role="status">{requirementCopy.loading}</p>
+        : <SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
+          draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} />
         : <section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">

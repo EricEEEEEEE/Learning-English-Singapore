@@ -1,0 +1,52 @@
+{
+  "result": [
+    {
+      "viewport": "1440x900",
+      "dpr": 2,
+      "syntheticSession": true,
+      "actualHttpSaveAndReload": "pass",
+      "repeatedSaveRevision": 1,
+      "inFlightEditRetained": "pass",
+      "uncertainSessionDraftRetained": "pass",
+      "uncertainSessionHidesPrivateInputs": "pass",
+      "noRequirementReloadOnSameOwnerRecovery": true,
+      "loopbackOrigins": "both pass",
+      "history": "unchanged",
+      "foreignOrMissingOrigin": "403",
+      "invalidNullKeyword": "400",
+      "otherOwner": "empty, historical404",
+      "anonymous": "401",
+      "horizontalOverflow": false,
+      "unexpectedConsoleErrors": 0,
+      "expectedInjected503Errors": 1,
+      "externalRequests": 0,
+      "generationWrites": 0
+    },
+    {
+      "viewport": "320x740",
+      "dpr": 2,
+      "syntheticSession": true,
+      "actualHttpSaveAndReload": "pass",
+      "repeatedSaveRevision": 1,
+      "inFlightEditRetained": "pass",
+      "uncertainSessionDraftRetained": "pass",
+      "uncertainSessionHidesPrivateInputs": "pass",
+      "noRequirementReloadOnSameOwnerRecovery": true,
+      "loopbackOrigins": "both pass",
+      "history": "unchanged",
+      "foreignOrMissingOrigin": "403",
+      "invalidNullKeyword": "400",
+      "otherOwner": "empty, historical404",
+      "anonymous": "401",
+      "horizontalOverflow": false,
+      "unexpectedConsoleErrors": 0,
+      "expectedInjected503Errors": 1,
+      "externalRequests": 0,
+      "generationWrites": 0
+    }
+  ],
+  "permissions": {
+    "directory": "700",
+    "database": "600"
+  }
+}

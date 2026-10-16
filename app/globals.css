@@ -84,6 +84,12 @@ h1 span { display: block; }
 .scene-entry-error { margin-top: 12px; color: #963d30; font-size: calc(14px * var(--text-scale)); line-height: 1.8; }
 .simple-main textarea[aria-invalid="true"] { border-color: #963d30; }
 .scene-description { margin: 24px 0 12px; padding: 16px; border-radius: 8px; background: var(--surface); line-height: 1.8; white-space: pre-wrap; }
+.scene-keywords { margin-top: 24px; }
+.scene-keywords input { display: block; width: 100%; min-width: 0; min-height: 48px; padding: 12px; border: 1px solid #9db6a8; border-radius: 8px; color: var(--ink); background: white; font: inherit; line-height: 1.7; }
+.scene-keywords input::placeholder { color: #61776c; opacity: 1; }
+.scene-keywords input:focus-visible { outline: 3px solid #be7232; outline-offset: 3px; }
+.scene-save-status { margin-top: 16px; color: var(--accent); }
+.simple-main .guide-primary:disabled { background: var(--surface); color: var(--muted); border-color: var(--line); }
 .simple-language { display: grid; gap: 4px; color: var(--muted); font-size: calc(12px * var(--text-scale)); }
 .simple-language select { max-width: 150px; min-height: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: inherit; }
 .simple-language select:focus-visible { outline: 3px solid #be7232; outline-offset: 4px; }
