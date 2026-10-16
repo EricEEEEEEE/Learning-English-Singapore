@@ -633,3 +633,5 @@
 - 2026-10-16 T71C红：新增12项domain考题，全部因缺lib/machine-audio-review.ts预期失败。
 - [audit] phase → implementing @ 2026-10-16T14:40:15+00:00
 - 2026-10-16 T71C绿：完整verify 1558/1558 exit0。
+- [audit] phase → test-writing @ 2026-10-16T14:53:23+00:00
+- 2026-10-16 T71D接线红：新增17项domain考题，14项预期失败（提交/状态读取未触发执行器、缺lib/live-scene-runner.ts），3项既有行为保护通过。
