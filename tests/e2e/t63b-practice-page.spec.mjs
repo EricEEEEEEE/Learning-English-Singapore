@@ -58,7 +58,8 @@ async function openPractice(page, context, baseURL, options) {
 const panel = main => main.getByTestId('scene-panel-5');
 const twoTurns = course => {
   const [partner, learner] = course.lines;
-  course.lines.push({ ...structuredClone(partner), id: 'line-2', text: 'May I see your passport?' }, { ...structuredClone(learner), id: 'line-3', text: 'Here you are.' });
+  // Later, non-overlapping segments of the same existing media so the course still passes material validation.
+  course.lines.push({ ...structuredClone(partner), id: 'line-2', text: 'May I see your passport?', start: 8, end: 9.5 }, { ...structuredClone(learner), id: 'line-3', text: 'Here you are.', start: 10, end: 11.5 });
   course.turns.push({ partnerLineId: 'line-2', learnerLineId: 'line-3' });
 };
 
