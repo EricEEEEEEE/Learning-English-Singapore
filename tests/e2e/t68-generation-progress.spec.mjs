@@ -315,3 +315,51 @@ for (const language of languages) test(`T68 / K4: ${language.code} can submit an
   await expect.poll(() => state.gets.length).toBeGreaterThan(readsBeforeReload);
   expect(state.posts).toHaveLength(1); await expect(main.locator('video')).toHaveCount(0);
 });
+
+async function openReadyCourse(page, context, baseURL) {
+  const record = requirement(), state = await setupBrowser(page, context, baseURL, record);
+  state.views[`${ownerA}:1`] = generationView(record, 't68-ready-recheck', 'ready', 3);
+  await page.goto('/?generation=1'); const main = page.getByRole('main');
+  await main.getByRole('button', { name: '观看场景', exact: true }).click();
+  await expect(main.getByTestId('scene-play')).toBeVisible();
+  return { state, main };
+}
+
+test('T68 regression: focus rechecking the same owner restores the opened course and exact materials without generation', async ({ page, context, baseURL }) => {
+  const { state, main } = await openReadyCourse(page, context, baseURL);
+  const checked = page.waitForResponse(response => new URL(response.url()).pathname === '/api/auth/session');
+  await page.evaluate(() => window.dispatchEvent(new Event('focus'))); await checked;
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  await expect(main.getByTestId('scene-play')).toBeVisible();
+  await expect(main.locator('video')).toHaveAttribute('src', /id=t68-ready-recheck&revision=1/);
+  for (const pointer of state.courseReads) expect(pointer).toEqual({ id: 't68-ready-recheck', revision: 1, materialsRevision: 3 });
+  expect(state.posts).toEqual([]); expect(state.writes).toEqual([]);
+});
+
+test('T68 regression: a temporary session failure hides video then restores the same course and materials after retry', async ({ page, context, baseURL }) => {
+  const { state, main } = await openReadyCourse(page, context, baseURL);
+  let failNext = true;
+  await page.route('**/api/auth/session', route => {
+    if (!failNext) return route.fallback();
+    failNext = false; return route.fulfill({ status: 503, json: { error: 'synthetic_failure' } });
+  });
+  await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
+  await expect(main.getByRole('button', { name: '重新检查登录', exact: true })).toBeVisible(); await expect(main.locator('video')).not.toBeVisible();
+  expect(await page.evaluate(() => [...document.querySelectorAll('video,audio')].every(media => media.paused))).toBe(true);
+  await main.getByRole('button', { name: '重新检查登录', exact: true }).click(); await expect(main.getByTestId('scene-play')).toBeVisible();
+  await expect(main.locator('video')).toHaveAttribute('src', /id=t68-ready-recheck&revision=1/);
+  for (const pointer of state.courseReads) expect(pointer).toEqual({ id: 't68-ready-recheck', revision: 1, materialsRevision: 3 });
+  expect(state.posts).toEqual([]); expect(state.writes).toEqual([]);
+});
+
+test('T68 regression: confirmed owner change or logout removes the opened private course instead of keeping A watching', async ({ page, context, baseURL }) => {
+  const { state, main } = await openReadyCourse(page, context, baseURL);
+  const b = requirement(1, '账号B的新活动'); state.records[ownerB] = b; state.histories[`${ownerB}:1`] = b;
+  state.views[`${ownerB}:1`] = generationView(b, 't68-ready-recheck-b');
+  state.owner = ownerB; await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
+  await expect(main.getByText(b.content.description, { exact: true })).toBeVisible(); await expect(main.locator('video')).toHaveCount(0);
+  await expect(main.getByRole('button', { name: '观看场景', exact: true })).toHaveCount(0);
+  state.authenticated = false; await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
+  await expect(main.getByRole('group', { name: '选择登录方式', exact: true })).toBeVisible(); await expect(main.locator('video')).toHaveCount(0);
+  expect(state.courseReads).toEqual([{ id: 't68-ready-recheck', revision: 1, materialsRevision: 3 }]); expect(state.posts).toEqual([]);
+});
