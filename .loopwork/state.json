@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "4",
-  "phase": "implementing",
+  "stage": "3",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 3,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "c1c62158b992c469c931d1d73b70b9aa451ca012",
+  "last_round_commit": "a70b04e767e4334d7dae3648d31a77e31e796518",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-10-15T18:52:08+08:00",
-  "authorized_batch": "C2E_T62A_local_account_approved",
+  "last_session": "2026-10-16T12:02:02+08:00",
+  "authorized_batch": "C2F_simple_scene_pending_approval",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 1090628,
-  "blocks_seen": 1374,
+  "audit_bytes": 1099614,
+  "blocks_seen": 1378,
   "red_commit_pending": true,
   "acceptance_status": "T61B_green_receipt_ab74bd8259_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: T62A真实入口主机修复与996项完整回归"
+    "msg": "存档: 极简场景主线规格与T65至T70候选方案"
   }
 }
