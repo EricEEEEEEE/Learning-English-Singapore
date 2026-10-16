@@ -1,0 +1,69 @@
+{
+  "realNextDefaultHttp": true,
+  "realSQLite": true,
+  "syntheticSignedIdentities": true,
+  "realGoogleOAuthProved": false,
+  "preparedSyntheticTasks": true,
+  "reusedExistingGeneratedVideos": true,
+  "newGenerationProved": false,
+  "checks": {
+    "desktop": {
+      "viewport": [
+        1440,
+        900
+      ],
+      "dpr": 2,
+      "naturalHotelEnded": true,
+      "naturalWallMs": 12964,
+      "finalFlushAwaited": true,
+      "clipConflictRestoreTime": 7,
+      "longCourseDuration": 34.017,
+      "longRestoreTime": 20.25,
+      "queuedSessionFailureThenSaved": 21,
+      "brokenMediaPreservesOldPosition": true,
+      "sameSyntheticIdentityNewCookieRestores": true,
+      "otherOwnerDenied": 404
+    },
+    "mobile": {
+      "viewport": [
+        320,
+        740
+      ],
+      "dpr": 2,
+      "approvedSyntheticCopy": true,
+      "neutralRole": true,
+      "promptRestoredPausedAfterReload": true,
+      "mediaShaMatchesSource": true,
+      "range": 206,
+      "progress": {
+        "page": "prompt",
+        "time": 2.5,
+        "turnIndex": 0
+      }
+    }
+  },
+  "screenshots": [
+    "desktop-library.png",
+    "desktop-terms.png",
+    "mobile-prompt.png"
+  ],
+  "modelCallsOnPreparedTasks": 0,
+  "reservedMicrosOnPreparedTasks": 0,
+  "browserWrites": 32,
+  "externalRequests": 0,
+  "microphoneCalls": 0,
+  "consoleErrors": [
+    {
+      "text": "Failed to load resource: the server responded with a status of 409 (Conflict)",
+      "url": "http://localhost:3271/api/scene-progress"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+      "url": "http://localhost:3271/api/auth/session"
+    },
+    {
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+      "url": "http://localhost:3271/api/generated-course-media?id=9d47c6ad-05d1-49bc-a0b9-0a5c77ca7f59&revision=2"
+    }
+  ]
+}

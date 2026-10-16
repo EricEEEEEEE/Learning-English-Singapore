@@ -10,6 +10,8 @@ import { sceneKeywordKeys } from '../lib/scene-requirement-content';
 import { useSceneGeneration } from './use-scene-generation';
 import { sceneGenerationCopy } from './scene-generation-copy';
 import RealSceneCourse from './real-scene-course';
+import { useLearningLibrary } from './use-learning-library';
+import { learningLibraryCopy } from './learning-library-copy';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -131,6 +133,9 @@ export default function LearningEntry() {
   const requirementsOwner = !account.ready || account.failed ? verifiedOwner.current : account.authenticated ? account.accountKey : null;
   const requirements = useSceneRequirements(requirementsOwner, language, restoreLanguage);
   const generation = useSceneGeneration(requirementsOwner, account.ready && !account.failed && account.authenticated);
+  const verified = ready && account.ready && !account.failed && account.authenticated;
+  const library = useLearningLibrary(requirementsOwner, verified);
+  const libraryCopy = learningLibraryCopy[language];
   const requirementCopy = sceneRequirementCopy[language];
 
   useEffect(() => {
@@ -184,6 +189,14 @@ export default function LearningEntry() {
       : notice === 'webview' ? copy.webViewNotice
       : authMessage
     : null;
+  const selectedScene = library.selected;
+  const viewing = selectedScene?.course ?? generation.watching;
+  const player = viewing && requirementsOwner ? <div hidden={!verified}>
+    <RealSceneCourse key={`${requirementsOwner}:${viewing.id}:${viewing.revision}:${viewing.materialsRevision ?? 0}`} language={language}
+      saved={viewing} guided rememberProgress active={verified} requirement={selectedScene?.requirement ?? generation.watchRequirement}
+      contextSource={selectedScene?.contextSource} backLabel={selectedScene ? libraryCopy.back : undefined}
+      onBack={selectedScene ? library.closeCourse : generation.closeWatch} />
+  </div> : null;
 
   return <div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
     <title>Learning English in Singapore</title>
@@ -194,8 +207,19 @@ export default function LearningEntry() {
       </select></label>
     </header>
     <main className="simple-main">
+      {player}
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
-        : account.authenticated && account.accountKey ? generation.watching ? <RealSceneCourse language={language} saved={generation.watching} guided requirement={generation.watchRequirement} onBack={generation.closeWatch} />
+        : account.authenticated && account.accountKey ? viewing ? null
+        : library.open ? <section>
+          <h1>{libraryCopy.title}</h1><p className="panel-copy">{libraryCopy.local}</p>
+          {!library.result || library.result.status === 'loading' ? <p role="status">{libraryCopy.loading}</p> : library.result.status === 'failed'
+            ? <><p role="alert">{libraryCopy.error}</p><button className="text-button" type="button" onClick={library.retry}>{libraryCopy.retry}</button></>
+            : <>{library.result.unavailable > 0 && <p role="status">{libraryCopy.unavailable(library.result.unavailable)}</p>}
+              {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map(scene => <li key={`${scene.course.id}:${scene.course.revision}:${scene.course.materialsRevision ?? 0}`} className="scene-card">
+                <p className="scene-description">{scene.description}</p><button className="text-button" type="button" onClick={() => library.choose(scene)}>{libraryCopy.learn}</button>
+              </li>)}</ul> : library.result.unavailable === 0 ? <p>{libraryCopy.empty}</p> : null}</>}
+          <button className="text-button" type="button" onClick={library.close}>{libraryCopy.input}</button>
+        </section>
         : generation.target !== null ? <section className="scene-form">
           <h1>{sceneGenerationCopy[language].title}</h1>
           {generation.view ? <p className="scene-description">{generation.view.requirement.content.description}</p> : null}
@@ -212,8 +236,9 @@ export default function LearningEntry() {
           <p className="scene-entry-error" role="alert">{requirementCopy.readError}</p>
           <button className="guide-primary" type="button" onClick={requirements.retry}>{requirementCopy.retry}</button>
         </section> : requirements.loading || !requirements.draft ? <p role="status">{requirementCopy.loading}</p>
-        : <SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
+        : <><SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
           draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} generation={generation} />
+          <button className="text-button" type="button" onClick={library.show}>{libraryCopy.title}</button></>
         : <section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">

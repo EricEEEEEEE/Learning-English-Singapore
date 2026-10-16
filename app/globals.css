@@ -77,6 +77,9 @@ h1 span { display: block; }
 .simple-main h1 { font-size: calc(clamp(28px, 4vw, 36px) * var(--text-scale)); letter-spacing: -.025em; }
 .simple-main .scene-form { margin-top: 0; }
 .simple-main textarea { margin-top: 24px; min-height: 150px; }
+.learning-scenes { list-style: none; padding: 0; }
+.learning-scenes li, .learning-position { overflow-wrap: anywhere; }
+.learning-position { font-size: calc(14px * var(--text-scale)); color: var(--muted); }
 .simple-main .guide-primary { margin-top: 24px; }
 .scene-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .scene-examples button { max-width: 100%; min-height: 44px; padding: 8px 14px; border: 1px solid #b2c4b8; border-radius: 8px; background: white; color: var(--accent); font-size: calc(14px * var(--text-scale)); line-height: 1.6; text-align: start; }
