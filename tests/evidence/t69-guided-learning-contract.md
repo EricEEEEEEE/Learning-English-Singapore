@@ -43,3 +43,11 @@
 - 剩余盲区：酒店真实间隔不能证明任意邻接音轨严格隔离；合成duration、第二回合及媒体事件只验证协议/事件。真实Next签名会话、实际浏览器媒体边界和完整verify需实现后另证；Safari真机、系统长期后台、母语审校、自由语音、新生成和学习位置持久仍不在此红卷成果内。
 
 NOW仅登记red，Stop实际红回执到达后才实现。
+
+## 实现检查点后的媒体替身纠错补红
+
+- 已核验实现记事回执 `a4a5e21a7a`，再显式复位 `test-writing`。原功能红回执仍为 `cdc0b3bd8f`；此次是测试基础设施纠错，不将已通过的补跑冒充新功能红。
+- 原实现定向18/20及真实Range对照诊断已保留于 `docs/evidence/t69/media-range-diagnosis.md`：整片200替身的seek回到0，标准206对照能定位到1秒和片尾。此次只在T69 fixture覆写媒体响应，调用生产 `handleGeneratedMedia`，替换底层已有酒店bytes；GET/HEAD/Range/响应头均由原生产实现处理。共享T68替身和全部spec断言、阈值、事件行为不改，不伪造currentTime。媒体id/revision断言在handler外，避免被业务异常捕获转成503。
+- `npm --prefix tests run list` exit0，仍1369项/104文件；`npm run verify:offline` exit0，验证已存实现检查点的类型与构建。此前同组20/20 exit0、13.1秒；最终断言移位后定向命令 `npm --prefix tests test -- t68-generation-progress t69-guided-learning --project=phone --grep 'T69|T68 regression:'` exit0、20/20、13.2秒，日志 `.loopwork/logs/t69-range-phone-final-check.log`。T69的17项及T68的3项均通过，含实际词组/句子/对方段起止end±0.1秒。片尾UI测试仍是合成事件，不能称自然完整观看已验。
+- 独立只读最终审查限定通过fixture纠错；审查者未运行测试。8项作弊检查未见命中；app/lib/spec/rules/hooks/.codex、测试spec和共享T68 fixture相对记事基线无变，diff检查exit0。鉴权/课程仍是协议替身，真实签名会话、实际Next HTTP补证与默认完整verify均未在此纠错阶段完成；T69保持未勾选。
+- NOW登记补充red；实际回执后再implementing，完成真实媒体/HTTP与全量验证，不能用20/20替代技术绿门。

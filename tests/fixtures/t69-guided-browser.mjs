@@ -1,8 +1,10 @@
 import { readFile } from 'node:fs/promises';
 import { expect } from '@playwright/test';
 import { setupBrowser, requirement, generationView, ownerA } from './t68-generation-browser.mjs';
+import { handleGeneratedMedia } from '../../app/api/generated-course-media/route.ts';
 
 export const hotelSample = JSON.parse(await readFile(new URL('../../public/media/hotel-course.json', import.meta.url), 'utf8'));
+const hotelBytes = await readFile(new URL('../../public/media/hotel-pov-12s.mp4', import.meta.url));
 export const guidedId = 't69-synthetic-hotel', guidedRevision = 2, guidedMaterials = 3;
 export function hotelRequirement(language = 'zh-Hans') {
   const record = requirement(guidedRevision, '我想在酒店办理入住，确认预订。');
@@ -33,6 +35,20 @@ export async function setupGuided(page, context, baseURL, { record = hotelRequir
     const params = new URL(route.request().url()).searchParams;
     state.courseReads.push({ id: params.get('id'), revision: Number(params.get('revision')), materialsRevision: Number(params.get('materialsRevision')) });
     return route.fulfill({ json: state.course });
+  });
+  // Substitute only existing bytes; use the real handler's GET/HEAD and Range protocol.
+  // Session/ownership remain protocol fixtures, not real signed-cookie evidence.
+  await page.route('**/api/generated-course-media*', async route => {
+    const request = route.request(), url = new URL(request.url());
+    state.mediaReads.push(url.search);
+    expect(url.searchParams.get('id')).toBe(guidedId);
+    expect(url.searchParams.get('revision')).toBe(String(record.revision));
+    const response = await handleGeneratedMedia(new Request(request.url(), { method: request.method(), headers: request.headers() }), {
+      now: 0, store: { async getCourseMedia() {
+        return { bytes: hotelBytes, size: hotelBytes.byteLength };
+      } },
+    });
+    return route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
   });
   await page.goto(`/?generation=${record.revision}`);
   await expect(page.getByRole('combobox')).toHaveValue(latest.content.language);
