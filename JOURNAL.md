@@ -629,3 +629,5 @@
 - 2026-10-16 T71B红：新增10项domain考题，全部因缺lib/generation-runner.ts预期失败（替身管线已能建任务）。
 - [audit] phase → implementing @ 2026-10-16T14:26:01+00:00
 - 2026-10-16 T71B绿：完整verify 1546/1546 exit0。
+- [audit] phase → test-writing @ 2026-10-16T14:38:56+00:00
+- 2026-10-16 T71C红：新增12项domain考题，全部因缺lib/machine-audio-review.ts预期失败。
