@@ -654,3 +654,4 @@
 - [audit] phase → implementing @ 2026-10-16T15:41:47+00:00
 - 2026-10-16 T63B绿：完整verify全绿exit0（日志verify-20261016-154230）。新增docs/runbooks/c3-paid-run.md供有密钥的新环境会话执行T71D/T63C付费实测。
 - [audit] phase → test-writing @ 2026-10-16T15:54:24+00:00
+- 2026-10-16 C3付费实测预检停下：api.openai.com与api.ltx.io被环境代理拒绝(403)，环境缺OPENAI_API_KEY（仅有疑似拼错的OPEN_API_KEY）；两节课均未生成(非ready)，对练0轮，生成USD0、对练USD0，合计USD0。详见BLOCKED.md B-C3。
