@@ -6,6 +6,13 @@ export type SceneRequirementContent = { description: string; language: EntryLang
 export type SceneRequirement = { revision: number; content: SceneRequirementContent };
 export const emptySceneKeywords = (): SceneKeywords => ({ location: '', learnerRole: '', partnerRole: '', topic: '', goal: '', special: '' });
 
+export function parseSceneRequirement(input: unknown): SceneRequirement {
+  if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !['revision', 'content'].includes(key))) throw new Error('Invalid requirement');
+  const value = input as SceneRequirement;
+  if (!Number.isSafeInteger(value.revision) || value.revision < 1) throw new Error('Invalid requirement revision');
+  return { revision: value.revision, content: parseSceneRequirementContent(value.content) };
+}
+
 export function parseSceneRequirementContent(input: unknown): SceneRequirementContent {
   if (!input || typeof input !== 'object' || Array.isArray(input) || Object.keys(input).some(key => !['description', 'language', 'keywords'].includes(key))) throw new Error('Invalid requirement content');
   const value = input as Record<string, unknown>;

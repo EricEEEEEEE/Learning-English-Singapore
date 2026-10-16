@@ -7,6 +7,9 @@ import { sceneEntryCopy } from './scene-entry-copy';
 import { sceneRequirementCopy } from './scene-requirement-copy';
 import { useSceneRequirements, type SceneDraft } from './use-scene-requirements';
 import { sceneKeywordKeys } from '../lib/scene-requirement-content';
+import { useSceneGeneration } from './use-scene-generation';
+import { sceneGenerationCopy } from './scene-generation-copy';
+import RealSceneCourse from './real-scene-course';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -25,9 +28,10 @@ function supportedLanguage(value: unknown): EntryLanguage | undefined {
 
 type InputFocus = { owner: string; start: number; end: number; direction: 'forward' | 'backward' | 'none' };
 
-function SceneDescription({ draft, onChange, language, title, hint, focusMemory, requirements }: {
+function SceneDescription({ draft, onChange, language, title, hint, focusMemory, requirements, generation }: {
   draft: SceneDraft; onChange: (next: SceneDraft) => void; language: EntryLanguage;
   title: string; hint: string; focusMemory: RefObject<InputFocus | null>; requirements: ReturnType<typeof useSceneRequirements>;
+  generation: ReturnType<typeof useSceneGeneration>;
 }) {
   const copy = sceneEntryCopy[language];
   const requirementCopy = sceneRequirementCopy[language];
@@ -58,21 +62,22 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
     nextFocus.current = null;
   }, [draft.page, draft.text]);
 
-  if (draft.page === 'background') return <form className="scene-form" onSubmit={event => { event.preventDefault(); void requirements.save(); }}>
+  if (draft.page === 'background') return <form className="scene-form" onSubmit={event => { event.preventDefault(); void generation.generate(requirements.save); }}>
     <h1 ref={heading} tabIndex={-1}>{copy.background}</h1>
     <p className="scene-description">{draft.text}</p>
     <p className="panel-copy" id="scene-keyword-hint">{requirementCopy.hint}</p>
     <div className="scene-keywords">{sceneKeywordKeys.map(key => <div key={key}>
       <label htmlFor={`scene-keyword-${key}`}>{requirementCopy.fields[key].label}</label>
-      <input id={`scene-keyword-${key}`} type="text" maxLength={200} value={draft.keywords[key]} aria-describedby="scene-keyword-hint"
+      <input id={`scene-keyword-${key}`} type="text" maxLength={200} disabled={generation.preparing} value={draft.keywords[key]} aria-describedby="scene-keyword-hint"
         placeholder={requirementCopy.fields[key].example} onChange={event => onChange({ ...draft, keywords: { ...draft.keywords, [key]: event.target.value } })} />
     </div>)}</div>
     {requirements.saveFailed || requirements.conflict ? <p className="scene-entry-error" role="alert">{requirements.conflict ? requirementCopy.conflict : requirementCopy.saveError}</p> : null}
     {requirements.conflict ? <button className="text-button" type="button" onClick={requirements.retry}>{requirementCopy.loadSaved}</button> : null}
-    <button className="guide-primary" type="submit" disabled={requirements.saving || requirements.conflict}>{requirements.saving ? requirementCopy.saving : requirementCopy.save}</button>
+    <button className="guide-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{sceneGenerationCopy[language].generate}</button>
+    <button className="text-button" type="button" disabled={generation.preparing || requirements.saving || requirements.conflict} onClick={() => void requirements.save()}>{requirements.saving ? requirementCopy.saving : requirementCopy.save}</button>
     {requirements.saved ? <p className="scene-save-status" role="status">{requirementCopy.saved}</p> : null}
     <p className="scene-note">{requirementCopy.local}</p>
-    <button className="text-button" type="button" onClick={() => { nextFocus.current = 'input'; onChange({ ...draft, page: 'scene' }); }}>{copy.back}</button>
+    <button className="text-button" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'input'; onChange({ ...draft, page: 'scene' }); }}>{copy.back}</button>
   </form>;
 
   return <form className="scene-form" noValidate onSubmit={event => {
@@ -125,6 +130,7 @@ export default function LearningEntry() {
   // still requires a currently verified session; a confirmed logout clears it.
   const requirementsOwner = !account.ready || account.failed ? verifiedOwner.current : account.authenticated ? account.accountKey : null;
   const requirements = useSceneRequirements(requirementsOwner, language, restoreLanguage);
+  const generation = useSceneGeneration(requirementsOwner, account.ready && !account.failed && account.authenticated);
   const requirementCopy = sceneRequirementCopy[language];
 
   useEffect(() => {
@@ -183,18 +189,31 @@ export default function LearningEntry() {
     <title>Learning English in Singapore</title>
     <header className="site-header">
       <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan">帮你融入新加坡，相信自己可以做到。</p></div>
-      <label className="simple-language"><span>{copy.change}</span><select aria-label={copy.change} value={language} disabled={!ready} onChange={event => changeLanguage(event.target.value)}>
+      <label className="simple-language"><span>{copy.change}</span><select aria-label={copy.change} value={language} disabled={!ready || generation.preparing} onChange={event => changeLanguage(event.target.value)}>
         {languageChoices.map(choice => <option key={choice.code} value={choice.code}>{choice.name}</option>)}
       </select></label>
     </header>
     <main className="simple-main">
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
-        : account.authenticated && account.accountKey ? requirements.readFailed ? <section>
+        : account.authenticated && account.accountKey ? generation.watching ? <RealSceneCourse language={language} saved={generation.watching} onBack={generation.closeWatch} />
+        : generation.target !== null ? <section className="scene-form">
+          <h1>{sceneGenerationCopy[language].title}</h1>
+          {generation.view ? <p className="scene-description">{generation.view.requirement.content.description}</p> : null}
+          {generation.error ? <p className="scene-entry-error" role="alert">{sceneGenerationCopy[language][generation.error === 'version' ? 'version' : 'error']}</p>
+            : <p className="panel-copy" role="status">{generation.view ? sceneGenerationCopy[language].phases[generation.view.phase] : sceneGenerationCopy[language].loading}</p>}
+          {generation.view?.phase === 'ready' ? <button className="guide-primary" type="button" onClick={generation.watch}>{sceneGenerationCopy[language].watch}</button> : null}
+          <button className="text-button" type="button" disabled={generation.preparing} onClick={generation.retry}>{sceneGenerationCopy[language].retry}</button>
+          <button className="text-button" type="button" onClick={() => {
+            if (requirements.draft) requirements.change({ ...requirements.draft, page: 'background' });
+            generation.back();
+          }}>{sceneGenerationCopy[language].back}</button>
+        </section>
+        : requirements.readFailed ? <section>
           <p className="scene-entry-error" role="alert">{requirementCopy.readError}</p>
           <button className="guide-primary" type="button" onClick={requirements.retry}>{requirementCopy.retry}</button>
         </section> : requirements.loading || !requirements.draft ? <p role="status">{requirementCopy.loading}</p>
         : <SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
-          draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} />
+          draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} generation={generation} />
         : <section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">

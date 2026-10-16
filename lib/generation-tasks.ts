@@ -6,6 +6,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { validateGeneratedScript, type GeneratedScript } from './generated-script';
 import { buildGeneratedCourse, buildRevisedLearningCourse } from './generated-course';
+import { parseSceneRequirement, type SceneRequirement } from './scene-requirement-content';
 
 import { wavDuration, planAudioSegments, type AudioAsset } from './generated-audio';
 import type { createPrivateMediaStore } from './private-media-store';
@@ -33,8 +34,9 @@ type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDura
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
+const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   const budget = liveBudget ? { ...liveBudget } : undefined;
@@ -133,11 +135,13 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async getCourseMedia(input: Session & { id: string; revision: number }) { return (await readCourse(input)).media; },
-    async create(input: Session & { goal: string; revision: number; requestKey: string }) {
+    async create(input: Session & { goal: string; revision: number; requestKey: string; requirement?: SceneRequirement }) {
       const ownerId = await owner(input);
       if (typeof input.goal !== 'string' || !input.goal.trim() || input.goal.length > 2000 || !Number.isSafeInteger(input.revision) || input.revision < 1 || typeof input.requestKey !== 'string' || !input.requestKey.trim() || input.requestKey.length > 128) throw new Error('Invalid task');
       const goal = input.goal.trim();
-      const fingerprint = createHash('sha256').update(JSON.stringify([goal, input.revision])).digest('hex');
+      const requirement = input.requirement === undefined ? undefined : parseSceneRequirement(input.requirement);
+      if (requirement && (requirement.revision !== input.revision || requirement.content.description.trim() !== goal)) throw new Error('Invalid requirement source');
+      const fingerprint = requirement ? requirementFingerprint(requirement) : createHash('sha256').update(JSON.stringify([goal, input.revision])).digest('hex');
       return transact(db => {
         const previous = db.prepare('SELECT fingerprint FROM requests WHERE owner=? AND key=?').get(ownerId, input.requestKey);
         if (previous && previous.fingerprint !== fingerprint) throw new Error('Request key conflict');
@@ -151,9 +155,21 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         }
         const count = db.prepare('SELECT count(*) AS n FROM jobs WHERE owner=?').get(ownerId);
         if (Number(count?.n) >= 50) throw new Error('Task limit');
-        const task: GenerationTask = { id: randomUUID(), ownerId, goal, revision: input.revision, status: 'awaiting_budget', reservedMicros: 0, providerCalls: 0, simulation };
+        const task: GenerationTask = { id: randomUUID(), ownerId, goal, revision: input.revision, status: 'awaiting_budget', reservedMicros: 0, providerCalls: 0, simulation, ...(requirement ? { requirement } : {}) };
         db.prepare('INSERT INTO jobs VALUES(?,?,?,?)').run(task.id, ownerId, fingerprint, JSON.stringify(task));
         db.prepare('INSERT INTO requests VALUES(?,?,?)').run(ownerId, input.requestKey, fingerprint); return task;
+      });
+    },
+    async findForRequirement(input: Session & { requirement: SceneRequirement }) {
+      const ownerId = await owner(input);
+      const fingerprint = requirementFingerprint(parseSceneRequirement(input.requirement));
+      return transact(db => {
+        const row = db.prepare('SELECT id FROM jobs WHERE owner=? AND fingerprint=?').get(ownerId, fingerprint);
+        if (!row) return null;
+        const task = read(db, String(row.id), ownerId)!;
+        db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
+        const latest = db.prepare('SELECT version FROM learning_materials WHERE owner=? AND task=? AND source_revision=? ORDER BY version DESC LIMIT 1').get(ownerId, task.id, task.revision);
+        return latest && task.status === 'video_assembled' ? { ...task, materialsRevision: Number(latest.version) } : task;
       });
     },
     async get(input: Session & { id: string }) { const id = await owner(input); return transact(db => read(db, input.id, id)); },

@@ -1,0 +1,137 @@
+'use client';
+
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { parseSceneRequirement, type SceneRequirement } from '../lib/scene-requirement-content';
+import type { SceneCoursePointer, SceneGenerationView } from '../lib/scene-generation';
+
+type Target = number | 'invalid' | null;
+type Result = { owner: string; revision: Target; view?: SceneGenerationView; error?: 'read' | 'version' };
+class VersionFailure extends Error {}
+const statuses = ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending', 'video_assembled'];
+const phases = ['not_submitted', ...statuses.filter(status => status !== 'video_assembled'), 'failed', 'simulation', 'media_unavailable', 'ready'];
+
+function parseView(input: unknown, revision: number): SceneGenerationView {
+  const value = input as SceneGenerationView;
+  try {
+    const requirement = parseSceneRequirement(value?.requirement);
+    if (requirement.revision !== revision || !phases.includes(value.phase)) throw new Error();
+    if (value.task === null) {
+      if (value.phase !== 'not_submitted' || value.course !== null) throw new Error();
+    } else {
+      const task = value.task;
+      if (!task || typeof task.id !== 'string' || !task.id || task.id.length > 128 || task.revision !== revision || task.requirementRevision !== revision || !statuses.includes(task.status) || typeof task.simulation !== 'boolean' || !Number.isSafeInteger(task.providerCalls) || task.providerCalls < 0) throw new Error();
+      if (task.simulation !== (value.phase === 'simulation') || value.phase === 'not_submitted') throw new Error();
+      if (value.phase === 'ready') {
+        const course = value.course;
+        if (task.status !== 'video_assembled' || !course || course.id !== task.id || course.revision !== revision || (course.materialsRevision !== undefined && (!Number.isSafeInteger(course.materialsRevision) || course.materialsRevision < 1))) throw new Error();
+      } else if (value.course !== null) throw new Error();
+    }
+    return { ...value, requirement };
+  } catch { throw new VersionFailure('Invalid generation version'); }
+}
+
+async function requestGeneration(method: 'GET' | 'POST', revision: number, controller: AbortController) {
+  const deadline = window.setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch('/api/scene-generation' + (method === 'GET' ? `?revision=${revision}` : ''), {
+      method, credentials: 'same-origin', cache: 'no-store', signal: controller.signal,
+      ...(method === 'POST' ? { headers: { 'content-type': 'application/json' }, body: JSON.stringify({ requirementRevision: revision }) } : {}),
+    });
+    if (response.status === 401) window.dispatchEvent(new Event('le-sg-auth-invalid'));
+    if (!response.ok) throw new Error('Generation request failed');
+    return parseView(await response.json(), revision);
+  } finally { window.clearTimeout(deadline); }
+}
+
+function readTarget(): Target {
+  const values = new URL(window.location.href).searchParams.getAll('generation');
+  if (!values.length) return null;
+  return values.length === 1 && /^[1-9]\d*$/.test(values[0]) && Number.isSafeInteger(Number(values[0])) ? Number(values[0]) : 'invalid';
+}
+
+export function useSceneGeneration(owner: string | null, enabled: boolean) {
+  const [target, setTarget] = useState<Target>(null);
+  const [result, setResult] = useState<Result | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const [preparing, setPreparing] = useState(false);
+  const [watching, setWatching] = useState<{ owner: string; course: SceneCoursePointer } | null>(null);
+  const ownerRef = useRef(owner), targetRef = useRef<Target>(null);
+  const busy = useRef(false);
+  const preparation = useRef<object | null>(null);
+  const submission = useRef<{ owner: string; revision: number; controller: AbortController } | null>(null);
+  useLayoutEffect(() => { ownerRef.current = enabled ? owner : null; }, [owner, enabled]);
+
+  useEffect(() => {
+    function sync() { targetRef.current = readTarget(); setTarget(targetRef.current); setWatching(null); }
+    sync(); window.addEventListener('popstate', sync);
+    return () => window.removeEventListener('popstate', sync);
+  }, []);
+  useEffect(() => {
+    setWatching(null); setPreparing(false); busy.current = false; preparation.current = null;
+    return () => { submission.current?.controller.abort(); submission.current = null; };
+  }, [owner]);
+
+  useEffect(() => {
+    if (!owner || !enabled || target === null) return;
+    if (target === 'invalid') { setResult({ owner, revision: target, error: 'version' }); return; }
+    let active = true, timer: number | undefined, controller: AbortController | null = null;
+    const current = () => active && ownerRef.current === owner && targetRef.current === target;
+    async function read() {
+      window.clearTimeout(timer);
+      if (!current() || document.hidden || submission.current?.owner === owner && submission.current.revision === target) return;
+      controller?.abort();
+      const request = new AbortController(); controller = request;
+      setResult({ owner: owner!, revision: target });
+      try {
+        const view = await requestGeneration('GET', target as number, request);
+        if (!current() || controller !== request) return;
+        setResult({ owner: owner!, revision: target, view });
+        if (['submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(view.phase) && !document.hidden) timer = window.setTimeout(() => void read(), 5000);
+      } catch (error) {
+        if (current() && controller === request) setResult({ owner: owner!, revision: target, error: error instanceof VersionFailure ? 'version' : 'read' });
+      }
+    }
+    function visibility() {
+      if (document.hidden) { window.clearTimeout(timer); controller?.abort(); controller = null; }
+      else void read();
+    }
+    void read(); document.addEventListener('visibilitychange', visibility);
+    return () => { active = false; window.clearTimeout(timer); controller?.abort(); document.removeEventListener('visibilitychange', visibility); };
+  }, [owner, enabled, target, attempt]);
+
+  function navigate(next: Target) {
+    const url = new URL(window.location.href);
+    if (next === null) url.searchParams.delete('generation'); else url.searchParams.set('generation', String(next));
+    window.history.pushState(null, '', `${url.pathname}${url.search}${url.hash}`);
+    targetRef.current = next; setTarget(next); setWatching(null);
+  }
+  async function generate(save: () => Promise<SceneRequirement | undefined>) {
+    if (!owner || !enabled || busy.current) return;
+    const token = {}; preparation.current = token;
+    busy.current = true; setPreparing(true);
+    try {
+      const requirement = await save();
+      if (!requirement || ownerRef.current !== owner || preparation.current !== token) return;
+      const controller = new AbortController();
+      const pending = { owner, revision: requirement.revision, controller };
+      submission.current = pending;
+      navigate(requirement.revision);
+      setResult({ owner, revision: requirement.revision });
+      try {
+        const view = await requestGeneration('POST', requirement.revision, controller);
+        if (ownerRef.current === owner && submission.current === pending && targetRef.current === requirement.revision) setResult({ owner, revision: requirement.revision, view });
+      } catch {
+        // The server may have committed. Recover only through GET, never a second POST.
+      } finally {
+        if (submission.current === pending) { submission.current = null; setAttempt(value => value + 1); }
+      }
+    } finally { if (preparation.current === token) { preparation.current = null; busy.current = false; setPreparing(false); } }
+  }
+  const current = result?.owner === owner && result.revision === target ? result : null;
+  return { target, view: current?.view, error: current?.error, preparing, generate,
+    retry: () => setAttempt(value => value + 1),
+    back: () => { submission.current?.controller.abort(); submission.current = null; preparation.current = null; busy.current = false; setPreparing(false); navigate(null); },
+    watch: () => { if (owner && ownerRef.current === owner && current?.view?.phase === 'ready' && current.view.course) setWatching({ owner, course: current.view.course }); },
+    watching: watching?.owner === owner ? watching.course : null, closeWatch: () => setWatching(null),
+  };
+}

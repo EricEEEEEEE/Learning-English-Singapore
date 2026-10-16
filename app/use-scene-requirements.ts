@@ -68,6 +68,7 @@ export function useSceneRequirements(owner: string | null, language: EntryLangua
       if (currentOwner.current !== owner || pendingSave.current !== controller) return;
       // A reply updates the saved version, never the live inputs edited in flight.
       setEditor(previous => previous?.draft.owner === owner ? { ...previous, revision: result.revision, saved: result.content, save: 'saved' } : previous);
+      return result;
     } catch (error) {
       if (currentOwner.current === owner && pendingSave.current === controller) setEditor(previous => previous?.draft.owner === owner ? {
         ...previous, save: error instanceof RequestFailure && error.status === 409 ? 'conflict' : 'failed',
