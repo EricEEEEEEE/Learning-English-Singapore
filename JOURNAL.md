@@ -625,3 +625,5 @@
 - 2026-10-16 T61B定位纠错：两处getByRole('alert')限定到main内（同T66先例），断言内容/阈值不变；三视口该文件12/12通过。
 - [audit] phase → implementing @ 2026-10-16T14:11:53+00:00
 - 2026-10-16 T71A绿：完整verify 1536/1536 exit0（云端CfT153，12.1分钟）。
+- [audit] phase → test-writing @ 2026-10-16T14:24:28+00:00
+- 2026-10-16 T71B红：新增10项domain考题，全部因缺lib/generation-runner.ts预期失败（替身管线已能建任务）。
