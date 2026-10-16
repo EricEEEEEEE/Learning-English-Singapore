@@ -1,13 +1,13 @@
 {
   "schema": 1,
-  "stage": "3",
+  "stage": "4",
   "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 3,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "a70b04e767e4334d7dae3648d31a77e31e796518",
+  "last_round_commit": "6fa5612cfc3b36d0d8b449a1472da4c83e0f68e6",
   "milestones": [
     "T01",
     "B2O"
@@ -16,18 +16,18 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-10-16T12:02:02+08:00",
-  "authorized_batch": "C2F_simple_scene_pending_approval",
+  "last_session": "2026-10-16T12:53:18+08:00",
+  "authorized_batch": "C2F_T65_T70_zero_cost_approved",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
-  "audit_bytes": 1099614,
-  "blocks_seen": 1378,
+  "audit_bytes": 1106432,
+  "blocks_seen": 1379,
   "red_commit_pending": true,
   "acceptance_status": "T61B_green_receipt_ab74bd8259_verified",
   "batch_preflight": "T61B_shared25_approved_cost_evidence_pending",
   "stop_blocks": 0,
   "pending_commit": {
     "kind": "note",
-    "msg": "存档: 极简场景主线规格与T65至T70候选方案"
+    "msg": "存档: C2F六项零费用开工授权与T65前置核对"
   }
 }
