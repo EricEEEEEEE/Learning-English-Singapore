@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 13,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "42bbca97e6aa47338da8a989b170a811c68f3710",
+  "last_round_commit": "fbb0331d8fcead3e8ee191b149816c283d710537",
   "milestones": [
     "T01",
     "B2O"
