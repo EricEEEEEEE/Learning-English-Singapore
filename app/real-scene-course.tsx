@@ -5,6 +5,7 @@ import { validateSceneCourse, type SceneCourse, type SceneLine } from '../lib/sc
 import { parseSceneRequirement, type SceneRequirement } from '../lib/scene-requirement-content';
 import type { EntryLanguage } from './entry-copy';
 import { guidedSceneCopy } from './guided-scene-copy';
+import ScenePractice, { scenePracticeCopy } from './scene-practice';
 import { useSceneProgress, type ProgressContext } from './use-scene-progress';
 import type { SceneProgressPosition } from '../lib/scene-progress';
 import { requestLearningJson } from './learning-request';
@@ -52,7 +53,8 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const fullPlayback = useRef(false);
   const guide = guidedSceneCopy[language];
   const libraryCopy = learningLibraryCopy[language];
-  const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : copy.steps[step - 1] : copy.title;
+  const practiceCopy = scenePracticeCopy[language];
+  const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : step === 5 ? practiceCopy.title : copy.steps[step - 1] : copy.title;
   useLayoutEffect(() => {
     if (guided && focusNext.current) { heading.current?.focus(); focusNext.current = false; }
   }, [guided, page, step]);
@@ -135,11 +137,11 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   function move(next: number) { stop(); setStep(next); }
   const lineById = (id: string) => course!.lines.find(line => line.id === id)!;
   const playLine = (line: SceneLine) => play(line.start, line.end);
-  function changePage(next: 'watch' | 'role' | 'learn', nextStep = 1) {
+  function changePage(next: 'watch' | 'role' | 'learn', nextStep = 1, turn = turnIndex) {
     position.current = { ...position.current, page: next === 'learn' ? nextStep === 2 ? 'terms' : nextStep === 3 ? 'sentences' : 'prompt' : next };
     stop(); focusNext.current = true; setPage(next); setStep(nextStep);
     savePosition(true);
-    if (next === 'learn' && nextStep === 4) void playLine(lineById(course!.turns[turnIndex].partnerLineId));
+    if (next === 'learn' && nextStep >= 4) void playLine(lineById(course!.turns[turn].partnerLineId));
   }
   function changeTurn(next: number) {
     position.current = { ...position.current, turnIndex: next };
@@ -213,12 +215,14 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     </div>}
     {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
     {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => <article key={line.id} data-testid="scene-sentence" className="scene-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>)}</div>}
-    {learning && step === 4 && <div data-testid="scene-panel-4">{!guided && <h2>{copy.steps[3]}</h2>}<article className="scene-card"><p data-testid="scene-partner" lang="en">{partner.text}</p><button data-testid="scene-turn-play" onClick={() => playLine(partner)}>{copy.listen}</button></article><article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article><p>{copy.hint}</p>
+    {learning && step === 4 && <div data-testid="scene-panel-4">{!guided && <h2>{copy.steps[3]}</h2>}<article className="scene-card"><p data-testid="scene-partner" lang="en">{partner.text}</p><button data-testid="scene-turn-play" onClick={() => playLine(partner)}>{copy.listen}</button></article><article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article><p>{guided ? practiceCopy.promptHint : copy.hint}</p>
       {course.turns.length > 1 && <div className="scene-actions"><button disabled={turnIndex === 0} onClick={() => changeTurn(turnIndex - 1)}>{notices.previous}</button><button data-testid="scene-next-turn" disabled={turnIndex === course.turns.length - 1} onClick={() => changeTurn(turnIndex + 1)}>{notices.next}</button></div>}
     </div>}
+    {guided && saved && page === 'learn' && step === 5 && <ScenePractice key={`${saved.id}:${saved.revision}:${saved.materialsRevision ?? 0}`} course={{ ...saved, lines: course.lines, turns: course.turns }} language={language} startTurn={turnIndex}
+      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); changePage('learn', 4, turn); }} playPartner={id => void playLine(lineById(id))} />}
     {guided && page === 'learn' && <div className="scene-actions">
-      {step < 4 && <button type="button" className="guide-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : guide.nextPrompt}</button>}
-      <button type="button" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>
+      {step < 5 && <button type="button" className="guide-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : step === 3 ? guide.nextPrompt : practiceCopy.enter}</button>}
+      {step < 5 && <button type="button" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>}
       <button type="button" onClick={() => changePage('watch')}>{guide.watchAgain}</button>
     </div>}
     {error && <p role="alert">{copy.error}</p>}
