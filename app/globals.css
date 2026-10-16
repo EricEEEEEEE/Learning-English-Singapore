@@ -73,6 +73,23 @@ h1 span { display: block; }
 .entry-status { margin-top: 16px; border-left: 3px solid #86a18d; padding: 12px 16px; background: var(--surface); font-size: calc(14px * var(--text-scale)); line-height: 1.85; }
 .entry-status p + p { margin-top: 12px; }
 
+.simple-main { display: block; max-width: 560px; min-height: 390px; margin: 0 auto; padding: 72px 0; }
+.simple-main h1 { font-size: calc(clamp(28px, 4vw, 36px) * var(--text-scale)); letter-spacing: -.025em; }
+.simple-main .scene-form { margin-top: 0; }
+.simple-main textarea { margin-top: 24px; min-height: 150px; }
+.simple-main .guide-primary { margin-top: 24px; }
+.simple-language { display: grid; gap: 4px; color: var(--muted); font-size: calc(12px * var(--text-scale)); }
+.simple-language select { max-width: 150px; min-height: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: inherit; }
+.simple-language select:focus-visible { outline: 3px solid #be7232; outline-offset: 4px; }
+.simple-footer { max-width: 700px; margin: 0 auto; padding: 24px 0; border-top: 1px solid var(--line); color: var(--muted); font-size: calc(12px * var(--text-scale)); line-height: 1.8; }
+.simple-footer summary { cursor: pointer; min-height: 44px; padding: 10px 0; }
+.simple-footer summary:focus-visible { outline: 3px solid #be7232; outline-offset: 4px; }
+.simple-footer details p { margin: 8px 0 20px; }
+@media (max-width: 520px) {
+  .simple-main { min-height: 360px; padding: 40px 0; }
+  .simple-language select { max-width: 120px; }
+}
+
 .site-footer { display: flex; justify-content: space-between; gap: 48px; padding: 28px 0 34px; border-top: 1px solid var(--line); font-size: calc(13px * var(--text-scale)); line-height: 1.9; color: var(--muted); }
 .site-footer > div { max-width: 700px; }
 .site-footer h2 { color: var(--ink); font-size: calc(14px * var(--text-scale)); margin-bottom: 10px; font-weight: 600; }

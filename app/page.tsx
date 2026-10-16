@@ -1,5 +1,5 @@
-import Entry from './entry';
+import LearningEntry from './learning-entry';
 
 export default function Home() {
-  return <Entry />;
+  return <LearningEntry />;
 }
