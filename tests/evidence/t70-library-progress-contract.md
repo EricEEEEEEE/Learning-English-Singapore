@@ -61,3 +61,33 @@ NOW先执行首组确认实际红，记录发现/执行数量与exit；独立只
 - 44红均明确缺`lib/learning-library.ts`或`app/api/learning-library/route.ts`，尚未走到具体service/HTTP行为断言，不作这些分支已验的证据；3绿真实执行了既有存储保护。当前app/lib/spec/rules/hooks/.codex及所有旧考题无改，diff检查exit0；旧1399项本红阶段未重跑，不能称1446全绿。
 - NOW仅登记第二组red，实际回执到达才实现service/HTTP；T70不勾选，真实HTTP网络、UI、暂停恢复及真人绑定/重登仍待后续。不调用供应商、不增加费用、不碰密钥或发布。
 - 独立只读最终四段审题5/5通过，列表伪空库/默认匿名访问等条件已补齐，八项作弊未见命中；审查者核对新增断言、合同与日志，未亲跑测试。盲区仍包括恢复页误自动发声、网络停滞后误报保存及真人重登，第三组另补；本红卷不构成完整T70验收。
+
+## 第三组：我的场景与暂停恢复界面合同
+
+核验第二组实现 note `8a065740f4` 后复位 test-writing；既有 app/lib 和考题保持不动。本段仍是已批准 C2F T70 的零费用开发，不接自动生成、收费执行、云库、自由语音或新密钥。
+
+1. 场景输入为主体，仅增加“我的场景”次要入口；主动进入后才读 `/api/learning-library`。列表只显示返回的可读课程，后台不可用计数明确显示。源请求失败有重试，不能显示假空库；返回输入保留未保存草稿。五种辅助语言的入口、返回、目录错误及临时学习反馈有正向可见断言，手机不横向溢出。
+2. 打开课程使用目录的精确 id/revision/materialsRevision 和 requirement，不借用最新草稿。无资料 neutral 显示“角色背景未记录”，不编造角色。课程仍通过原私有 JSON/Range 媒体入口；错误不换公共样片。进度响应须对应课程、材料、媒体 SHA，合法版本和课程范围内的位置；坏记录视为无法读取，不当作 null 或自动覆盖。
+3. 从同版进度恢复 watch/role/terms/sentences/prompt、time、turnIndex；恢复不调用 play 或麦克风。真正点击进入提示接话时对方先说，恢复该页不自动说。刷新后从“我的场景”恢复，同 A 临时 session503 后恢复原课程、页面、时间及回合且暂停；确认换号/退出后旧课程不显示。全课程容器可安全保留为隐藏状态，不强制某种 React 卸载策略，但旧媒体必须暂停。
+4. 普通生成观看和库内观看使用同一进度接口，旧 `/demo` 保持独立。进度 GET 完成前或失败后不得以默认位置写回；可临时学习并重试读取。位置保存只发 `{course,expectedVersion,position:{page,time,turnIndex}}`，不传 owner/SHA/playing/能力；单条保存串行，合并高频 timeupdate，保留最新明确页面及位置。允许的 codec 尾差在保存前按已核验课程长度规范化，不放宽服务端越界限制。
+5. 保存成功才显示已保存在本机；503 不改旧记录、不报成功，重试后可继续。已提交但回执丢失，恢复或等价重试不重复加版本；随后产生更新位置也必须保留最新值。其他页面冲突提供重新读取，不强盖原记录。目录、课程 JSON、进度 GET 和 PUT 包括 JSON 消费在内均有 5 秒客户端期限，并实际验证重试/重新进入可恢复。A→B 后迟到目录、进度读取和写入回执不能回显 A 或给 B 写 A 数据。学习只新增读取/进度 PUT，不提交生成或需求保存。
+
+### 考题与替身边界
+
+`tests/e2e/t70-learning-library.spec.mjs` 有 24 条逻辑题，在三个既有视口展开为 72 项。`tests/e2e/t70-fixture-sanity.spec.mjs` 另有 2 条替身自检，三视口共 6 项，不算产品功能已实现。合计新增 78，发现清单 1524 项/110 文件、exit0。最终审题另补目录及进度 GET/PUT 的 401 必须触发会话重查并隐藏私人学习，不能只把失效会话当存储暂时错误。
+
+`tests/fixtures/t70-learning-browser.mjs` 仅新增本组协议替身，不改共享 T68/T69 fixture：会话、目录、课程和进度均是 UI 协议数据；媒体复用酒店原 bytes 和真实 Range handler。合成额外第二回合只验证状态索引，不声称原视频含有这段对白。持久化在本组 fixture 中是内存字典，刷新保留是协议边界验证，不能代替第二组真实 SQLite/HTTP 或最终真人重登。
+
+超时用单次安装的 fetch wrapper、统一 `Request` 规范化及导航后显式目标，避免多份 initScript 的未定义顺序。部分 JSON body 在 headers 后保持 pending，客户端须在虚拟浏览器时间推进到 5.1 秒时 abort 并可恢复；这不是现实网络故障计时。自检直接在请求体已提交之后制造不完整响应，必须先确认读取 pending，再明确 abort、signal.aborted、目标计数加一和消费 reject；不把特定错误名当产品合同。
+
+保存替身使用结构等价，不按 JSON 键顺序判冲突。丢 ACK 替身先保存版本，再中断响应；迟到响应题观察具体原 Request 的 finished/failed，再等待两帧，允许实现正确取消请求，不用固定睡眠冒充晚到证明。未知会话仅要求整个私有课程不可见且暂停，不锁定 DOM 是否卸载。实际媒体自然播放、完整 HTTP/SQLite、真人身份绑定/退出重登仍必须另证；T70 保持未勾选。
+
+## 第三组实际红结果
+
+- 最初普通沙箱启动测试服务时监听 3210 得到 EPERM，未运行产品断言，不算产品红。经工具权限批准后，同一运行器实际启动；首轮代表 phone 4 项 exit1：3 项产品红、1 项 T69 既有回归通过，46.8 秒，日志 `.loopwork/logs/t70-stage3-phone-red.log`。产品红为未找到“我的场景”入口（2 题）或未恢复句子页（1 题）。
+- 审题补强五语错误、失 ACK 后保留更新位置、同 A session503 后恢复页面/回合、codec 尾差、JSON 读体恢复和竞态屏障，并新增两条永久替身自检。中间代表运行 5 项 exit1：2 产品预期红 + 1 替身自检失败 + 2 通过，26.9 秒，日志 `t70-stage3-reviewed-phone-red.log`；不把替身失败算产品缺口。
+- 替身失败原因为自检要求异常名必须为 AbortError。本机固定 Chromium 实际在流中止后的 Response.json 消费返回 TypeError/Failed to fetch；单题诊断记录 abort 计数 1、堆栈在注入器 signal listener，日志 `t70-stage3-injection-diagnosis.log`。最终另用没有 fetch wrapper 的原生 Response/ReadableStream 对照，也得到同一 TypeError。纠正在当前红相位：保持/加强“先 pending、显式 abort、signal.aborted、逐目标计数增加、读取 rejected 且不能 resolved”这一真实合同，保留错误诊断；产品的 5 秒、位置及版本断言未放宽。共享旧考题未改。
+- 最终命令 `npm --prefix tests test -- t70-fixture-sanity t70-learning-library.spec.mjs t69-guided-learning.spec.mjs --project=phone --grep 'fixture sanity only|secondary action|watch position restores|generation watch|manual early continue'`，顶层 **exit1，6 项中 3 产品预期红 + 3 通过，47.2 秒**，日志 `.loopwork/logs/t70-stage3-final-phone-red.log`。3 通过分别是 CAS/结构等价替身自检、4 种请求的部分 JSON 消费中止自检、既有 T69 手动继续/历史角色回归；不是 3 项新产品功能已实现。
+- 最终实际执行的是新产品 72 项中的 phone 3 项；其余 69 项未跑，替身 6 项中的 phone 2 项已跑、其余 4 项未跑。重复执行不累加。3 产品红还未走到深层恢复、超时、保存或账号断言；不能以此声称所有分支已被逐个实测。旧 1446 项仅重跑上述 1 项，不称 1524 项全绿。
+- 新增文件与合同仅在 tests/，app/lib/spec/rules/hooks/.codex 及旧 T68/T69 spec/fixture 无改，diff 检查 exit0。NOW 登记第三组 red，收到实际红回执后才实现“我的场景”和同版位置恢复；不勾 T70，不新增模型请求、费用、配置、密钥、发布或删除。
+- 独立只读最终四段审题核实 5/5 设计交付、八项作弊未见命中，复核最终代表日志和原生流错误对照，确认可冻结 red。随后补的 API401 题亦静态通过：错误码与真实协议一致，每种模式均观察触发后的新会话请求完成，再判断隐私隐藏；未实跑该新增题。审查者没有亲跑测试或 verify，不把静态审查当产品验收。盲区为自然播放/后台切换保存、真实媒体与默认接口全链路、真人绑定/重登，留实现后补证。
