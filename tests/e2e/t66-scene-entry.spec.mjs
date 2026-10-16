@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { emptyRequirements } from '../fixtures/empty-requirements.mjs';
 
 const sceneTitle = '你想在哪个场景下学习英语？';
 const backgroundTitle = '再给几个关键词，让场景更贴近你';
@@ -16,6 +17,7 @@ test.beforeEach(async ({ context, baseURL }) => {
     }
     return route.continue();
   });
+  await emptyRequirements(context);
 });
 
 async function openScene(page, owner = ownerA) {

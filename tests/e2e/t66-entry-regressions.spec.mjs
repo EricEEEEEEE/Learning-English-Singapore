@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { emptyRequirements } from '../fixtures/empty-requirements.mjs';
 
 const sceneTitle = '你想在哪个场景下学习英语？';
 const ownerA = { authenticated: true, accountKey: 't66-regression-owner-a' };
@@ -10,6 +11,7 @@ test.beforeEach(async ({ context, baseURL }) => {
     if (new URL(route.request().url()).origin !== new URL(baseURL).origin) throw new Error('T66 regressions must stay offline.');
     return route.continue();
   });
+  await emptyRequirements(context);
 });
 
 test('T66 / T65 regression: unknown auth notification names do not crash the simple login page', async ({ page }) => {

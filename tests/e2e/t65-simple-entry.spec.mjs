@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { emptyRequirements } from '../fixtures/empty-requirements.mjs';
 
 const sceneTitle = '你想在哪个场景下学习英语？';
 const loginTitle = '选择登录方式';
@@ -12,6 +13,7 @@ test.beforeEach(async ({ context, baseURL }) => {
     if (new URL(route.request().url()).origin === new URL(baseURL).origin) return route.continue();
     throw new Error('T65 must not contact a real identity provider or model.');
   });
+  await emptyRequirements(context);
 });
 
 async function session(page, body = signedOut) {
