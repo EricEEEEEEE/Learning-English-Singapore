@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { entryCopy, languageChoices, type EntryLanguage } from './entry-copy';
 import { useAccountBoundary } from './use-account-boundary';
+import { sceneEntryCopy } from './scene-entry-copy';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -19,6 +20,76 @@ function supportedLanguage(value: unknown): EntryLanguage | undefined {
   return languageChoices.find(choice => choice.code === value)?.code;
 }
 
+type SceneDraft = { owner: string; text: string; page: 'scene' | 'background' };
+type InputFocus = { owner: string; start: number; end: number; direction: 'forward' | 'backward' | 'none' };
+
+function SceneDescription({ draft, onChange, language, title, hint, focusMemory }: {
+  draft: SceneDraft; onChange: (next: SceneDraft) => void; language: EntryLanguage;
+  title: string; hint: string; focusMemory: RefObject<InputFocus | null>;
+}) {
+  const copy = sceneEntryCopy[language];
+  const input = useRef<HTMLTextAreaElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const nextFocus = useRef<'input' | 'heading' | null>(null);
+  const [invalid, setInvalid] = useState(false);
+
+  useLayoutEffect(() => {
+    const saved = focusMemory.current;
+    if (saved?.owner === draft.owner && document.activeElement === document.body && input.current) {
+      input.current.focus({ preventScroll: true });
+      input.current.setSelectionRange(saved.start, saved.end, saved.direction);
+    }
+    return () => {
+      const field = input.current;
+      focusMemory.current = field && document.activeElement === field
+        ? { owner: draft.owner, start: field.selectionStart, end: field.selectionEnd, direction: field.selectionDirection }
+        : null;
+    };
+  }, [draft.owner, focusMemory]);
+
+  useLayoutEffect(() => {
+    if (nextFocus.current === 'input' && input.current) {
+      input.current.focus();
+      input.current.setSelectionRange(draft.text.length, draft.text.length);
+    } else if (nextFocus.current === 'heading') heading.current?.focus();
+    nextFocus.current = null;
+  }, [draft.page, draft.text]);
+
+  if (draft.page === 'background') return <section className="scene-form">
+    <h1 ref={heading} tabIndex={-1}>{copy.background}</h1>
+    <p className="scene-description">{draft.text}</p>
+    <button className="text-button" type="button" onClick={() => { nextFocus.current = 'input'; onChange({ ...draft, page: 'scene' }); }}>{copy.back}</button>
+  </section>;
+
+  return <form className="scene-form" noValidate onSubmit={event => {
+    event.preventDefault();
+    if (!draft.text.trim()) { setInvalid(true); input.current?.focus(); return; }
+    setInvalid(false);
+    nextFocus.current = 'heading';
+    onChange({ ...draft, page: 'background' });
+  }}>
+    <h1 id="scene-entry-title">{title}</h1>
+    <p className="panel-copy" id="scene-entry-hint">{hint}</p>
+    <textarea ref={input} aria-labelledby="scene-entry-title" aria-describedby={`scene-entry-hint${invalid ? ' scene-entry-error' : ''}`}
+      aria-invalid={invalid || undefined} maxLength={2000} value={draft.text}
+      onChange={event => { setInvalid(false); onChange({ ...draft, text: event.target.value }); }} />
+    {invalid ? <p className="scene-entry-error" id="scene-entry-error" role="alert">{copy.empty}</p> : null}
+    <div className="scene-examples" role="group" aria-label={copy.examplesLabel}>
+      {copy.examples.map(example => <button key={example.label} type="button" onClick={() => {
+        setInvalid(false);
+        if (draft.text === example.text) {
+          input.current?.focus();
+          input.current?.setSelectionRange(example.text.length, example.text.length);
+          return;
+        }
+        nextFocus.current = 'input';
+        onChange({ ...draft, text: example.text });
+      }}>{example.label}</button>)}
+    </div>
+    <button className="guide-primary" type="submit">{copy.next}</button>
+  </form>;
+}
+
 export default function LearningEntry() {
   const account = useAccountBoundary();
   const [preferences, setPreferences] = useState(defaults);
@@ -26,7 +97,8 @@ export default function LearningEntry() {
   const [embedded, setEmbedded] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [preferenceError, setPreferenceError] = useState<'read' | 'save' | null>(null);
-  const [draft, setDraft] = useState<{ owner: string; text: string } | null>(null);
+  const [draft, setDraft] = useState<SceneDraft | null>(null);
+  const inputFocus = useRef<InputFocus | null>(null);
   const initialized = useRef(false);
   const language = preferences.language;
   const copy = entryCopy[language];
@@ -94,12 +166,9 @@ export default function LearningEntry() {
     </header>
     <main className="simple-main">
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
-        : account.authenticated && account.accountKey ? <section className="scene-form">
-          <h1 id="scene-entry-title">{journey.scene}</h1>
-          <p className="panel-copy" id="scene-entry-hint">{journey.hint}</p>
-          <textarea aria-labelledby="scene-entry-title" aria-describedby="scene-entry-hint" maxLength={2000} value={draft?.owner === account.accountKey ? draft.text : ''}
-            onChange={event => setDraft({ owner: account.accountKey!, text: event.target.value })} />
-        </section> : <section role="group" aria-labelledby="login-title">
+        : account.authenticated && account.accountKey ? <SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
+          draft={draft?.owner === account.accountKey ? draft : { owner: account.accountKey, text: '', page: 'scene' }} onChange={setDraft} focusMemory={inputFocus} />
+        : <section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">
             <button type="button" onClick={() => setNotice('wechat')}>{copy.wechat}<small>{copy.unavailable}</small></button>
