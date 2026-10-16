@@ -195,7 +195,7 @@ export default function LearningEntry() {
     </header>
     <main className="simple-main">
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
-        : account.authenticated && account.accountKey ? generation.watching ? <RealSceneCourse language={language} saved={generation.watching} onBack={generation.closeWatch} />
+        : account.authenticated && account.accountKey ? generation.watching ? <RealSceneCourse language={language} saved={generation.watching} guided requirement={generation.watchRequirement} onBack={generation.closeWatch} />
         : generation.target !== null ? <section className="scene-form">
           <h1>{sceneGenerationCopy[language].title}</h1>
           {generation.view ? <p className="scene-description">{generation.view.requirement.content.description}</p> : null}

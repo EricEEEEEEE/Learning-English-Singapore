@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { validateSceneCourse, type SceneCourse, type SceneLine } from '../lib/scene-course';
+import { parseSceneRequirement, type SceneRequirement } from '../lib/scene-requirement-content';
 import type { EntryLanguage } from './entry-copy';
+import { guidedSceneCopy } from './guided-scene-copy';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
 export const realSceneCopy: Record<EntryLanguage, Copy> = {
@@ -12,7 +14,7 @@ export const realSceneCopy: Record<EntryLanguage, Copy> = {
   ko: { title: '호텔 상황 영상 샘플', steps: ['영상', '표현', '문장', '답을 보며 응답'], notice: '12초 AI 샘플 · 완성된 수업이나 실시간 생성이 아님 · 보조 언어는 원어민 검토 전입니다', play: '재생', replay: '다시 듣기', pause: '일시 정지', back: '로그인 선택으로 돌아가기', listen: '영상 속 문장 듣기', answer: '답변 예시 듣기', hint: '상대가 말한 후 답을 보며 따라 말하세요. 녹음, 인식, 채점은 하지 않습니다. 자유 대화와 계정 저장은 아직 지원하지 않습니다.', error: '재생 실패. 다시 시도하세요.' },
   hi: { title: 'होटल दृश्य का नमूना', steps: ['वीडियो', 'वाक्यांश', 'वाक्य', 'उत्तर देखकर बोलें'], notice: '12 सेकंड का AI नमूना · पूरा पाठ या रीयल-टाइम निर्माण नहीं · सहायक भाषा की मूल वक्ता से समीक्षा बाकी है', play: 'चलाएँ', replay: 'फिर सुनें', pause: 'रोकें', back: 'साइन इन विकल्पों पर वापस जाएँ', listen: 'वीडियो का वाक्य सुनें', answer: 'उत्तर का उदाहरण सुनें', hint: 'सामने वाले के बोलने के बाद उत्तर देखकर बोलें। रिकॉर्डिंग, पहचान या अंक नहीं दिए जाते। खुली बातचीत और खाते में सहेजना अभी उपलब्ध नहीं है।', error: 'वीडियो नहीं चला। फिर कोशिश करें।' },
 };
-export default function RealSceneCourse({ language, onBack, saved }: { language: EntryLanguage; onBack: () => void; saved?: { id: string; revision: number; materialsRevision?: number } }) {
+export default function RealSceneCourse({ language, onBack, saved, guided = false, requirement }: { language: EntryLanguage; onBack: () => void; saved?: { id: string; revision: number; materialsRevision?: number }; guided?: boolean; requirement?: SceneRequirement | null }) {
   const savedCopy = {
     'zh-Hans': ['已保存场景课程', '本地课程 · 辅助语言尚未经母语审查', '返回生成任务', '听对方说话，再看答案跟读；尚无录音、识别、评分或自由对话。'],
     id: ['Pelajaran tersimpan', 'Pelajaran lokal · Terjemahan belum ditinjau', 'Kembali ke tugas', 'Dengarkan lalu ikuti jawaban. Belum ada rekaman, penilaian atau percakapan bebas.'],
@@ -27,13 +29,31 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
   const [step, setStep] = useState(1);
   const [time, setTime] = useState(0);
   const [error, setError] = useState(false);
+  const [page, setPage] = useState<'watch' | 'role' | 'learn'>('watch');
+  const [roles, setRoles] = useState<{ learner: string; partner: string } | null>(null);
+  const [watchComplete, setWatchComplete] = useState(false);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const focusNext = useRef(false);
   const video = useRef<HTMLVideoElement>(null);
   const end = useRef(12.1);
   const request = useRef(0);
   const wantsPlayback = useRef(false);
+  const fullPlayback = useRef(false);
+  const guide = guidedSceneCopy[language];
+  const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : copy.steps[step - 1] : copy.title;
+  useLayoutEffect(() => {
+    if (guided && focusNext.current) { heading.current?.focus(); focusNext.current = false; }
+  }, [guided, page, step]);
   useEffect(() => {
     const controller = new AbortController();
-    setCourse(null); setLoadFailed(false);
+    stop(); setCourse(null); setLoadFailed(false); setRoles(null); setPage('watch'); setStep(1); setTurnIndex(0); setWatchComplete(false); setTime(0); setError(false);
+    if (guided) {
+      try {
+        const snapshot = parseSceneRequirement(requirement);
+        if (!saved || snapshot.revision !== saved.revision) throw new Error('Requirement version');
+        setRoles({ learner: snapshot.content.keywords.learnerRole.trim(), partner: snapshot.content.keywords.partnerRole.trim() });
+      } catch { setLoadFailed(true); return () => controller.abort(); }
+    }
     if (saved?.materialsRevision !== undefined && (!Number.isSafeInteger(saved.materialsRevision) || saved.materialsRevision < 1)) { setLoadFailed(true); return () => controller.abort(); }
     fetch(saved ? `/api/generated-courses?${new URLSearchParams({ id: saved.id, revision: String(saved.revision), ...(saved.materialsRevision !== undefined ? { materialsRevision: String(saved.materialsRevision) } : {}) })}` : '/media/hotel-course.json', { signal: controller.signal, cache: 'no-store' })
       .then(response => { if (!response.ok) throw new Error('course'); return response.json(); })
@@ -41,6 +61,7 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
         let source = data;
         let privateUrl: string | undefined;
         if (saved) {
+          if (guided && data?.source !== 'ai-generated') throw new Error('Generated source required');
           if (data?.materialsRevision !== saved.materialsRevision) throw new Error('materials version');
           if (data?.id !== saved.id || data?.revision !== saved.revision || data?.media?.courseId !== saved.id || data?.media?.revision !== saved.revision || !['test-fixture', 'ai-generated'].includes(data?.source) || !Array.isArray(data?.lines) || data.lines.some((line: { revision?: number }) => line.revision !== saved.revision)) throw new Error('course');
           const version = String(saved.revision);
@@ -52,17 +73,19 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
         if (result.ok && privateUrl) result.value.media.src = privateUrl; if (!result.ok) throw new Error('course'); if (!controller.signal.aborted) setCourse(result.value); })
       .catch(() => { if (!controller.signal.aborted) setLoadFailed(true); });
     return () => controller.abort();
-  }, [saved?.id, saved?.revision, saved?.materialsRevision]);
+  }, [saved?.id, saved?.revision, saved?.materialsRevision, guided, requirement]);
   useEffect(() => {
     const media = video.current;
-    return () => { wantsPlayback.current = false; request.current++; media?.pause(); };
+    return () => { wantsPlayback.current = false; fullPlayback.current = false; request.current++; media?.pause(); };
   }, [course]);
-  function stop() { wantsPlayback.current = false; request.current++; video.current?.pause(); }
-  async function play(start: number, finish: number) {
+  function stop() { wantsPlayback.current = false; fullPlayback.current = false; request.current++; video.current?.pause(); }
+  async function play(start: number, finish: number, full = false) {
     const media = video.current;
     if (!media) return;
     stop();
     wantsPlayback.current = true;
+    fullPlayback.current = full;
+    setWatchComplete(false);
     const id = request.current;
     end.current = finish;
     setError(false);
@@ -74,6 +97,14 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
   function move(next: number) { stop(); setStep(next); }
   const lineById = (id: string) => course!.lines.find(line => line.id === id)!;
   const playLine = (line: SceneLine) => play(line.start, line.end);
+  function changePage(next: 'watch' | 'role' | 'learn', nextStep = 1) {
+    stop(); focusNext.current = true; setPage(next); setStep(nextStep);
+    if (next === 'learn' && nextStep === 4) void playLine(lineById(course!.turns[turnIndex].partnerLineId));
+  }
+  function changeTurn(next: number) {
+    stop(); setTurnIndex(next);
+    if (guided) void playLine(lineById(course!.turns[next].partnerLineId));
+  }
   const notices = {
     'zh-Hans': { loading: '正在加载课程', invalid: '课程材料不完整或版本不一致，请返回重试。', test: '测试材料：文字与画面仅用于程序验证，不是新场景课程。', next: '下一回合', previous: '上一回合' },
     id: { loading: 'Memuat pelajaran', invalid: 'Materi tidak lengkap atau versinya berbeda. Silakan kembali.', test: 'Materi uji, bukan pelajaran situasi baru.', next: 'Giliran berikutnya', previous: 'Giliran sebelumnya' },
@@ -82,16 +113,20 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
     hi: { loading: 'पाठ लोड हो रहा है', invalid: 'सामग्री अधूरी है या संस्करण अलग हैं। वापस जाएँ।', test: 'यह परीक्षण सामग्री है, नया दृश्य पाठ नहीं।', next: 'अगली बारी', previous: 'पिछली बारी' },
   }[language];
   const back = <button data-testid="scene-back" className="text-button" onClick={() => { stop(); onBack(); }}>{copy.back}</button>;
-  if (!course) return <section data-testid="real-scene-course" className="real-scene"><h1>{copy.title}</h1><p role={loadFailed ? 'alert' : 'status'}>{loadFailed ? notices.invalid : notices.loading}</p>{back}</section>;
+  if (!course) return <section data-testid="real-scene-course" className="real-scene"><h1>{title}</h1><p role={loadFailed ? 'alert' : 'status'}>{loadFailed ? notices.invalid : notices.loading}</p>{back}</section>;
   const caption = course.lines.find(line => time >= line.start && time < line.end)?.text ?? '';
   const turn = course.turns[turnIndex];
   const partner = lineById(turn.partnerLineId);
   const learner = lineById(turn.learnerLineId);
-  return <section data-testid="real-scene-course" className="real-scene">
-    <h1>{copy.title}</h1><p className="trial-note">{copy.notice}</p>
+  const learning = !guided || page === 'learn';
+  return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`}>
+    <h1 ref={heading} tabIndex={-1}>{title}</h1><p className="trial-note">{guided ? `${guide.short(Math.max(1, Math.round(course.media.duration)))} · ${copy.notice}` : copy.notice}</p>
     {course.source === 'test-fixture' && <p role="note">{notices.test}</p>}
-    <nav className="scene-actions" aria-label={copy.title}>{copy.steps.map((label, i) => <button key={label} type="button" data-testid={`scene-step-${i + 1}`} aria-current={step === i + 1 ? 'step' : undefined} onClick={() => move(i + 1)}>{i + 1}. {label}</button>)}</nav>
-    <video ref={video} src={course.media.src} preload="auto" playsInline aria-label={copy.title} onError={() => setError(true)} onLoadedMetadata={() => {
+    {!guided && <nav className="scene-actions" aria-label={copy.title}>{copy.steps.map((label, i) => <button key={label} type="button" data-testid={`scene-step-${i + 1}`} aria-current={step === i + 1 ? 'step' : undefined} onClick={() => move(i + 1)}>{i + 1}. {label}</button>)}</nav>}
+    <video ref={video} src={course.media.src} hidden={guided && page === 'role'} preload="auto" playsInline aria-label={title} onError={() => { stop(); setWatchComplete(false); setError(true); }} onEnded={() => {
+      if (guided && page === 'watch' && fullPlayback.current && wantsPlayback.current && !error && (video.current?.currentTime ?? 0) >= course.media.duration - 0.1) setWatchComplete(true);
+      wantsPlayback.current = false; fullPlayback.current = false;
+    }} onLoadedMetadata={() => {
       const duration = video.current?.duration;
       if (duration === undefined || !Number.isFinite(duration) || Math.abs(duration - course.media.duration) > 0.25 || course.lines.some(line => line.end > duration)) {
         stop(); setLoadFailed(true); setCourse(null);
@@ -99,17 +134,28 @@ export default function RealSceneCourse({ language, onBack, saved }: { language:
     }} onTimeUpdate={() => {
       const media = video.current;
       if (!media) return;
-      if (media.currentTime >= end.current) { media.pause(); if (media.currentTime > end.current) media.currentTime = end.current; }
+      if (!fullPlayback.current && media.currentTime >= end.current) { media.pause(); if (media.currentTime > end.current) media.currentTime = end.current; }
       setTime(media.currentTime);
     }} />
-    {step === 1 && <div data-testid="scene-panel-1">
+    {step === 1 && (!guided || page === 'watch') && <div data-testid="scene-panel-1">
       <p data-testid="scene-caption" lang="en" className="scene-caption" aria-live="off">{caption || '\u00a0'}</p>
-      <div className="scene-actions"><button data-testid="scene-play" onClick={() => play(video.current?.ended ? 0 : video.current?.currentTime ?? 0, course.media.duration)}>{copy.play}</button><button onClick={stop}>{copy.pause}</button><button data-testid="scene-replay" onClick={() => play(0, course.media.duration)}>{copy.replay}</button></div>
+      <div className="scene-actions"><button data-testid="scene-play" onClick={() => play(video.current?.ended ? 0 : video.current?.currentTime ?? 0, course.media.duration, true)}>{copy.play}</button><button onClick={stop}>{copy.pause}</button><button data-testid="scene-replay" onClick={() => play(0, course.media.duration, true)}>{copy.replay}</button></div>
+      {guided && <>{watchComplete && <p role="status">{guide.complete}</p>}<button className="guide-primary" type="button" onClick={() => changePage('role')}>{guide.enter}</button></>}
     </div>}
-    {step === 2 && <div data-testid="scene-panel-2"><h2>{copy.steps[1]}</h2>{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
-    {step === 3 && <div data-testid="scene-panel-3"><h2>{copy.steps[2]}</h2>{course.lines.map(line => <article key={line.id} data-testid="scene-sentence" className="scene-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>)}</div>}
-    {step === 4 && <div data-testid="scene-panel-4"><h2>{copy.steps[3]}</h2><article className="scene-card"><p data-testid="scene-partner" lang="en">{partner.text}</p><button data-testid="scene-turn-play" onClick={() => playLine(partner)}>{copy.listen}</button></article><article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article><p>{copy.hint}</p>
-      {course.turns.length > 1 && <div className="scene-actions"><button disabled={turnIndex === 0} onClick={() => { stop(); setTurnIndex(turnIndex - 1); }}>{notices.previous}</button><button data-testid="scene-next-turn" disabled={turnIndex === course.turns.length - 1} onClick={() => { stop(); setTurnIndex(turnIndex + 1); }}>{notices.next}</button></div>}
+    {guided && page === 'role' && <div className="scene-card"><p>{guide.roleSource}</p>
+      <p data-testid="scene-learner-role">{guide.learner}：{roles?.learner || guide.learnerFallback}</p>
+      <p data-testid="scene-partner-role">{guide.partner}：{roles?.partner || guide.partnerFallback}</p>
+      <div className="scene-actions"><button type="button" className="guide-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button><button type="button" onClick={() => changePage('watch')}>{guide.watchAgain}</button></div>
+    </div>}
+    {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
+    {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => <article key={line.id} data-testid="scene-sentence" className="scene-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>)}</div>}
+    {learning && step === 4 && <div data-testid="scene-panel-4">{!guided && <h2>{copy.steps[3]}</h2>}<article className="scene-card"><p data-testid="scene-partner" lang="en">{partner.text}</p><button data-testid="scene-turn-play" onClick={() => playLine(partner)}>{copy.listen}</button></article><article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article><p>{copy.hint}</p>
+      {course.turns.length > 1 && <div className="scene-actions"><button disabled={turnIndex === 0} onClick={() => changeTurn(turnIndex - 1)}>{notices.previous}</button><button data-testid="scene-next-turn" disabled={turnIndex === course.turns.length - 1} onClick={() => changeTurn(turnIndex + 1)}>{notices.next}</button></div>}
+    </div>}
+    {guided && page === 'learn' && <div className="scene-actions">
+      {step < 4 && <button type="button" className="guide-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : guide.nextPrompt}</button>}
+      <button type="button" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>
+      <button type="button" onClick={() => changePage('watch')}>{guide.watchAgain}</button>
     </div>}
     {error && <p role="alert">{copy.error}</p>}
     {back}

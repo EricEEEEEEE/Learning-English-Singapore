@@ -279,6 +279,8 @@ h1 span { display: block; }
 
 .real-scene { width: 100%; min-width: 0; }
 .real-scene video { display: block; width: min(100%, 320px); max-height: 50vh; margin: 20px auto 0; background: #142d28; border-radius: 12px; }
+.real-scene video[hidden] { display: none; }
+.guided-scene .guide-primary { color: white; background: #215f4d; border-color: #215f4d; }
 .scene-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
 .real-scene button { white-space: normal; overflow-wrap: anywhere; border: 1px solid #91ada0; border-radius: 8px; padding: 12px 16px; color: #164b3d; background: #fff; cursor: pointer; min-height: 44px; }
 .real-scene button[aria-current="step"] { background: #215f4d; color: white; }

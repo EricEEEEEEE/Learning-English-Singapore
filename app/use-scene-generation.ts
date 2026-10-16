@@ -54,7 +54,7 @@ export function useSceneGeneration(owner: string | null, enabled: boolean) {
   const [result, setResult] = useState<Result | null>(null);
   const [attempt, setAttempt] = useState(0);
   const [preparing, setPreparing] = useState(false);
-  const [watching, setWatching] = useState<{ owner: string; course: SceneCoursePointer } | null>(null);
+  const [watching, setWatching] = useState<{ owner: string; course: SceneCoursePointer; requirement: SceneRequirement } | null>(null);
   const ownerRef = useRef(owner), targetRef = useRef<Target>(null);
   const busy = useRef(false);
   const preparation = useRef<object | null>(null);
@@ -131,7 +131,7 @@ export function useSceneGeneration(owner: string | null, enabled: boolean) {
   return { target, view: current?.view, error: current?.error, preparing, generate,
     retry: () => setAttempt(value => value + 1),
     back: () => { submission.current?.controller.abort(); submission.current = null; preparation.current = null; busy.current = false; setPreparing(false); navigate(null); },
-    watch: () => { if (owner && ownerRef.current === owner && current?.view?.phase === 'ready' && current.view.course) setWatching({ owner, course: current.view.course }); },
-    watching: watching?.owner === owner ? watching.course : null, closeWatch: () => setWatching(null),
+    watch: () => { if (owner && ownerRef.current === owner && current?.view?.phase === 'ready' && current.view.course) setWatching({ owner, course: current.view.course, requirement: current.view.requirement }); },
+    watching: watching?.owner === owner ? watching.course : null, watchRequirement: watching?.owner === owner ? watching.requirement : null, closeWatch: () => setWatching(null),
   };
 }
