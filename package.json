@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "npm@11.12.1",
-  "engines": { "node": ">=24" },
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "NEXT_TELEMETRY_DISABLED=1 next dev --hostname 127.0.0.1",
     "build": "NEXT_TELEMETRY_DISABLED=1 next build",
@@ -14,7 +16,7 @@
     "test": "bash tests/run.sh"
   },
   "dependencies": {
-    "next": "16.3.5",
+    "next": "16.4.2",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
