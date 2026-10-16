@@ -10,5 +10,5 @@
 
 ## 云端运行注意
 
-- Playwright 1.63 需要 chromium-1243；云端若只有旧版浏览器，视频用例（T59/T60/T61B/T69/T70 共 78 项）会因缺 H.264 解码失败。需要装 Google Chrome 或 Chrome for Testing 后再判卷，不能把这 78 项当通过。
+- 云端自带的旧 Chromium 不支持 H.264，视频用例（T59/T60/T61B/T69/T70 共 78 项）会失败。判卷前先运行 `eval "$(bash scripts/cloud-test-browser.sh)"`，它从 storage.googleapis.com 下载与 Playwright 版本对应的 Chrome for Testing 并设好 `PLAYWRIGHT_BROWSERS_PATH`。不能把这 78 项当通过。
 - 云端完整 verify 约 14 分钟，超过 verify.sh 默认 300 秒，需设 `LOOPWORK_VERIFY_TIMEOUT=1500`。

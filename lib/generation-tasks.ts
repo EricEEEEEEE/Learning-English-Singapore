@@ -6,7 +6,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { validateGeneratedScript, type GeneratedScript } from './generated-script';
 import { buildGeneratedCourse, buildRevisedLearningCourse } from './generated-course';
-import { parseSceneRequirement, type SceneRequirement } from './scene-requirement-content';
+import { parseSceneRequirement, type SceneRequirement, type SceneRequirementContent } from './scene-requirement-content';
 
 import { wavDuration, planAudioSegments, type AudioAsset } from './generated-audio';
 import type { createPrivateMediaStore } from './private-media-store';
@@ -35,7 +35,7 @@ type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
-type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string }) => Promise<{ requestId: string; script: unknown }> };
+type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
@@ -199,7 +199,8 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
       let result: { requestId: string; script: GeneratedScript } | undefined;
       try {
-        const response = await scriptProvider.generate({ goal: task.goal });
+        // Only the stored, owner-bound requirement reaches the provider; request fields never do.
+        const response = await scriptProvider.generate({ goal: task.goal, ...(task.requirement ? { requirement: task.requirement.content } : {}) });
         const checked = validateGeneratedScript(response?.script);
         if (typeof response?.requestId === 'string' && response.requestId.trim() && response.requestId.length <= 500 && checked.ok) result = { requestId: response.requestId, script: checked.value };
       } catch { /* Submission may have reached the provider. Preserve reservation; do not retry. */ }
