@@ -1,0 +1,49 @@
+{
+  "scope": "T70 stage2 HTTP checkpoint only",
+  "realNextHttp": true,
+  "syntheticSignedSessions": true,
+  "preparedSyntheticTask": true,
+  "reusedExistingHotelBytes": true,
+  "newGenerationProved": false,
+  "realGoogleOAuthProved": false,
+  "uiPersistenceProved": false,
+  "checks": {
+    "catalogue": {
+      "sourceContext": "requirement",
+      "copiedContext": "legacy-neutral",
+      "sourceCount": 1,
+      "copyCount": 1,
+      "unavailable": 0,
+      "noPrivateOperationalFields": true
+    },
+    "privateMedia": {
+      "fullRead": 200,
+      "rangeRead": 206,
+      "sourceAndCopyShaMatchExistingBytes": true,
+      "bytes": 1475721,
+      "sha256": "80dbb00f7c5f8392191e0afc2f9155826dd7f8179aae3de545e48538f380fd77"
+    },
+    "progress": {
+      "sourceSavedAndRead": true,
+      "copiedSavedAndRead": true,
+      "independentPositions": true,
+      "lostAcknowledgementRetryVersion": 1,
+      "staleChangedPosition": 409,
+      "sameSyntheticIdentityNewCookieRestores": true
+    },
+    "historicalMaterials": {
+      "latestAvailable": 4,
+      "rememberedCatalogueVersion": 3,
+      "newVersionDoesNotInheritProgress": true
+    },
+    "boundaries": {
+      "otherOwnerProgressAndMedia": 404,
+      "anonymousCatalogueAndProgress": 401,
+      "wrongMaterials": 404,
+      "emptyAndForeignOrigin": 403,
+      "realLoopbackAliasOriginAccepted": true
+    }
+  },
+  "providerCalls": 0,
+  "reservedMicros": 0
+}
