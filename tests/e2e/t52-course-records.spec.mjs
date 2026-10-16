@@ -38,7 +38,7 @@ async function backend(page) {
 
 async function open(page, fresh = true) {
   if (fresh) {
-    await page.goto('/');
+    await page.goto('/demo');
     await page.getByRole('button', { name: /^简体中文/ }).click();
   }
   await page.getByRole('button', { name: '合成课程演示', exact: true }).click();

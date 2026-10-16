@@ -57,7 +57,7 @@ const test = base.extend({
 
 // Touch emulation at all three widths is deliberate; this is not a real-device claim.
 test.use({ hasTouch: true, locale: 'en-US' });
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/demo'); });
 
 test('T02 / F1.1: language choice comes before either login option', async ({ page }) => {
   for (const language of languages) {

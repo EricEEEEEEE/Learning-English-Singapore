@@ -21,7 +21,7 @@ async function setup(page, denied = false) {
     return route.fulfill(denied ? { status: 401, json: { error: 'unauthenticated' } } : { json: course });
   });
   await page.route('**/api/generated-course-media?**', async route => route.fulfill({ contentType: 'video/mp4', body: await readFile(new URL('../../public/media/hotel-pov-12s.mp4', import.meta.url)) }));
-  await page.goto('/'); await page.getByRole('button', { name: /^简体中文/ }).click();
+  await page.goto('/demo'); await page.getByRole('button', { name: /^简体中文/ }).click();
   await page.getByTestId('generation-entry').click();
   return { course, counts: () => ({ creates, reads }) };
 }

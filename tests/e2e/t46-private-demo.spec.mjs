@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 const goal = '与老师确认孩子下次家长会的时间';
 
 async function openConfirmedScenario(page) {
-  await page.goto('/');
+  await page.goto('/demo');
   await page.getByRole('button', { name: /^简体中文/ }).click();
   await page.getByRole('button', { name: '预览逐题引导', exact: true }).click();
   await page.getByRole('button', { name: '结束引导', exact: true }).click();

@@ -12,7 +12,7 @@ test.beforeEach(async ({ page, context, baseURL }) => {
     expect(new URL(route.request().url()).origin).toBe(new URL(baseURL).origin);
     await route.continue();
   });
-  await page.goto('/');
+  await page.goto('/demo');
 });
 
 for (const [code, name, settings, large, reduced, permissions, change, explanation, title] of languages) {

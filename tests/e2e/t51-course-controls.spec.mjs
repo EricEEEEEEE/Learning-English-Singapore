@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 async function open(page) {
   await page.route('**/api/auth/session', route => route.fulfill({ json: { authenticated: false, accountKey: null } }));
-  await page.goto('/');
+  await page.goto('/demo');
   await page.getByRole('button', { name: /^简体中文/ }).click();
   await page.getByRole('button', { name: '合成课程演示', exact: true }).click();
   await page.getByRole('button', { name: '打开听练操作', exact: true }).click();
@@ -126,7 +126,7 @@ for (const locale of [
   { choice: 'हिन्दी', entry: 'सिंथेटिक पाठ का डेमो', open: 'अभ्यास नियंत्रण खोलें', start: 'उदाहरण शुरू करें (बिना आवाज़)', end: 'वाक्य का अंत अनुकरण करें', practice: 'बातचीत अभ्यास का डेमो', listen: 'केवल उदाहरण देखें' },
 ]) test(`T51: ${locale.choice} can operate a silent example and partner-led practice`, async ({ page }) => {
   await page.route('**/api/auth/session', route => route.fulfill({ json: { authenticated: false } }));
-  await page.goto('/');
+  await page.goto('/demo');
   await page.getByRole('button', { name: new RegExp(`^${locale.choice}`) }).click();
   await page.getByRole('button', { name: locale.entry, exact: true }).click();
   await page.getByRole('button', { name: locale.open, exact: true }).click();

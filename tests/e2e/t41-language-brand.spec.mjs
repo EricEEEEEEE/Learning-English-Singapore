@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 
 test.use({ hasTouch: true });
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/demo'); });
 
 const choices = ['简体中文', 'Bahasa Indonesia', '日本語', '한국어', 'हिन्दी'];
 

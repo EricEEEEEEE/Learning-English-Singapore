@@ -28,7 +28,7 @@ const test = base.extend({
   },
 });
 test.use({ hasTouch: true });
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/demo'); });
 
 const current = page => page.getByRole('article', { name: '当前问题', exact: true });
 const choices = page => current(page).getByRole('group', { name: '回答选项', exact: true }).getByRole('button');

@@ -38,7 +38,7 @@ async function checkRoles(preview) {
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/auth/session', route => route.fulfill({ json: { authenticated: false, accountKey: null } }));
-  await page.goto('/');
+  await page.goto('/demo');
 });
 
 for (const locale of locales) test(`T50: ${locale.code} anonymous learner can open two samples and return`, async ({ page }) => {

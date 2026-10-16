@@ -9,7 +9,7 @@ const languages = [
 ];
 
 test.beforeEach(async ({ page }) => {
-  await page.goto('/');
+  await page.goto('/demo');
   await page.evaluate(() => localStorage.clear());
   await page.reload();
 });
@@ -32,7 +32,7 @@ for (const [code, choice, heading, cancelled] of languages) {
   });
 
   test(`T43 / F1.3,F13.3: ${code} cancelled callback restores language and stays signed out`, async ({ page }) => {
-    await page.goto(`/?auth=cancelled&language=${code}`);
+    await page.goto(`/demo?auth=cancelled&language=${code}`);
     await expect(page.locator('html')).toHaveAttribute('lang', code);
     await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
     await expect(page.getByRole('status')).toContainText(cancelled);
@@ -43,7 +43,7 @@ for (const [code, choice, heading, cancelled] of languages) {
 }
 
 test('T43 / F1.4,F13.4: malformed callback language and external return target cannot steer the entry page', async ({ page }) => {
-  await page.goto('/?auth=failed&language=en&returnTo=https%3A%2F%2Fattacker.example');
+  await page.goto('/demo?auth=failed&language=en&returnTo=https%3A%2F%2Fattacker.example');
   await expect(page.getByRole('button', { name: /^简体中文/ })).toBeVisible();
   await expect(page.locator('html')).toHaveAttribute('lang', 'zh-Hans');
   expect(page.url()).not.toContain('attacker.example');
@@ -55,12 +55,12 @@ test('T43 / F1.4,F13.4: WeChat WebView explains system-browser continuation and 
     userAgent: 'Mozilla/5.0 (Linux; Android 14; wv) AppleWebKit/537.36 Mobile MicroMessenger/8.0.50',
   });
   const page = await context.newPage();
-  await page.goto(baseURL);
+  await page.goto(new URL('/demo', baseURL).toString());
   await page.getByRole('button', { name: /^简体中文/ }).click();
   const group = page.getByRole('group', { name: '选择登录方式', exact: true });
   await expect(group.getByRole('link', { name: /Google/ })).toHaveCount(0);
   await group.getByRole('button', { name: /Google/ }).click();
   await expect(page.getByRole('status')).toContainText(/系统浏览器|Safari|Chrome/);
-  expect(page.url()).toBe(`${baseURL}/`);
+  expect(page.url()).toBe(`${baseURL}/demo`);
   await context.close();
 });

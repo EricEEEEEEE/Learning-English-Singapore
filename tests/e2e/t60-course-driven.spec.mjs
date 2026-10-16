@@ -3,7 +3,7 @@ import { courseFixture } from '../fixtures/t60-course.mjs';
 async function enter(page, data) {
   await page.route('**/api/auth/session', route => route.fulfill({ json: { authenticated: false, accountKey: null } }));
   await page.route('**/media/hotel-course.json', route => route.fulfill({ json: data }));
-  await page.goto('/');
+  await page.goto('/demo');
   await page.getByRole('button', { name: /^简体中文/ }).click();
   await page.getByTestId('real-scene-entry').click();
   return page.getByTestId('real-scene-course');

@@ -10,7 +10,7 @@ test('T61A: learner describes a scene and sees budget-waiting status, not a fabr
     expect(body.goal).toBe('我要和孩子生日聚会上的其他家长交流');
     await route.fulfill({ json: { id: 'test-task', status: 'awaiting_budget', goal: body.goal, revision: 1, providerCalls: 0 } });
   });
-  await page.goto('/'); await page.getByRole('button', { name: /^简体中文/ }).click();
+  await page.goto('/demo'); await page.getByRole('button', { name: /^简体中文/ }).click();
   await page.getByTestId('generation-entry').click();
   await page.getByLabel('生成场景需求').fill('我要和孩子生日聚会上的其他家长交流');
   await page.getByRole('button', { name: '创建生成任务', exact: true }).click();

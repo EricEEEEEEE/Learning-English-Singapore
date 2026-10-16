@@ -22,7 +22,7 @@ const test = base.extend({
   },
 });
 test.use({ hasTouch: true });
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/demo'); });
 async function tap(page, name) { await page.getByRole('button', { name, exact: true }).tap(); }
 async function detail(page, label) {
   const summary = page.getByText(label, { exact: true });

@@ -26,7 +26,7 @@ const test = base.extend({
   },
 });
 test.use({ hasTouch: true });
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/demo'); });
 
 const languages = [
   { code: 'zh-Hans', language: '简体中文', entry: '预览逐题引导', finish: '结束引导', change: '更换语言',

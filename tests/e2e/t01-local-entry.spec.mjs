@@ -41,7 +41,7 @@ const test = base.extend({
 });
 
 test.beforeEach(async ({ page }) => {
-  const response = await page.goto('/');
+  const response = await page.goto('/demo');
   expect(response.status()).toBe(200);
 });
 

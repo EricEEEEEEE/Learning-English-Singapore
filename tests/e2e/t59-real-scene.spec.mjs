@@ -8,7 +8,7 @@ const lines = ['Hello. Checking in?', 'Yes. I booked a room.'];
 
 async function openSample(page, choice = '简体中文') {
   await page.route('**/api/auth/session', route => route.fulfill({ json: { authenticated: false, accountKey: null } }));
-  await page.goto('/');
+  await page.goto('/demo');
   await page.getByRole('button', { name: new RegExp(`^${choice}`) }).click();
   // A learner can discover the real sample from the existing entry screen.
   await page.getByTestId('real-scene-entry').click();

@@ -21,7 +21,7 @@ const test = base.extend({
   },
 });
 test.use({ hasTouch: true });
-test.beforeEach(async ({ page }) => { await page.goto('/'); });
+test.beforeEach(async ({ page }) => { await page.goto('/demo'); });
 const goalA = '陪邻居和物业确认电梯检修时间';
 const goalB = '和物业确认楼梯照明损坏如何报修';
 const card = page => page.getByRole('region', { name: '确认场景', exact: true });
