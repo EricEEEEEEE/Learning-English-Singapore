@@ -20,3 +20,4 @@ test-results/
 playwright-report/
 ica-screenshots/
 *.local
+.loopwork/scratch/
