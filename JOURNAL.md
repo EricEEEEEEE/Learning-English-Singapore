@@ -643,3 +643,5 @@
 - 2026-10-16 T63A绿：完整verify 1590/1590 exit0。
 - [audit] phase → test-writing @ 2026-10-16T15:22:10+00:00
 - 2026-10-16 T63B第一组红（接口与适配器）：新增26项domain考题，全部因缺practice-providers/practice-turn路由/live-practice模块预期失败；第二组（第五页界面）随后。
+- [audit] phase → implementing @ 2026-10-16T15:23:42+00:00
+- 2026-10-16 T63B第一组实现检查点：practice-providers（转写/场景回应/对方配音各一次请求不重试）、/api/practice-turn（同源、≤1.5MB、白名单、错误码映射）、live-practice（对练+生成上限合计≤USD30）；practice-turn支持副本课的materialsRevision。定向41/41、tsc通过；未跑完整verify，不勾T63B。

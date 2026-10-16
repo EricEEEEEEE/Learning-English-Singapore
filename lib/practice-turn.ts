@@ -5,19 +5,20 @@ import { ownerIdFromSessionCookie } from './private-owner';
 import { sceneLanguages, type SceneCourse, type SceneLanguage } from './scene-course';
 
 type Audio = { bytes: Uint8Array; mimeType: string };
+type PracticeCourse = { id: string; lines: Pick<SceneCourse['lines'][number], 'id' | 'role' | 'text'>[]; turns: SceneCourse['turns'] };
 type History = { learner: string; partner: string }[];
 export type PracticeContext = { partnerLine: string; expectedLearnerLine: string; sceneLines: { role: 'partner' | 'learner'; text: string }[]; transcript: string; history: History; language: SceneLanguage };
 type Options = {
   directory: string; sessionSecret: string; maxReservedMicros: number; turnMicros: number; maxTurnsPerCourse?: number;
-  getCourse: (input: { cookie?: string | null; now?: number; id: string; revision: number }) => Promise<Pick<SceneCourse, 'id' | 'lines' | 'turns'>>;
+  getCourse: (input: { cookie?: string | null; now?: number; id: string; revision: number; materialsRevision?: number }) => Promise<PracticeCourse>;
   transcribe: (input: Audio) => Promise<{ text: string }>;
   respond: (input: PracticeContext) => Promise<{ reply: string; understood: boolean }>;
   speak: (input: { text: string }) => Promise<{ bytes: Uint8Array; mimeType: string }>;
 };
-type TurnInput = { cookie?: string | null; now?: number; courseId: string; revision: number; turnIndex: number; language: string; history: History; audio: Audio };
+type TurnInput = { cookie?: string | null; now?: number; courseId: string; revision: number; materialsRevision?: number; turnIndex: number; language: string; history: History; audio: Audio };
 export type PracticeTurnResult = { kind: 'silence' } | { kind: 'reply'; transcript: string; understood: boolean; reply: { text: string; audioBase64: string; mimeType: string } };
 
-const TURN_KEYS = ['cookie', 'now', 'courseId', 'revision', 'turnIndex', 'language', 'history', 'audio'];
+const TURN_KEYS = ['cookie', 'now', 'courseId', 'revision', 'materialsRevision', 'turnIndex', 'language', 'history', 'audio'];
 const AUDIO_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav'];
 const MAX_AUDIO_BYTES = 1_000_000;
 const text = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
@@ -52,10 +53,10 @@ export function createPracticeTurnService(options: Options) {
       if (!audio || !(audio.bytes instanceof Uint8Array) || !audio.bytes.length || audio.bytes.length > MAX_AUDIO_BYTES || !AUDIO_TYPES.includes(audio.mimeType)) throw new Error('Invalid practice audio');
       if (!sceneLanguages.includes(input.language as SceneLanguage)) throw new Error('Invalid practice language');
       if (!Array.isArray(history) || history.length > 10 || history.some(item => !item || !text(item.learner, 500) || !text(item.partner, 500))) throw new Error('Invalid practice history');
-      if (typeof input.courseId !== 'string' || !input.courseId || !Number.isSafeInteger(input.revision) || input.revision < 1 || !Number.isSafeInteger(input.turnIndex) || input.turnIndex < 0) throw new Error('Invalid practice turn');
+      if (typeof input.courseId !== 'string' || !input.courseId || !Number.isSafeInteger(input.revision) || input.revision < 1 || !Number.isSafeInteger(input.turnIndex) || input.turnIndex < 0 || (input.materialsRevision !== undefined && (!Number.isSafeInteger(input.materialsRevision) || input.materialsRevision < 1))) throw new Error('Invalid practice turn');
       const owner = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
       if (!owner) throw new Error('Authenticated session required');
-      const course = await options.getCourse({ cookie: input.cookie, now: input.now, id: input.courseId, revision: input.revision });
+      const course = await options.getCourse({ cookie: input.cookie, now: input.now, id: input.courseId, revision: input.revision, ...(input.materialsRevision !== undefined ? { materialsRevision: input.materialsRevision } : {}) });
       const turn = course.turns[input.turnIndex];
       const partner = course.lines.find(line => line.id === turn?.partnerLineId), learner = course.lines.find(line => line.id === turn?.learnerLineId);
       if (!turn || !partner || !learner) throw new Error('Invalid practice turn');
