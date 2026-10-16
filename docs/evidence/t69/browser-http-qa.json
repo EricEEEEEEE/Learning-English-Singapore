@@ -1,0 +1,256 @@
+{
+  "preparedSyntheticTask": true,
+  "existingHotelBytes": true,
+  "newGenerationProved": false,
+  "realLocalHttp": true,
+  "syntheticSignedSessions": true,
+  "ordinaryGoogleOAuthProved": false,
+  "viewports": [
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 900,
+      "dpr": 2,
+      "course": {
+        "id": "f3a98dbf-e515-4662-9228-c5da5e6f1986",
+        "revision": 2,
+        "materialsRevision": 3
+      },
+      "readyHistoricalRequirement": 2,
+      "newestDraft": 3,
+      "materialVersion": 3,
+      "privateBytesSha256Matches": true,
+      "range": 206,
+      "invalidRange": 416,
+      "wrongMaterials": 404,
+      "naturalWatch": {
+        "wallMs": 12152,
+        "naturalEnds": 1,
+        "state": {
+          "currentTime": 12.041667,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": true,
+          "readyState": 4
+        }
+      },
+      "englishCaptionsBothLines": true,
+      "replayAndManualContinue": true,
+      "historicalRoles": true,
+      "term": {
+        "start": {
+          "currentTime": 1,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 2.5,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "sentence": {
+        "start": {
+          "currentTime": 6,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 7.7,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "partner": {
+        "start": {
+          "currentTime": 1,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 2.5,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "answer": {
+        "start": {
+          "currentTime": 6,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 7.7,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "explicitAnswerOnly": true,
+      "sameStepLanguageSwitch": true,
+      "sameMediaNavigation": true,
+      "focusSamePointer": true,
+      "focusCourseReads": 2,
+      "session503TestDoubleOnly": true,
+      "restoredHistoricalRole": true,
+      "otherOwnerDenied": 404,
+      "noSessionDenied": 401,
+      "logoutClears": true,
+      "postGenerationWrites": 0,
+      "externalRequests": 0,
+      "pageErrors": [],
+      "consoleErrors": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://localhost:3269/api/auth/session"
+        },
+        {
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://localhost:3269/api/scene-generation?revision=2"
+        }
+      ],
+      "providerCalls": 0,
+      "reservedMicros": 0,
+      "microphoneCalls": 0,
+      "playbackPositionOrStepPersistenceProved": false
+    },
+    {
+      "name": "phone",
+      "width": 320,
+      "height": 740,
+      "dpr": 2,
+      "course": {
+        "id": "e6efb7bb-e6f8-4530-a36b-a7051b19ccee",
+        "revision": 2,
+        "materialsRevision": 3
+      },
+      "readyHistoricalRequirement": 2,
+      "newestDraft": 3,
+      "materialVersion": 3,
+      "privateBytesSha256Matches": true,
+      "range": 206,
+      "invalidRange": 416,
+      "wrongMaterials": 404,
+      "naturalWatch": {
+        "wallMs": 12569,
+        "naturalEnds": 1,
+        "state": {
+          "currentTime": 12.041667,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": true,
+          "readyState": 4
+        }
+      },
+      "englishCaptionsBothLines": true,
+      "replayAndManualContinue": true,
+      "historicalRoles": true,
+      "term": {
+        "start": {
+          "currentTime": 1,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 2.5,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "sentence": {
+        "start": {
+          "currentTime": 6,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 7.7,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "partner": {
+        "start": {
+          "currentTime": 1,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 2.5,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "answer": {
+        "start": {
+          "currentTime": 6,
+          "duration": 12.041667,
+          "paused": false,
+          "ended": false,
+          "readyState": 1
+        },
+        "stop": {
+          "currentTime": 7.7,
+          "duration": 12.041667,
+          "paused": true,
+          "ended": false,
+          "readyState": 4
+        }
+      },
+      "explicitAnswerOnly": true,
+      "sameStepLanguageSwitch": true,
+      "sameMediaNavigation": true,
+      "focusSamePointer": true,
+      "focusCourseReads": 2,
+      "session503TestDoubleOnly": true,
+      "restoredHistoricalRole": true,
+      "otherOwnerDenied": 404,
+      "noSessionDenied": 401,
+      "logoutClears": true,
+      "postGenerationWrites": 0,
+      "externalRequests": 0,
+      "pageErrors": [],
+      "consoleErrors": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://localhost:3269/api/auth/session"
+        },
+        {
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://localhost:3269/api/scene-generation?revision=2"
+        }
+      ],
+      "providerCalls": 0,
+      "reservedMicros": 0,
+      "microphoneCalls": 0,
+      "playbackPositionOrStepPersistenceProved": false
+    }
+  ]
+}
