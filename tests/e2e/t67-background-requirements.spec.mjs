@@ -234,6 +234,46 @@ test('T67 / K3.3: saved confirmation is withdrawn when keywords, language or des
   await expect(saved).toHaveCount(0);
 });
 
+test('T67 regression: temporary session failure hides private inputs and restores the same unsaved description and six fields', async ({ page, context }) => {
+  const state = await api(page, context);
+  const main = await background(page); await fillAll(main);
+  const readsBefore = state.reads.length;
+  let failing = true;
+  await page.route('**/api/auth/session', route => route.fulfill({ status: failing ? 503 : 200, json: failing ? { error: 'synthetic_failure' } : { authenticated: true, accountKey: state.owner } }));
+  await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
+  await expect(main.getByRole('button', { name: '重新检查登录', exact: true })).toBeVisible();
+  await expect(main.getByRole('textbox')).toHaveCount(0);
+  failing = false;
+  await main.getByRole('button', { name: '重新检查登录', exact: true }).click();
+  await expect(main.getByText(description, { exact: true })).toBeVisible();
+  for (let index = 0; index < labels.length; index++) await expect(main.getByRole('textbox', { name: labels[index], exact: true })).toHaveValue(values[index]);
+  expect(state.reads.length).toBe(readsBefore); expect(state.writes).toHaveLength(0);
+  await main.getByRole('button', { name: '返回', exact: true }).click();
+  await expect(main.getByRole('textbox', { name: title, exact: true })).toHaveValue(description);
+});
+
+test('T67 regression: saving acknowledgement cannot replace edits made while the same-account save is in flight', async ({ page, context }) => {
+  const state = await api(page, context);
+  const observed = firstRequestSettlement(page, 'PUT');
+  let release; state.writeGates[state.owner] = new Promise(resolve => { release = resolve; });
+  try {
+    const main = await background(page); await fillAll(main);
+    await main.getByRole('button', { name: '保存需求', exact: true }).click();
+    await expect.poll(() => state.writes.length).toBe(1);
+    const field = main.getByRole('textbox', { name: labels[5], exact: true });
+    await field.fill('保存途中继续编辑的内容');
+    release(); await renderAfterNetwork(page, observed);
+    await expect(main.getByRole('button', { name: '保存需求', exact: true })).toBeEnabled();
+    await expect(field).toHaveValue('保存途中继续编辑的内容');
+    await expect(main.getByText('需求已保存。', { exact: true })).toHaveCount(0);
+    expect(state.records[state.owner].content.keywords.special).toBe(values[5]);
+    await main.getByRole('button', { name: '保存需求', exact: true }).click();
+    await expect(main.getByText('需求已保存。', { exact: true })).toBeVisible();
+    expect(state.records[state.owner].revision).toBe(2);
+    expect(state.records[state.owner].content.keywords.special).toBe('保存途中继续编辑的内容');
+  } finally { release(); observed.dispose(); }
+});
+
 test('T67 / K3.1: each keyword input enforces the 200-character bound without losing the accepted value', async ({ page, context }) => {
   const state = await api(page, context); const main = await background(page);
   for (const label of labels) {
