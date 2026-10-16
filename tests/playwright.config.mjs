@@ -9,7 +9,7 @@ export default defineConfig({
   outputDir: '../test-results',
   forbidOnly: true,
   retries: 0,
-  workers: 1,
+  workers: 2,
   reporter: 'list',
   timeout: 20_000,
   use: {
