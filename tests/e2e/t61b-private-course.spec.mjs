@@ -47,7 +47,7 @@ test('T61B private course UI: opens saved course, plays and repeats four learnin
 test('T61B private course UI: expired access shows failure without fallback to public sample', async ({ page }) => {
   const context = await setup(page, true);
   await page.getByTestId('generated-course-open').click();
-  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('main').getByRole('alert')).toBeVisible();
   await expect(page.locator('video')).toHaveCount(0);
   expect(context.counts()).toEqual({ creates: 0, reads: 1 });
 });
@@ -92,7 +92,7 @@ test('T61B material UI: carries advertised revision through four pages and reope
 test('T61B material UI: mismatched material response rejects without playing an older course', async ({ page }) => {
   const c = await revisedSetup(page, 1);
   await page.getByTestId('generated-course-open').click();
-  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.getByRole('main').getByRole('alert')).toBeVisible();
   await expect(page.locator('video')).toHaveCount(0);
   expect(c.versions).toEqual(['2']);
 });
