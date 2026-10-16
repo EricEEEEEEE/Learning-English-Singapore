@@ -71,15 +71,15 @@ test('T66 / K2.3: empty and whitespace descriptions get an accessible inline err
   for (const value of ['', ' \n\t　']) {
     await input.fill(value);
     await page.getByRole('button', { name: '下一步', exact: true }).click();
-    await expect(page.getByRole('alert')).toContainText('先简单说说你想准备的场景');
+    await expect(page.getByRole('main').getByRole('alert')).toContainText('先简单说说你想准备的场景');
     await expect(input).toHaveAttribute('aria-invalid', 'true');
-    const errorId = await page.getByRole('alert').getAttribute('id');
+    const errorId = await page.getByRole('main').getByRole('alert').getAttribute('id');
     expect((await input.getAttribute('aria-describedby')).split(/\s+/)).toContain(errorId);
     await expect(input).toBeFocused();
     await expect(page.getByRole('heading', { name: sceneTitle, exact: true })).toBeVisible();
   }
   await input.fill(customScene);
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(page.getByRole('main').getByRole('alert')).toHaveCount(0);
   await page.getByRole('button', { name: '下一步', exact: true }).click();
   await expect(page.getByRole('heading', { name: backgroundTitle, exact: true })).toBeVisible();
 });
@@ -138,7 +138,7 @@ for (const language of languages) {
     const input = page.getByRole('textbox', { name: language.title, exact: true });
     for (const name of language.examples) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
     await page.getByRole('button', { name: language.next, exact: true }).click();
-    await expect(page.getByRole('alert')).toHaveText(language.error);
+    await expect(page.getByRole('main').getByRole('alert')).toHaveText(language.error);
     await input.fill(language.sample);
     await page.getByRole('button', { name: language.next, exact: true }).click();
     await expect(page.getByRole('heading', { name: language.background, exact: true })).toBeVisible();

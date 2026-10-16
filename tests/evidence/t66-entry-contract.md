@@ -39,3 +39,11 @@
 2. 上述运行结束后才加强两处断言。仅重跑受影响的6条phone题：`npm --prefix tests test -- t66-scene-entry --project=phone --grep 'scene page has one free input|has localized choices'`：exit1、6失败，缺少示例控件；日志`.loopwork/logs/t66-strengthened-red.log`。这是补强后的追加结果，不与首轮失败重复相加。
 
 失败均为真实功能/焦点断言，非服务启动或环境失败。small-phone/desktop尚未运行新增题；1089是最终发现总数，不假称全量已验证。未改app/lib/spec/rules/hooks，也没有运行实现；红档仍以随后Stop真实回执为准。
+
+## 定位纠错补红（2026-10-16）
+
+T66原红档721c1a3bce和实现检查点93192a233f均获真实回执。实现后phone首轮13通过、6失败；这6项同时命中业务错误与Next.js空播报器，证据`t66-phone-green.log`保持，不改写为产品行为失败。
+
+收到实现检查点回执后回到test-writing。本次唯一用例改动：4处`page.getByRole('alert')`限定为`page.getByRole('main').getByRole('alert')`。逐字校验after等于before的这4处替换；toHaveText/toContainText、aria-invalid、aria-describedby关联、清除后0条错误、零任务请求及其他全部断言原样保留。没有使用.first()或改/藏框架播报器，也没有产品代码修改。独立只读逐字复核通过，属于纠正定位歧义，不是放宽断言。
+
+纠错后完整19条phone复验：exit0、19/19通过，6.8秒，日志`.loopwork/logs/t66-scoped-phone.log`。最终发现清单仍为1089项/99文件，`npm --prefix tests run list` exit0，日志`t66-scoped-list.log`。这是纠错后定向结果，不代表1089全量通过。补红回执后回implementing运行原默认300秒完整verify；本轮无app/lib/spec/rules/hooks改动。
