@@ -1,0 +1,25 @@
+{
+  "source_records": 86,
+  "unique_ids": 86,
+  "access_counts": {
+    "检索文本": 25,
+    "正文": 44,
+    "提要": 1,
+    "未读正文": 16
+  },
+  "use_counts": {
+    "补充线索": 18,
+    "主证据": 30,
+    "背景": 17,
+    "重复": 3,
+    "排除": 15,
+    "反例": 3
+  },
+  "all_main_and_counter_sources_have_body": true,
+  "all_raw_entry_records_present": true,
+  "query_groups": 38,
+  "query_count": 111,
+  "visual_review": "12/12 PDF pages and all four workbook sheets reviewed; no observed clipping or missing glyphs in rendered views.",
+  "archive_note": "E014-access.html records failed direct PDF download. NUS paper was read via the web tool; the downloaded HTML is not represented as a PDF.",
+  "coverage_acceptance": "Not complete: China social-platform primary posts and multiple population segments remain underrepresented."
+}

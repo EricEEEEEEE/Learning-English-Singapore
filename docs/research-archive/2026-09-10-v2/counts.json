@@ -1,0 +1,278 @@
+{
+  "all": {
+    "total": 151,
+    "access": {
+      "检索文本": 30,
+      "正文": 102,
+      "提要": 1,
+      "未读正文": 16,
+      "未读到": 2
+    },
+    "use": {
+      "补充线索": 31,
+      "主证据": 55,
+      "背景": 28,
+      "重复": 3,
+      "排除": 24,
+      "反例": 10
+    }
+  },
+  "old": {
+    "total": 86,
+    "access": {
+      "检索文本": 25,
+      "正文": 44,
+      "提要": 1,
+      "未读正文": 16
+    },
+    "use": {
+      "补充线索": 18,
+      "主证据": 30,
+      "背景": 17,
+      "重复": 3,
+      "排除": 15,
+      "反例": 3
+    }
+  },
+  "new": {
+    "total": 65,
+    "access": {
+      "检索文本": 5,
+      "正文": 58,
+      "未读到": 2
+    },
+    "use": {
+      "背景": 11,
+      "主证据": 25,
+      "补充线索": 13,
+      "反例": 7,
+      "排除": 9
+    }
+  },
+  "platforms": {
+    "Reddit": {
+      "total": 17,
+      "body": 7,
+      "main_counter": 6,
+      "supplement": 5
+    },
+    "知乎": {
+      "total": 8,
+      "body": 2,
+      "main_counter": 0,
+      "supplement": 4
+    },
+    "note": {
+      "total": 11,
+      "body": 9,
+      "main_counter": 9,
+      "supplement": 2
+    },
+    "学术研究": {
+      "total": 14,
+      "body": 8,
+      "main_counter": 7,
+      "supplement": 1
+    },
+    "SGN": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 1,
+      "supplement": 0
+    },
+    "Singapore Expats": {
+      "total": 4,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 2
+    },
+    "Expat.com": {
+      "total": 6,
+      "body": 2,
+      "main_counter": 1,
+      "supplement": 2
+    },
+    "HOME": {
+      "total": 5,
+      "body": 5,
+      "main_counter": 2,
+      "supplement": 0
+    },
+    "CNA": {
+      "total": 5,
+      "body": 5,
+      "main_counter": 4,
+      "supplement": 0
+    },
+    "高校学生经历": {
+      "total": 4,
+      "body": 2,
+      "main_counter": 2,
+      "supplement": 2
+    },
+    "豆瓣": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 1
+    },
+    "抖音": {
+      "total": 2,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 1
+    },
+    "HardwareZone": {
+      "total": 6,
+      "body": 2,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "InterNations": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 1,
+      "supplement": 0
+    },
+    "Prothom Alo": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "Salvation Army": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "VnExpress": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 1,
+      "supplement": 0
+    },
+    "Hotcourses": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "Kernel": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "哔哩哔哩": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "SingStat": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "STB": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "MHA": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "原始研究": {
+      "total": 2,
+      "body": 2,
+      "main_counter": 2,
+      "supplement": 0
+    },
+    "联合早报": {
+      "total": 2,
+      "body": 2,
+      "main_counter": 2,
+      "supplement": 0
+    },
+    "新加坡新闻": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 1
+    },
+    "MomsDaily": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 0,
+      "supplement": 1
+    },
+    "NPTD": {
+      "total": 2,
+      "body": 2,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "RICE": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 1,
+      "supplement": 0
+    },
+    "美卡论坛": {
+      "total": 2,
+      "body": 2,
+      "main_counter": 2,
+      "supplement": 0
+    },
+    "携程": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 1,
+      "supplement": 0
+    },
+    "文学城": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "人民日报海外版": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "意腾留学": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 1
+    },
+    "宗乡总会": {
+      "total": 1,
+      "body": 0,
+      "main_counter": 0,
+      "supplement": 0
+    },
+    "TWC2/NUS": {
+      "total": 1,
+      "body": 1,
+      "main_counter": 1,
+      "supplement": 0
+    },
+    "小红书": {
+      "total": 40,
+      "body": 40,
+      "main_counter": 22,
+      "supplement": 8
+    }
+  },
+  "query_groups": 62,
+  "queries": 183
+}

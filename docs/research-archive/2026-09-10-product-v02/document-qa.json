@@ -1,0 +1,23 @@
+{
+  "version": "v0.2",
+  "source_count": 73,
+  "requirements": 40,
+  "scenario_seeds": 36,
+  "worked_examples": 6,
+  "visual_routes_compared": 8,
+  "f_features": 15,
+  "source_ids_missing": [],
+  "spec_sha256": "717c700682b5803c14673204512d06cef7158941b487002b21311b7173dff843",
+  "application_tests": "not run; document-only task",
+  "review": "independent review passed for validation-design stage; final nonblocking field clarification checked locally",
+  "tables_consistent": true,
+  "requirements_unique": 40,
+  "new_source_count": 34,
+  "worked_example_count": 6,
+  "scenario_seed_count": 36,
+  "canonical_term_scan": "pass",
+  "pdf_matches_spec": true,
+  "paid_api_tests": false,
+  "app_implemented": false,
+  "checked_at": "2026-09-10"
+}

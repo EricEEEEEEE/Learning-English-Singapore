@@ -1,0 +1,183 @@
+{
+  "pdf": "/Users/eric/projects/Learning English  Singapore/output/pdf/singapore-english-product-spec-01.pdf",
+  "pages": 34,
+  "page_text_lengths": [
+    386,
+    461,
+    1351,
+    1132,
+    578,
+    968,
+    1136,
+    1123,
+    1149,
+    1178,
+    1089,
+    411,
+    1222,
+    318,
+    1206,
+    537,
+    1150,
+    685,
+    834,
+    1374,
+    1204,
+    941,
+    1202,
+    1025,
+    1099,
+    660,
+    1065,
+    686,
+    1022,
+    463,
+    950,
+    1798,
+    2027,
+    716
+  ],
+  "links": 140,
+  "section_pages": [
+    {
+      "title": "0. 需要先看清的结论",
+      "page": 3
+    },
+    {
+      "title": "1. 文档依据与证据边界",
+      "page": 3
+    },
+    {
+      "title": "2. 定位、用户与成功定义",
+      "page": 4
+    },
+    {
+      "title": "3. 痛点怎样进入产品",
+      "page": 6
+    },
+    {
+      "title": "4. 首版完整学习路径",
+      "page": 6
+    },
+    {
+      "title": "5. 功能与可手工验收的标准",
+      "page": 7
+    },
+    {
+      "title": "6. 教学行为的具体规则",
+      "page": 11
+    },
+    {
+      "title": "7. 一条可执行的完整样例：家长与老师见面",
+      "page": 13
+    },
+    {
+      "title": "8. 技术路线：保持体验，把生成与实时互动分开",
+      "page": 15
+    },
+    {
+      "title": "9. 已有技术与相近项目评估",
+      "page": 17
+    },
+    {
+      "title": "10. OpenAI 模型职责和不能承诺的能力",
+      "page": 19
+    },
+    {
+      "title": "11. 产品数据合约与运行状态",
+      "page": 20
+    },
+    {
+      "title": "12. 微信与 Google 登录落地条件",
+      "page": 22
+    },
+    {
+      "title": "13. 工程验证：把“能调用”升级成“能学习”",
+      "page": 23
+    },
+    {
+      "title": "14. 学习效果与公平性验证",
+      "page": 24
+    },
+    {
+      "title": "15. 质量优先的成本和运行设计",
+      "page": 26
+    },
+    {
+      "title": "16. 分阶段实施边界与交付闸门",
+      "page": 27
+    },
+    {
+      "title": "17. 决策、假设与未决项",
+      "page": 28
+    },
+    {
+      "title": "18. 用户诉求逐条对账",
+      "page": 29
+    },
+    {
+      "title": "19. 深度评审结论与交付状态",
+      "page": 31
+    },
+    {
+      "title": "附录 A · 来源索引",
+      "page": 32
+    }
+  ],
+  "spec_sha256": "397fa20a24e1eabbdfec18c23864f772113ac1670e82c5422a5744d8c1c3eb72",
+  "visual_review": {
+    "status": "passed",
+    "all_pages_inspected_in_contact_sheets": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34
+    ],
+    "full_size_sample_pages": [
+      1,
+      15,
+      23,
+      32
+    ],
+    "checks": [
+      "cover line break fixed",
+      "readable CJK text",
+      "tables within margins",
+      "no clipping or overlap observed",
+      "architecture diagram readable",
+      "TOC and repeated table headers checked"
+    ],
+    "renderer": "PDFium",
+    "images": "tmp/pdfs/product-spec-final"
+  }
+}

@@ -1,0 +1,568 @@
+[
+  {
+    "id": "01-reddit",
+    "q": [
+      "site:reddit.com/r/askSingapore Singlish understand foreigner accent",
+      "site:reddit.com/r/singapore \"English\" \"foreigner\" \"understand\"",
+      "site:reddit.com Singapore \"struggling\" \"English\"",
+      "site:reddit.com Singapore \"Singlish\" \"moved\""
+    ]
+  },
+  {
+    "id": "02-chinese",
+    "q": [
+      "site:zhihu.com 新加坡 英语 听不懂",
+      "site:xiaohongshu.com 新加坡 英语 听不懂",
+      "site:douban.com 新加坡 英语 听不懂",
+      "site:sgcn.com 新加坡 英语 听不懂"
+    ]
+  },
+  {
+    "id": "03-international",
+    "q": [
+      "site:forum.singaporeexpats.com Singlish understand",
+      "site:expat.com Singapore English language barrier",
+      "Singapore migrant workers English language communication difficulties study",
+      "Singapore international students English Singlish language difficulties study"
+    ]
+  },
+  {
+    "id": "04-zhihu",
+    "q": [
+      {
+        "q": "\"新加坡\" \"听不懂\" 英语",
+        "domains": [
+          "zhihu.com"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"英语\" \"困难\" 生活",
+        "domains": [
+          "zhihu.com"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"Singlish\" 留学 工作",
+        "domains": [
+          "zhihu.com"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "05-china-social",
+    "q": [
+      {
+        "q": "\"新加坡\" \"英语\" \"听不懂\"",
+        "domains": [
+          "xiaohongshu.com"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"听不懂\"",
+        "domains": [
+          "douban.com"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"英语不好\"",
+        "domains": [
+          "sgcn.com"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "06-expats",
+    "q": [
+      {
+        "q": "\"Singlish\" \"understand\"",
+        "domains": [
+          "forum.singaporeexpats.com"
+        ]
+      },
+      {
+        "q": "\"English\" \"language\" \"Singapore\"",
+        "domains": [
+          "expat.com"
+        ]
+      },
+      {
+        "q": "\"Singapore\" \"English\" \"barrier\"",
+        "domains": [
+          "internations.org"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "07-japan-korea",
+    "q": [
+      {
+        "q": "シンガポール 英語 聞き取れない 生活",
+        "domains": [
+          "note.com"
+        ]
+      },
+      {
+        "q": "싱가포르 영어 못 알아듣 싱글리시",
+        "domains": [
+          "tistory.com"
+        ]
+      },
+      {
+        "q": "Singapore susah bahasa Inggris Singlish pengalaman",
+        "domains": [
+          "kompasiana.com"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "08-reddit-newcomers",
+    "q": [
+      {
+        "q": "Singapore \"Singlish\" \"I moved\" site:reddit.com"
+      },
+      {
+        "q": "Singapore \"understand\" \"international student\" \"Singlish\" site:reddit.com"
+      },
+      {
+        "q": "Singapore \"English\" \"Indian\" \"accent\" \"struggle\" site:reddit.com"
+      },
+      {
+        "q": "Singapore \"Singlish\" \"American\" \"understand\" site:reddit.com"
+      }
+    ]
+  },
+  {
+    "id": "09-local-reporting",
+    "q": [
+      {
+        "q": "\"language barrier\" migrant workers Singapore",
+        "domains": [
+          "channelnewsasia.com"
+        ]
+      },
+      {
+        "q": "\"Singlish\" \"foreigners\" \"understand\"",
+        "domains": [
+          "channelnewsasia.com"
+        ]
+      },
+      {
+        "q": "\"English\" \"migrant\" \"communication\"",
+        "domains": [
+          "straitstimes.com"
+        ]
+      },
+      {
+        "q": "\"language\" \"domestic workers\" Singapore",
+        "domains": [
+          "home.org.sg",
+          "twc2.org.sg"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "10-chinese-video",
+    "q": [
+      {
+        "q": "新加坡 英语 听不懂 生活",
+        "domains": [
+          "bilibili.com"
+        ]
+      },
+      {
+        "q": "新加坡 英语 听不懂",
+        "domains": [
+          "douyin.com"
+        ]
+      },
+      {
+        "q": "新加坡 英语 听不懂",
+        "domains": [
+          "weibo.com"
+        ]
+      },
+      {
+        "q": "新加坡 英语 听不懂 小红书"
+      }
+    ]
+  },
+  {
+    "id": "11-expat-specific",
+    "q": [
+      {
+        "q": "site:expat.com/en/forum/asia/singapore/ \"English\" \"learn\""
+      },
+      {
+        "q": "site:forum.singaporeexpats.com \"English\" \"wife\" \"learn\""
+      },
+      {
+        "q": "site:forum.singaporeexpats.com \"Singlish\" \"2023\""
+      },
+      {
+        "q": "site:internations.org \"Singapore\" \"language\" \"2025\""
+      }
+    ]
+  },
+  {
+    "id": "12-sg-chinese-forum",
+    "q": [
+      {
+        "q": "狮城论坛 英语不好 工作"
+      },
+      {
+        "q": "狮城论坛 听不懂 英语"
+      },
+      {
+        "q": "新加坡 华新论坛 英语 学习 困难"
+      }
+    ]
+  },
+  {
+    "id": "13-bilibili-target",
+    "q": [
+      {
+        "q": "site:bilibili.com/video/ 新加坡 听不懂 singlish"
+      },
+      {
+        "q": "site:bilibili.com/video/ 新加坡 英语 崩溃"
+      },
+      {
+        "q": "site:bilibili.com/video/ 新加坡 留学 英语 口音"
+      }
+    ]
+  },
+  {
+    "id": "14-douban-target",
+    "q": [
+      {
+        "q": "site:douban.com/group/topic/ 新加坡 英语"
+      },
+      {
+        "q": "site:douban.com/note/ 新加坡 英语"
+      },
+      {
+        "q": "site:douban.com/group/topic/ 新加坡 语言障碍"
+      }
+    ]
+  },
+  {
+    "id": "15-youtube",
+    "q": [
+      {
+        "q": "Singapore Singlish difficult understand foreigner experience",
+        "domains": [
+          "youtube.com"
+        ]
+      },
+      {
+        "q": "Singapore English language barrier expat experience",
+        "domains": [
+          "youtube.com"
+        ]
+      },
+      {
+        "q": "Singapore migrant workers learning English story",
+        "domains": [
+          "youtube.com"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "16-reddit-focused",
+    "q": [
+      {
+        "q": "site:reddit.com/r/askSingapore \"understanding Singlish\""
+      },
+      {
+        "q": "site:reddit.com/r/askSingapore \"learn Singlish\""
+      },
+      {
+        "q": "site:reddit.com/r/nus \"Singlish\""
+      },
+      {
+        "q": "site:reddit.com/r/NTU \"Singlish\""
+      }
+    ]
+  },
+  {
+    "id": "17-video-focused",
+    "q": [
+      {
+        "q": "\"Singlish\" \"foreigner\" \"YouTube\""
+      },
+      {
+        "q": "\"Singapore\" \"language barrier\" \"YouTube\""
+      },
+      {
+        "q": "\"新加坡\" \"听不懂\" \"哔哩哔哩\""
+      }
+    ]
+  },
+  {
+    "id": "18-lemon-hwz",
+    "q": [
+      {
+        "q": "site:lemon8-app.com \"Singapore\" \"Singlish\""
+      },
+      {
+        "q": "site:forums.hardwarezone.com.sg \"Singlish\" \"understand\""
+      },
+      {
+        "q": "site:expatforum.com \"Singapore\" \"English\" \"wife\""
+      }
+    ]
+  },
+  {
+    "id": "19-health-research",
+    "q": [
+      {
+        "q": "Singapore migrant workers language barriers healthcare survey English 2017 2019 study"
+      },
+      {
+        "q": "Singapore foreign domestic workers English classes time barriers HOME 2024 2025"
+      },
+      {
+        "q": "Singapore migrant workers English learn WhatsApp translation limitations"
+      }
+    ]
+  },
+  {
+    "id": "20-japan-depth",
+    "q": [
+      {
+        "q": "site:note.com シンガポール \"英語\" \"困った\""
+      },
+      {
+        "q": "site:note.com シンガポール \"聞き取れない\" シングリッシュ"
+      },
+      {
+        "q": "site:note.com シンガポール \"英語\" \"電話\""
+      }
+    ]
+  },
+  {
+    "id": "21-thai-vietnam",
+    "q": [
+      {
+        "q": "site:pantip.com สิงคโปร์ ภาษาอังกฤษ ฟังไม่ออก"
+      },
+      {
+        "q": "site:webtretho.com Singapore tiếng Anh nghe không hiểu"
+      },
+      {
+        "q": "site:vnexpress.net Singapore tiếng Anh Singlish không hiểu"
+      }
+    ]
+  },
+  {
+    "id": "22-indonesia-korea",
+    "q": [
+      {
+        "q": "Singapura \"bahasa Inggris\" \"kesulitan\" pengalaman"
+      },
+      {
+        "q": "Singlish \"pengalaman\" \"mengerti\""
+      },
+      {
+        "q": "싱가포르 \"싱글리시\" \"어려\" 블로그"
+      }
+    ]
+  },
+  {
+    "id": "23-french",
+    "q": [
+      {
+        "q": "site:expat.com/fr/forum/asie/singapour/ anglais difficultés"
+      },
+      {
+        "q": "site:expat.com/fr/forum/asie/singapour/ apprendre anglais"
+      },
+      {
+        "q": "Singapour \"singlish\" \"comprendre\" témoignage"
+      }
+    ]
+  },
+  {
+    "id": "24-zhihu-experience",
+    "q": [
+      {
+        "q": "新加坡 听不懂 英语 知乎 留学 体验 -雅思听力 -课程 -辅导"
+      },
+      {
+        "q": "site:zhihu.com/question 新加坡 \"英语不好\""
+      },
+      {
+        "q": "site:zhuanlan.zhihu.com 新加坡 \"听不懂\" -课程 -雅思 -培训 -申请"
+      }
+    ]
+  },
+  {
+    "id": "25-douyin-depth",
+    "q": [
+      {
+        "q": "site:douyin.com/video 新加坡 \"听不懂\""
+      },
+      {
+        "q": "site:douyin.com/video 新加坡 \"英语不好\""
+      },
+      {
+        "q": "site:douyin.com/video 新加坡 \"口音\" \"评论\""
+      }
+    ]
+  },
+  {
+    "id": "26-students-primary",
+    "q": [
+      {
+        "q": "\"Singapore\" \"international students\" \"Singlish\" \"interviews\""
+      },
+      {
+        "q": "\"EMI\" \"Singapore\" \"Botha\" \"12624\""
+      },
+      {
+        "q": "\"Singlish\" \"newcomers\" \"study\""
+      }
+    ]
+  },
+  {
+    "id": "27-community-specific",
+    "q": [
+      {
+        "q": "site:forums.hardwarezone.com.sg/threads/ \"Singlish\" \"foreigner\""
+      },
+      {
+        "q": "site:forum.singaporeexpats.com \"English\" \"2019\" \"learn\""
+      },
+      {
+        "q": "site:expat.com/en/forum/asia/singapore/ \"improve\" \"English\""
+      }
+    ]
+  },
+  {
+    "id": "28-zhihu-single",
+    "q": [
+      {
+        "q": "新加坡 听不懂 英语 知乎"
+      }
+    ]
+  },
+  {
+    "id": "29-china-incidents",
+    "q": [
+      {
+        "q": "新加坡 留学 \"听不懂\" \"我\" 英语 体验"
+      },
+      {
+        "q": "新加坡 工作 \"英语\" \"听不懂\" site:zhihu.com/question"
+      },
+      {
+        "q": "新加坡 \"英语\" \"不敢\" site:douban.com"
+      }
+    ]
+  },
+  {
+    "id": "30-china-discussion",
+    "q": [
+      {
+        "q": "新加坡 \"英语\" \"听不懂\" site:xiaohongshu.com"
+      },
+      {
+        "q": "新加坡 \"Singlish\" \"听不懂\" site:weibo.com"
+      },
+      {
+        "q": "新加坡 \"英语\" \"听不懂\" site:tieba.baidu.com"
+      }
+    ]
+  },
+  {
+    "id": "31-south-asia",
+    "q": [
+      {
+        "q": "Singapore \"English\" \"couldn't understand\" \"Indian\""
+      },
+      {
+        "q": "Singapore migrant worker \"English classes\" \"Bangladesh\" experience"
+      },
+      {
+        "q": "Singapore Myanmar domestic worker \"English\" \"understand\" language"
+      }
+    ]
+  },
+  {
+    "id": "32-douban-singlish",
+    "q": [
+      {
+        "q": "site:douban.com 新加坡 英语 交流 听不懂"
+      }
+    ]
+  },
+  {
+    "id": "33-zhihu-life",
+    "q": [
+      {
+        "q": "site:zhihu.com 新加坡生活 英语 听不懂 经历"
+      }
+    ]
+  },
+  {
+    "id": "34-zhihu-singlish",
+    "q": [
+      {
+        "q": "site:zhihu.com singlish 我 听不懂"
+      }
+    ]
+  },
+  {
+    "id": "35-bili-experience",
+    "q": [
+      {
+        "q": "site:bilibili.com 新加坡 留学 听不懂 英语 经历"
+      }
+    ]
+  },
+  {
+    "id": "36-zhihu-exact",
+    "q": [
+      {
+        "q": "\"What are the characteristics of Singapore English\" \"71820713\""
+      },
+      {
+        "q": "\"What are the characteristics of Singapore English\" \"38190134\""
+      },
+      {
+        "q": "\"What are the characteristics of Singapore English\" \"125672654\""
+      }
+    ]
+  },
+  {
+    "id": "37-douban-exact",
+    "q": [
+      {
+        "q": "\"308951394\" \"英语\""
+      },
+      {
+        "q": "\"新加坡\" \"听不懂\" \"豆瓣\" 旅游"
+      }
+    ]
+  },
+  {
+    "id": "38-zhihu-questions",
+    "q": [
+      {
+        "q": "\"1521909641\" Singapore"
+      },
+      {
+        "q": "\"901679833\" Singapore"
+      },
+      {
+        "q": "\"2242397901\" Singapore"
+      }
+    ]
+  }
+]

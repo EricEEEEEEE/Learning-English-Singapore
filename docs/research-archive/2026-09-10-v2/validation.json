@@ -1,0 +1,43 @@
+{
+  "date": "2026-09-10",
+  "pdf_pages": 25,
+  "cited_sources": 66,
+  "catalog_records": 151,
+  "prior_preserved": 86,
+  "new_records": 65,
+  "readable_text_records": 102,
+  "main_evidence": 55,
+  "counterexamples": 10,
+  "supplemental": 31,
+  "xlsx_sheets": [
+    "研究说明",
+    "华语与零基础",
+    "综合痛点",
+    "事件证据",
+    "Sources",
+    "检索记录"
+  ],
+  "cached_counts": [
+    151,
+    102,
+    55,
+    10,
+    31,
+    65,
+    40,
+    183
+  ],
+  "formula_errors": [],
+  "formula_count": 9,
+  "visual_review": "25 PDF pages reviewed; revised page 5 rechecked; preview ranges for all six workbook sheets reviewed after density adjustments",
+  "files": {
+    "output/pdf/singapore-english-integrated-research.pdf": {
+      "bytes": 764635,
+      "sha256": "10321ad13ff4e0b659e0bacca0daa630f780b927f6572721d88e2a85c0e2293d"
+    },
+    "outputs/learning-english-research-v2/singapore-english-integrated-evidence.xlsx": {
+      "bytes": 95887,
+      "sha256": "7507bd5e7a6a3b835131f37abb9ab39908ba0394a50a45afc79d6dcad7b5ea83"
+    }
+  }
+}

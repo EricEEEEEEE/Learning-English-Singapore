@@ -1,0 +1,74 @@
+{
+  "checked_at": "2026-09-10",
+  "scope": "document and PDF validation only; no app/API/learning tests",
+  "status": "passed",
+  "deliverables": {
+    "canonical_spec": "spec.md",
+    "reading_copy": "output/pdf/singapore-english-product-spec-01.pdf",
+    "source_ledger": "research/2026-09-10-product/sources.json",
+    "independent_review": "research/2026-09-10-product/REVIEW.md"
+  },
+  "requirements": {
+    "expected": 30,
+    "found": 30,
+    "preserved_in_spec": 29,
+    "explicit_conflict_pending_user_decision": [
+      "U14 / D01"
+    ]
+  },
+  "features": {
+    "expected": 15,
+    "found": 15
+  },
+  "sources": {
+    "count": 39,
+    "unique_urls": 39,
+    "by_type": {
+      "official": 20,
+      "repository": 11,
+      "forum": 7,
+      "workflow": 1
+    },
+    "live_remote_rechecks": "selected primary sources; not every URL rerun"
+  },
+  "original_learning_evidence_count": 72,
+  "review_findings": {
+    "initial": 3,
+    "resolved": 3,
+    "residual_sentence_checked": true
+  },
+  "pdf": {
+    "pages": 34,
+    "annotations": 140,
+    "external_link_annotations": 98,
+    "unique_external_urls": 39,
+    "visual_review": "passed",
+    "all_requirement_ids_present": true
+  },
+  "limitations": [
+    "D01 not approved",
+    "G1-G6 not executed",
+    "no paid API calls",
+    "no repository runtime tests",
+    "no user study",
+    "no deployment"
+  ],
+  "files": {
+    "spec.md": {
+      "bytes": 81958,
+      "sha256": "397fa20a24e1eabbdfec18c23864f772113ac1670e82c5422a5744d8c1c3eb72"
+    },
+    "output/pdf/singapore-english-product-spec-01.pdf": {
+      "bytes": 795890,
+      "sha256": "c7d59dad26cbe33cc3ccd5eb96df2dc85d6f6090b64a7ce2b141662d7a721def"
+    },
+    "research/2026-09-10-product/sources.json": {
+      "bytes": 18563,
+      "sha256": "8f74a034c7ab1d1848a8cc5d673c3ff28a9ccd1819bb94ded8a09d477db95b8e"
+    },
+    "research/2026-09-10-product/REVIEW.md": {
+      "bytes": 4795,
+      "sha256": "51d30c84b1796c288d71044543426a30b164b3ffe526b59819e689cb92166770"
+    }
+  }
+}

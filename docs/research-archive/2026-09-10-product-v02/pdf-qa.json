@@ -1,0 +1,141 @@
+{
+  "pdf": "/Users/eric/projects/Learning English  Singapore/output/pdf/singapore-english-product-spec-v02.pdf",
+  "pages": 42,
+  "page_text_lengths": [
+    413,
+    469,
+    1209,
+    1392,
+    953,
+    1116,
+    1145,
+    1128,
+    1193,
+    1197,
+    1003,
+    1518,
+    1368,
+    1351,
+    1545,
+    1439,
+    1554,
+    1550,
+    1372,
+    1316,
+    1301,
+    1395,
+    847,
+    1554,
+    1348,
+    1216,
+    582,
+    1255,
+    1247,
+    1185,
+    992,
+    687,
+    1145,
+    930,
+    1013,
+    1073,
+    969,
+    1610,
+    1733,
+    1981,
+    2109,
+    464
+  ],
+  "links": 221,
+  "section_pages": [
+    {
+      "title": "0. 本次升级后的产品决定",
+      "page": 3
+    },
+    {
+      "title": "1. 文档依据与证据边界",
+      "page": 4
+    },
+    {
+      "title": "2. 定位、用户与成功定义",
+      "page": 5
+    },
+    {
+      "title": "3. 痛点怎样进入产品",
+      "page": 6
+    },
+    {
+      "title": "4. 首版完整学习路径",
+      "page": 6
+    },
+    {
+      "title": "5. 功能与可手工验收的标准",
+      "page": 7
+    },
+    {
+      "title": "6. 听优先、自然问答和主动引导的具体规则",
+      "page": 11
+    },
+    {
+      "title": "7. 有依据的场景库与六个完整练习样例",
+      "page": 14
+    },
+    {
+      "title": "8. 生成式视觉技术与速度选型",
+      "page": 18
+    },
+    {
+      "title": "9. 已有技术与相近项目评估",
+      "page": 21
+    },
+    {
+      "title": "10. OpenAI 模型职责和不能承诺的能力",
+      "page": 23
+    },
+    {
+      "title": "11. 产品数据合约与运行状态",
+      "page": 24
+    },
+    {
+      "title": "12. 微信与 Google 登录落地条件",
+      "page": 26
+    },
+    {
+      "title": "13. 工程验证：把“能调用”升级成“能学习”",
+      "page": 28
+    },
+    {
+      "title": "14. 学习效果与公平性验证",
+      "page": 30
+    },
+    {
+      "title": "15. 质量优先的成本和运行设计",
+      "page": 32
+    },
+    {
+      "title": "16. 分阶段实施边界与交付闸门",
+      "page": 33
+    },
+    {
+      "title": "17. 已定范围、选型建议与未决项",
+      "page": 34
+    },
+    {
+      "title": "18. 用户诉求逐条对账",
+      "page": 35
+    },
+    {
+      "title": "19. 深度评审与交付状态",
+      "page": 37
+    },
+    {
+      "title": "附录 A · 来源索引与访问边界",
+      "page": 38
+    }
+  ],
+  "spec_sha256": "717c700682b5803c14673204512d06cef7158941b487002b21311b7173dff843",
+  "visual_review": "passed: all 42 pages in contact sheets; enlarged placement, silence, comparison, architecture and latency pages",
+  "external_annotations": 179,
+  "unique_external_urls": 73,
+  "all_source_urls_present": true,
+  "pdf_sha256": "847ec3e528cb95349252fa169cdda5f84a3a5a7ba7c254ca7a10dcee1ebc83d3"
+}

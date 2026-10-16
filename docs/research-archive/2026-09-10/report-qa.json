@@ -1,0 +1,80 @@
+{
+  "pages": 12,
+  "cited_sources": 34,
+  "source_records": 86,
+  "links": 134,
+  "schedule": [
+    {
+      "page": 1,
+      "title": "新加坡英语与 Singlish 痛点研究",
+      "footnotes": 4
+    },
+    {
+      "page": 2,
+      "title": "研究方法与材料覆盖",
+      "footnotes": 0
+    },
+    {
+      "page": 3,
+      "title": "人群差异与问题边界",
+      "footnotes": 3
+    },
+    {
+      "page": 4,
+      "title": "痛点一与二：现场听力和交流修复",
+      "footnotes": 7
+    },
+    {
+      "page": 5,
+      "title": "痛点三与四：生活表达和群体参与",
+      "footnotes": 5
+    },
+    {
+      "page": 6,
+      "title": "痛点五：得体表达与语言身份",
+      "footnotes": 5
+    },
+    {
+      "page": 7,
+      "title": "痛点六：工作、医疗与求助中的理解障碍",
+      "footnotes": 7
+    },
+    {
+      "page": 8,
+      "title": "痛点七与八：学习要求和练习条件",
+      "footnotes": 11
+    },
+    {
+      "page": 9,
+      "title": "反例与证据强度",
+      "footnotes": 3
+    },
+    {
+      "page": 10,
+      "title": "覆盖缺口与下一轮验证",
+      "footnotes": 0
+    },
+    {
+      "page": 11,
+      "title": "来源"
+    },
+    {
+      "page": 12,
+      "title": "来源"
+    }
+  ],
+  "text_lengths": [
+    900,
+    642,
+    766,
+    943,
+    804,
+    912,
+    1035,
+    1240,
+    881,
+    947,
+    2515,
+    2536
+  ]
+}

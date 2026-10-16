@@ -1,0 +1,323 @@
+[
+  {
+    "id": "C01-official-demographics",
+    "q": [
+      {
+        "q": "site.population.gov.sg population in brief 2025 Chinese ethnicity permanent residents new citizens"
+      },
+      {
+        "q": "site.stb.gov.sg 2025 international visitor arrivals China 2026 3.1 million"
+      }
+    ]
+  },
+  {
+    "id": "C02-guardian-mothers",
+    "q": [
+      {
+        "q": "新加坡 陪读妈妈 \"不会英语\""
+      },
+      {
+        "q": "新加坡 陪读妈妈 \"零基础\" 英语"
+      },
+      {
+        "q": "新加坡 陪读妈妈 \"语言不通\""
+      },
+      {
+        "q": "Singapore study mothers China \"English\" \"language\""
+      }
+    ]
+  },
+  {
+    "id": "C03-zero-basics",
+    "q": [
+      {
+        "q": "新加坡 \"不会英语\" \"看病\""
+      },
+      {
+        "q": "新加坡 \"不会英语\" \"家长会\""
+      },
+      {
+        "q": "新加坡 \"零基础\" \"妈妈\" 英语 经历"
+      },
+      {
+        "q": "新加坡 陪读妈妈 英语 困境 调查"
+      }
+    ]
+  },
+  {
+    "id": "C04-zaobao-local",
+    "q": [
+      {
+        "q": "site.zaobao.com.sg 陪读妈妈 英语 不会"
+      },
+      {
+        "q": "site.8world.com 新移民 不会 英语"
+      },
+      {
+        "q": "site.zaobao.com.sg 新移民 \"英语\" \"沟通\""
+      },
+      {
+        "q": "site.channelnewsasia.com \"study mothers\" English"
+      }
+    ]
+  },
+  {
+    "id": "C05-china-platforms",
+    "q": [
+      {
+        "q": "site.zhihu.com 新加坡 \"不会英语\" \"妈妈\""
+      },
+      {
+        "q": "site.douban.com 新加坡 \"不会英语\""
+      },
+      {
+        "q": "site.xiaohongshu.com 新加坡 陪读 英语 零基础"
+      },
+      {
+        "q": "site.bilibili.com 新加坡 \"陪读\" \"英语\" 妈妈"
+      }
+    ]
+  },
+  {
+    "id": "C06-sg-chinese-forums",
+    "q": [
+      {
+        "q": "site.sgcn.com \"英文不好\" 妈妈"
+      },
+      {
+        "q": "site.shichengad.com \"不会英文\""
+      },
+      {
+        "q": "site.huasing.org \"英文\" \"陪读\""
+      },
+      {
+        "q": "site.sgcn.com \"不会英语\""
+      }
+    ]
+  },
+  {
+    "id": "C07-official-denominators",
+    "q": [
+      {
+        "q": "site.stb.gov.sg \"2025\" \"3.1 million\" \"16.9\""
+      },
+      {
+        "q": "site.population.gov.sg \"racial proportions\" \"immigration\""
+      },
+      {
+        "q": "site.singstat.gov.sg \"2025\" \"74.0\" \"Chinese\""
+      },
+      {
+        "q": "site.mha.gov.sg new citizens permanent residents Chinese ethnic proportion 2024 2025"
+      }
+    ]
+  },
+  {
+    "id": "C08-mothers-original-research",
+    "q": [
+      {
+        "q": "Huang Yeoh 2005 Chinese study mothers Singapore English language 35 interviews pdf"
+      },
+      {
+        "q": "\"study mothers\" \"English\" \"interviews\" Singapore"
+      },
+      {
+        "q": "\"陪读妈妈\" \"语言\" \"访谈\" 新加坡"
+      },
+      {
+        "q": "\"陪读妈妈\" \"英语\" \"调查\" 新加坡 不会"
+      }
+    ]
+  },
+  {
+    "id": "C09-chinese-migrants-original",
+    "q": [
+      {
+        "q": "\"Chinese migrants\" Singapore \"English\" \"interviews\" language"
+      },
+      {
+        "q": "\"Chinese migrant workers\" Singapore \"English\" language study"
+      },
+      {
+        "q": "Singapore \"Chinese immigrants\" \"English classes\""
+      },
+      {
+        "q": "\"English Illiterate Parents\" RICE Media"
+      }
+    ]
+  },
+  {
+    "id": "C10-chinese-travel-communities",
+    "q": [
+      {
+        "q": "新加坡 不会英语 父母 自由行 经历",
+        "domains": [
+          "qyer.com",
+          "mafengwo.cn",
+          "ctrip.com",
+          "uscardforum.com"
+        ]
+      },
+      {
+        "q": "新加坡 英语不懂 求助 旅游",
+        "domains": [
+          "douban.com",
+          "zhihu.com",
+          "tieba.baidu.com"
+        ]
+      },
+      {
+        "q": "新加坡 陪读妈妈 英语 看不懂 通知",
+        "domains": [
+          "sohu.com",
+          "163.com",
+          "mp.weixin.qq.com"
+        ]
+      },
+      {
+        "q": "新加坡 不会英文 生活",
+        "domains": [
+          "huasing.org",
+          "sgcn.com",
+          "shichengbbs.com"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "C11-local-basic-courses",
+    "q": [
+      {
+        "q": "新移民 \"英语\" \"零基础\" 新加坡"
+      },
+      {
+        "q": "新移民 \"基础英语\" 新加坡 采访"
+      },
+      {
+        "q": "Singapore new immigrants basic English Chinese elderly interviews community centre"
+      },
+      {
+        "q": "新加坡 \"英语\" \"陪读妈妈\" 联合早报 学习"
+      }
+    ]
+  },
+  {
+    "id": "C12-verify-population-policy",
+    "q": [
+      {
+        "q": "site.population.gov.sg \"What are the racial proportions among Singapore citizens\""
+      },
+      {
+        "q": "site.singstat.gov.sg \"73.9\" \"2025\""
+      },
+      {
+        "q": "site.population.gov.sg \"racial balance\" immigration"
+      }
+    ]
+  },
+  {
+    "id": "C13-find-rice-study-mothers",
+    "q": [
+      {
+        "q": "\"What Having English Illiterate Parents Taught Me\" ricemedia"
+      },
+      {
+        "q": "\"Transnational families\" \"study mothers\" \"pdf\""
+      },
+      {
+        "q": "\"In pursuit of linguistic gold\" pdf"
+      },
+      {
+        "q": "\"新加坡\" \"李敏\" \"英语培训班\" 陪读"
+      }
+    ]
+  },
+  {
+    "id": "C14-beginner-parents-specific",
+    "q": [
+      {
+        "q": "新加坡 \"零基础\" \"我\" \"英语\" 陪读 妈妈 -site:iworldlearning.com -site:sinobus.org -site:eistudy.com"
+      },
+      {
+        "q": "\"新加坡\" \"一句英语\" \"妈妈\" -site:iworldlearning.com -site:sinobus.org"
+      },
+      {
+        "q": "\"新加坡\" \"26个字母\" 成人 英语"
+      },
+      {
+        "q": "\"新加坡\" \"不会英语\" \"看病\" 经历 -site:iworldlearning.com"
+      }
+    ]
+  },
+  {
+    "id": "C15-mainland-platform-target",
+    "q": [
+      {
+        "q": "\"新加坡\" \"不懂英语\" \"游记\"",
+        "domains": [
+          "qyer.com",
+          "mafengwo.cn"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"语言不通\" \"陪读\"",
+        "domains": [
+          "163.com",
+          "sohu.com"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"不会英文\"",
+        "domains": [
+          "douban.com"
+        ]
+      },
+      {
+        "q": "\"新加坡\" \"英语很差\"",
+        "domains": [
+          "zhihu.com"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "C17-travel-parents",
+    "queries": [
+      "site.ctrip.com 新加坡 \"父母\" \"不会英语\"",
+      "site.mafengwo.cn 新加坡 \"英文\" \"父母\" \"听不懂\"",
+      "site.uscardforum.com 新加坡 \"不会英语\" 父母",
+      "site.zaobao.com.sg \"新移民\" \"英语\" \"学\" 母亲"
+    ],
+    "q": [
+      {
+        "q": "site.ctrip.com 新加坡 \"父母\" \"不会英语\""
+      },
+      {
+        "q": "site.mafengwo.cn 新加坡 \"英文\" \"父母\" \"听不懂\""
+      },
+      {
+        "q": "site.uscardforum.com 新加坡 \"不会英语\" 父母"
+      },
+      {
+        "q": "site.zaobao.com.sg \"新移民\" \"英语\" \"学\" 母亲"
+      }
+    ]
+  },
+  {
+    "id": "C19-zero-worker-testimonial",
+    "q": [
+      {
+        "q": "\"陪读妈妈励志自述\" \"依依\""
+      },
+      {
+        "q": "\"新加坡\" \"一句英文不会\" 妈妈"
+      },
+      {
+        "q": "site.twc2.org.sg \"Chinese\" \"English\" \"read\""
+      },
+      {
+        "q": "site.zaobao.com.sg \"中国\" \"英语班\" \"母亲\""
+      }
+    ]
+  }
+]

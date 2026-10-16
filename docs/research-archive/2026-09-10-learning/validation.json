@@ -1,0 +1,49 @@
+{
+  "date": "2026-09-10",
+  "deliverables_expected": 2,
+  "deliverables_actual": 2,
+  "records": 72,
+  "record_uses": {
+    "第一方需求": 1,
+    "主证据": 38,
+    "反例": 5,
+    "复核重复": 1,
+    "排除": 11,
+    "补充线索": 11,
+    "背景": 5
+  },
+  "queries": 55,
+  "cited_records": 45,
+  "all_citations_resolve": true,
+  "no_excluded_record_cited": true,
+  "short_excerpt_records": 10,
+  "pdf_pages": 22,
+  "pdf_visual_review": "All 22 rendered pages reviewed; no clipping or overlap observed.",
+  "workbook_sheets": [
+    "研究说明",
+    "学习痛点",
+    "证据与边界",
+    "Sources",
+    "检索记录"
+  ],
+  "workbook_visual_review": "All 5 sheets represented in reviewed renders; long-source/quote columns inspected separately.",
+  "workbook_export_error_cells": [],
+  "limitations": [
+    "Purposeful public-source sample; not population estimates.",
+    "Platform depth unequal; Zhihu/Douban/video/social-group gaps disclosed.",
+    "No new formal interviews, matched product testing, or second-coder review.",
+    "Strict near-zero beginners and adults absent from public platforms remain underrepresented."
+  ],
+  "artifacts": [
+    {
+      "path": "/Users/eric/projects/Learning English  Singapore/output/pdf/singapore-english-learning-pains-report-02.pdf",
+      "bytes": 640459,
+      "sha256": "5bd675d234ff6d995279deade5b8f572bb74117fc7b3b9f20275b2c6e052fd3d"
+    },
+    {
+      "path": "/Users/eric/projects/Learning English  Singapore/outputs/learning-pains-report-02/singapore-english-learning-evidence-02.xlsx",
+      "bytes": 46855,
+      "sha256": "6b6ecd40297e55a91792f4642c0729946c9b181d4bdf520beefebeae333559f4"
+    }
+  ]
+}

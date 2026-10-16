@@ -1,0 +1,47 @@
+{
+  "scope": "handoff documentation and copied evidence only; no new product implementation",
+  "baseCommit": "22f38f31724d06931f845ea2ce1f6404a3e3253a",
+  "publishedBranch": "codex/ai-handoff-20261016",
+  "historyScan": {
+    "commits": 295,
+    "blobsScanned": 1330,
+    "bytesScanned": 36555904,
+    "findings": []
+  },
+  "copiedManifest": {
+    "files": 93,
+    "hashErrors": [],
+    "ignoredPaths": []
+  },
+  "packageScan": {
+    "filesAtScanTime": 100,
+    "pdfTextScanned": 5,
+    "findings": []
+  },
+  "entryDocumentLinks": {
+    "checkedLocalLinks": 46,
+    "missing": []
+  },
+  "productSourceTestsHooksRulesChanged": false,
+  "newProductTestsRun": false,
+  "priorFullVerification": {
+    "baseOnly": true,
+    "passed": 1524,
+    "failed": 0,
+    "exitCode": 0,
+    "independentSeconds": 266.791
+  },
+  "note": "Pattern and PDF text screening is not a proof that no possible sensitive content exists. Private databases, environment files, sessions and raw audit caches were not copied.",
+  "independentDocumentationReview": {
+    "result": "passed for note; final archive and push still pending",
+    "contractsVerified": 4,
+    "copiedFileHashesMatched": 93,
+    "workflowFilesMatched": 23,
+    "fivePdfTextsScreened": true,
+    "realCredentialFindings": 0,
+    "testUrlPatternMatches": 2,
+    "testUrlMatchesAreSyntheticInvalidDomain": true,
+    "newProductTestRun": false,
+    "cleanCloneRun": false
+  }
+}

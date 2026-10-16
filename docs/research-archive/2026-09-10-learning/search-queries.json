@@ -1,0 +1,284 @@
+[
+  {
+    "id": "LS01-sg-learning",
+    "q": [
+      {
+        "q": "site:reddit.com/r/askSingapore \"English\" \"learn\" \"shy\""
+      },
+      {
+        "q": "site:reddit.com/r/askSingapore \"English\" \"classes\" \"beginner\""
+      },
+      {
+        "q": "site:forum.singaporeexpats.com \"English\" \"classes\" \"learn\""
+      },
+      {
+        "q": "site:expat.com Singapore english lessons beginner time"
+      }
+    ]
+  },
+  {
+    "id": "LS02-ai-practice",
+    "q": [
+      {
+        "q": "site:reddit.com/r/EnglishLearning AI speaking practice \"frustrating\""
+      },
+      {
+        "q": "site:reddit.com \"Speak\" \"app\" \"custom\" \"English\""
+      },
+      {
+        "q": "site:reddit.com/r/languagelearning \"ChatGPT\" \"interrupts\""
+      },
+      {
+        "q": "site:reddit.com/r/EnglishLearning \"Cambly\" \"anxiety\""
+      }
+    ]
+  },
+  {
+    "id": "LS03-named-low",
+    "q": [
+      {
+        "q": "\"摩打\" \"英语\""
+      },
+      {
+        "q": "site:reddit.com/r/EnglishLearning \"afraid\" \"tutor\""
+      },
+      {
+        "q": "site:reddit.com/r/askSingapore \"learn English\" \"wife\""
+      },
+      {
+        "q": "site:reddit.com/r/askSingapore \"English classes\" \"mother\""
+      }
+    ]
+  },
+  {
+    "id": "LS04-chinese-learning",
+    "q": [
+      {
+        "q": "site:zhihu.com 英语 口语 外教 紧张 上课 学习"
+      },
+      {
+        "q": "site:douban.com 英语 自学 多邻国 开口"
+      },
+      {
+        "q": "site:bilibili.com AI 英语 口语 缺点"
+      },
+      {
+        "q": "site:note.com シンガポール 英会話 緊張 続かない"
+      }
+    ]
+  },
+  {
+    "id": "LS05-app-feedback",
+    "q": [
+      {
+        "q": "site:apps.apple.com \"Speak\" \"Ratings\" \"repetitive\""
+      },
+      {
+        "q": "site:apps.apple.com \"ELSA\" \"recognize\" \"review\""
+      },
+      {
+        "q": "site:reddit.com \"Duolingo\" \"speaking\" \"English\" \"streak\""
+      },
+      {
+        "q": "site:reddit.com \"Praktika\" \"interrupt\""
+      }
+    ]
+  },
+  {
+    "id": "LS06-voa-local",
+    "q": [
+      {
+        "q": "site:note.com シンガポール 英会話 スクール 緊張 大人"
+      },
+      {
+        "q": "site:forums.hardwarezone.com.sg \"english\" \"classes\" \"learn\""
+      },
+      {
+        "q": "site:douban.com/group/topic \"VOA\" \"听不懂\""
+      },
+      {
+        "q": "site:zhihu.com \"VOA\" \"听不懂\" \"单词\""
+      }
+    ]
+  },
+  {
+    "id": "LS07-original-research",
+    "q": [
+      {
+        "q": "AI chatbot EFL speaking anxiety low proficiency experimental study 2025 2026"
+      },
+      {
+        "q": "English conversational AI learners difficulties feedback speech recognition study beginners"
+      },
+      {
+        "q": "adult migrant English learning barriers time childcare Singapore study"
+      },
+      {
+        "q": "mobile language learning app discontinuance speaking motivation adult study"
+      }
+    ]
+  },
+  {
+    "id": "LS08-products",
+    "q": [
+      {
+        "q": "site:apps.apple.com/cn/app Speak 英语 评论 自由 对话"
+      },
+      {
+        "q": "site:apps.apple.com Praktika reviews conversation feedback"
+      },
+      {
+        "q": "site:speak.com tutor custom lessons scenarios"
+      },
+      {
+        "q": "site:learningenglish.voanews.com About Us beginning intermediate advanced"
+      }
+    ]
+  },
+  {
+    "id": "LS09",
+    "q": [
+      {
+        "q": "site.reddit.com/r/askSingapore \"english\" \"classes\" \"mother\""
+      },
+      {
+        "q": "site.forums.hardwarezone.com.sg \"learn english\" adults"
+      },
+      {
+        "q": "site.singaporeexpats.com/forum \"English\" \"lessons\" wife"
+      },
+      {
+        "q": "site.expat.com/forum \"Singapore\" \"anglais\" \"cours\""
+      }
+    ]
+  },
+  {
+    "id": "LS10",
+    "q": [
+      {
+        "q": "site.note.com シンガポール 英会話 レッスン 挫折 緊張"
+      },
+      {
+        "q": "site.zhihu.com \"Cambly\" \"52小时\""
+      },
+      {
+        "q": "site.douban.com/group \"英语\" \"开口\" \"紧张\" \"AI\""
+      },
+      {
+        "q": "site.reddit.com/r/EnglishLearning \"Singapore\" \"learn\""
+      }
+    ]
+  },
+  {
+    "id": "LS11",
+    "q": [
+      {
+        "q": "site.bilibili.com \"零基础\" \"英语\" \"坚持不下去\""
+      },
+      {
+        "q": "site.douyin.com \"英语\" \"外教\" \"听不懂\""
+      },
+      {
+        "q": "site.weibo.com \"多邻国\" \"口语\" \"打卡\""
+      },
+      {
+        "q": "site.facebook.com \"Singapore\" \"learn English\" \"beginner\""
+      }
+    ]
+  },
+  {
+    "id": "LS12-official",
+    "q": [
+      {
+        "q": "site.learningenglish.voanews.com \"Beginning Level\" \"Level 1\""
+      },
+      {
+        "q": "site.blog.duolingo.com video call roleplay English learners 2026"
+      }
+    ]
+  },
+  {
+    "id": "LXHS01",
+    "q": [
+      {
+        "q": "新加坡 学英语 坚持",
+        "domains": [
+          "小红书站内"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "LXHS02",
+    "q": [
+      {
+        "q": "英语 社恐 口语",
+        "domains": [
+          "小红书站内"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "LXHS03",
+    "q": [
+      {
+        "q": "外教课 紧张",
+        "domains": [
+          "小红书站内"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "LXHS04",
+    "q": [
+      {
+        "q": "AI口语 不好用",
+        "domains": [
+          "小红书站内"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "LXHS05",
+    "q": [
+      {
+        "q": "多邻国 英语 口语",
+        "domains": [
+          "小红书站内"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "LS13-domain-filter",
+    "q": [
+      {
+        "q": "シンガポール 英会話 通い始め 緊張",
+        "domains": [
+          "note.com"
+        ]
+      },
+      {
+        "q": "英语 外教 口语 紧张 学习",
+        "domains": [
+          "zhihu.com"
+        ]
+      },
+      {
+        "q": "英语 自学 坚持 口语",
+        "domains": [
+          "douban.com"
+        ]
+      },
+      {
+        "q": "Singapore English classes adult beginner",
+        "domains": [
+          "facebook.com"
+        ]
+      }
+    ]
+  }
+]

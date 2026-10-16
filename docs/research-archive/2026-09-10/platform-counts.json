@@ -1,0 +1,142 @@
+[
+  {
+    "platform": "Reddit",
+    "selected": 15,
+    "body": 7,
+    "main": 6,
+    "supp": 3
+  },
+  {
+    "platform": "知乎",
+    "selected": 8,
+    "body": 2,
+    "main": 0,
+    "supp": 4
+  },
+  {
+    "platform": "note",
+    "selected": 11,
+    "body": 9,
+    "main": 9,
+    "supp": 2
+  },
+  {
+    "platform": "学术研究",
+    "selected": 11,
+    "body": 6,
+    "main": 6,
+    "supp": 1
+  },
+  {
+    "platform": "SGN",
+    "selected": 1,
+    "body": 1,
+    "main": 1,
+    "supp": 0
+  },
+  {
+    "platform": "Singapore Expats",
+    "selected": 4,
+    "body": 0,
+    "main": 0,
+    "supp": 2
+  },
+  {
+    "platform": "Expat.com",
+    "selected": 6,
+    "body": 2,
+    "main": 1,
+    "supp": 2
+  },
+  {
+    "platform": "HOME",
+    "selected": 5,
+    "body": 5,
+    "main": 2,
+    "supp": 0
+  },
+  {
+    "platform": "CNA",
+    "selected": 5,
+    "body": 5,
+    "main": 4,
+    "supp": 0
+  },
+  {
+    "platform": "高校学生经历",
+    "selected": 4,
+    "body": 2,
+    "main": 2,
+    "supp": 2
+  },
+  {
+    "platform": "豆瓣",
+    "selected": 1,
+    "body": 0,
+    "main": 0,
+    "supp": 1
+  },
+  {
+    "platform": "抖音",
+    "selected": 2,
+    "body": 0,
+    "main": 0,
+    "supp": 1
+  },
+  {
+    "platform": "HardwareZone",
+    "selected": 6,
+    "body": 2,
+    "main": 0,
+    "supp": 0
+  },
+  {
+    "platform": "InterNations",
+    "selected": 1,
+    "body": 1,
+    "main": 1,
+    "supp": 0
+  },
+  {
+    "platform": "Prothom Alo",
+    "selected": 1,
+    "body": 1,
+    "main": 0,
+    "supp": 0
+  },
+  {
+    "platform": "Salvation Army",
+    "selected": 1,
+    "body": 0,
+    "main": 0,
+    "supp": 0
+  },
+  {
+    "platform": "VnExpress",
+    "selected": 1,
+    "body": 1,
+    "main": 1,
+    "supp": 0
+  },
+  {
+    "platform": "Hotcourses",
+    "selected": 1,
+    "body": 0,
+    "main": 0,
+    "supp": 0
+  },
+  {
+    "platform": "Kernel",
+    "selected": 1,
+    "body": 0,
+    "main": 0,
+    "supp": 0
+  },
+  {
+    "platform": "哔哩哔哩",
+    "selected": 1,
+    "body": 0,
+    "main": 0,
+    "supp": 0
+  }
+]
