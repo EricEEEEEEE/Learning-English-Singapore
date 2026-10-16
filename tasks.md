@@ -38,11 +38,13 @@
 
   **实现检查点，未验收**：红cdc0b3bd8f已确认后接guided分步体验，初版构建exit0，phone20项中18过2败。真实媒体事件证据定位T69媒体替身200整片无法seek，临时标准206 Range对照同代码可定位到1秒及片尾；不是实际整段原音边界已过。独立只读认可fixture纠错方向，全部断言/阈值保留。NOW先note存实现，真实回执后test-writing局部修T69媒体替身并补红，再继续实际媒体/完整验证；实现期冻结题未改。证据docs/evidence/t69/media-range-diagnosis.md。T69保持未勾选，不把18/20或对照当绿档。
 
-  **技术绿门通过，待Stop实际绿回执**：纠错红d022e6e8a5已核验，重新implementing。仅T69 fixture纠正生产Range语义，全部spec断言/阈值、共享T68替身保留；phone20/20 exit0、13.2秒。主向导及独立判卷员各原默认verify1369/1369、顶层exit0、失败0，三视口各228/domain685，独立241.462秒、原300秒内。真实Next签名合成会话和已有酒店bytes在1440桌面/320手机自然播完12.041667秒，原音词组/对方1→2.5及句子/回答6→7.7均暂停；角色历史2非较新草稿3，材料3、focus/503恢复同指针、换号404/匿名401及退出清理有证。浏览器写入/外部请求/模型调用/预留/麦克风均0；Console仅各2条有因503/404，不泛称0。独立5/5四段限定通过，8作弊未见命中；相对纠错红app/lib/tests/spec/rules/hooks/.codex无变，diff检查0。证据docs/evidence/t69/result.md、review.md、browser-http-qa.json。非新生成/真人OAuth/邻接音轨样本级隔离，位置和step持久仍留T70。NOW登记green，NEXT实际回执后T70红阶段；无新增费用、密钥/规矩/发布或手动commit/stop_hook。
+  **绿回执已确认9d6a51f614**：Stop复验全绿并推进本圈第8轮；纠错红d022e6e8a5已核验后重新implementing。仅T69 fixture纠正生产Range语义，全部spec断言/阈值、共享T68替身保留；phone20/20 exit0、13.2秒。主向导及独立判卷员各原默认verify1369/1369、顶层exit0、失败0，三视口各228/domain685，独立241.462秒、原300秒内。真实Next签名合成会话和已有酒店bytes在1440桌面/320手机自然播完12.041667秒，原音词组/对方1→2.5及句子/回答6→7.7均暂停；角色历史2非较新草稿3，材料3、focus/503恢复同指针、换号404/匿名401及退出清理有证。浏览器写入/外部请求/模型调用/预留/麦克风均0；Console仅各2条有因503/404，不泛称0。独立5/5四段限定通过，8作弊未见命中；相对纠错红app/lib/tests/spec/rules/hooks/.codex无变，diff检查0。证据docs/evidence/t69/result.md、review.md、browser-http-qa.json。非新生成/真人OAuth/邻接音轨样本级隔离，位置和step持久仍留T70。实际绿回执已核验，继续T70红阶段；无新增费用、密钥/规矩/发布或手动commit/stop_hook。
 
 - [ ] T70 · 从我的场景恢复同版课程和学习位置〔K6；人类团队1–2天 / AI协作2–5小时〕 ★ 本批验收
 
   复用T62A本地私有库；先完成真实账号副本归属验证，普通入口打开本人课程、退出重登恢复，其他账号拒绝。固定媒体版本不变，进度恢复不调用生成API；本地不称跨设备云库。
+
+  **首组存储红阶段**：已核验T69绿9d6a51f614后test-writing；完整5项交付和存储→HTTP→UI三段红票顺序见tests/evidence/t70-library-progress-contract.md。当前只新增持久进度考题；初27项缺模块预期红后，独立审题补无materialsRevision原课、同毫秒3→4→3最近选择、未来版本同内容冲突3题，最终发现1399项105文件exit0，首组30/30缺lib/scene-progress.ts预期失败、exit1，未走后续分支断言，旧1369项本阶段未重跑。原27断言保留，app/lib/spec/rules/hooks/.codex及旧tests无变，diff检查0。当前真实IAB登录页，不能猜目标owner或自动复制；先完成零费用开发，再按T62A核验真实登录/明确绑定/重登。NOW登记首组red待实际回执，不勾选T70、不声称完整接口/UI通过。
 
 - [ ] T71 · 从场景关键词自动生成新课程〔候选；K3.2/K4/T61B真实执行接入；另批方案与费用〕
 
