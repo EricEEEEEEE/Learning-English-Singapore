@@ -74,7 +74,7 @@ test('T69 / K5.2: terms sentences and prompted answers form one-step navigation 
   await expect(main.getByTestId('scene-panel-2')).toHaveCount(0); await expect(main.getByTestId('scene-sentence').first()).toContainText(hotelSample.lines[0].translations['zh-Hans']);
   await main.getByRole('button', { name: '下一步：提示接话', exact: true }).click();
   await expect(main.getByTestId('scene-partner')).toHaveText(hotelSample.lines[0].text); await expect(main.getByTestId('scene-answer')).toHaveText(hotelSample.lines[1].text);
-  await expect(main).toContainText('尚无录音、识别、评分或自由对话');
+  await expect(main).toContainText('这一步不录音、不评分');
   await main.getByRole('button', { name: '上一步：句子', exact: true }).click();
   await main.getByRole('button', { name: '上一步：词组', exact: true }).click();
   await main.getByRole('button', { name: '返回角色说明', exact: true }).click();

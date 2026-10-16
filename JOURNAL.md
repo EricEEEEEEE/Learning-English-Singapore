@@ -645,3 +645,5 @@
 - 2026-10-16 T63B第一组红（接口与适配器）：新增26项domain考题，全部因缺practice-providers/practice-turn路由/live-practice模块预期失败；第二组（第五页界面）随后。
 - [audit] phase → implementing @ 2026-10-16T15:23:42+00:00
 - 2026-10-16 T63B第一组实现检查点：practice-providers（转写/场景回应/对方配音各一次请求不重试）、/api/practice-turn（同源、≤1.5MB、白名单、错误码映射）、live-practice（对练+生成上限合计≤USD30）；practice-turn支持副本课的materialsRevision。定向41/41、tsc通过；未跑完整verify，不勾T63B。
+- [audit] phase → test-writing @ 2026-10-16T15:25:02+00:00
+- 2026-10-16 T63B第二组红（第五页开口对练）：新增10项e2e考题（×3视口），覆盖仅显示对方台词、点击后才请求麦克风、说完了才发送一次、下一回合带历史、沉默不推进、503/429/502/401如实提示不自动重试、麦克风被拒、不出现发音评分；T69第四页提示文案断言改为“这一步不录音、不评分”（第五页上线后旧文案“尚无自由对话”不再属实）。全部因缺第五页预期失败。
