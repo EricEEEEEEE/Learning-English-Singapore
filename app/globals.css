@@ -291,3 +291,7 @@ h1 span { display: block; }
 .scene-caption { text-align: center; font-size: 1.3rem; min-height: 2em; }
 .scene-card { margin: 12px 0; padding: 16px; background: #f0f5f2; border-radius: 10px; }
 .scene-card strong, .scene-card [lang="en"] { font-size: 1.2rem; }
+.sentence-row > .text-button { margin: -4px 0 8px; }
+.ab-loop label { display: block; margin: 8px 0 4px; }
+.ab-loop select { display: block; width: 100%; font: inherit; padding: 8px; }
+.practice-help { margin: 12px 0; }

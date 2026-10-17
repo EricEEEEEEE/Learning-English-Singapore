@@ -2,11 +2,14 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { EntryLanguage } from './entry-copy';
+import { listenToolsCopy } from './listen-tools-copy';
 
-type Line = { id: string; text: string };
+type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
 type History = { learner: string; partner: string }[];
 type Reply = { transcript: string; text: string; src: string };
+// Kept by the course page so a detour to the hint page does not lose the conversation so far.
+export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null };
 type Copy = { start: string; done: string; hint: string; next: string; listening: string; sending: string; heard: string; silence: string; unavailable: string; budget: string; failed: string; login: string; mic: string; tooLong: string; intro: string; replay: string };
 
 export const scenePracticeCopy: Record<EntryLanguage, Copy & { title: string; enter: string; promptHint: string }> = {
@@ -36,6 +39,9 @@ const AUDIO_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav'];
 const MAX_AUDIO_BYTES = 1_000_000;
 const MAX_RECORDING_MS = 30_000;
 const errorKey: Record<number, keyof Copy> = { 401: 'login', 429: 'budget', 502: 'failed', 503: 'unavailable' };
+const HELP_DELAY_MS = 6000;
+const AUTO_HELP_KEY = 'les.practice.autoHelp';
+function readAutoHelp() { try { return window.localStorage.getItem(AUTO_HELP_KEY) !== 'off'; } catch { return true; } }
 
 async function toBase64(blob: Blob) {
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -46,13 +52,19 @@ async function toBase64(blob: Blob) {
 
 // One spoken exchange at a time: the microphone opens only on an explicit start, the turn is sent once when the
 // learner says they are done, and every failure waits for the learner instead of retrying.
-export default function ScenePractice({ course, language, startTurn, onHint, playPartner }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; playPartner: (lineId: string) => void }) {
+export default function ScenePractice({ course, language, startTurn, onHint, playPartner, memory, mediaBusy = false }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; playPartner: (lineId: string, rate?: number) => void; memory?: PracticeMemory; mediaBusy?: boolean }) {
   const copy = scenePracticeCopy[language];
+  const tools = listenToolsCopy[language];
   const [turnIndex, setTurnIndex] = useState(startTurn);
   const [stage, setStage] = useState<'idle' | 'opening' | 'recording' | 'sending'>('idle');
-  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy } | null>(null);
-  const [reply, setReply] = useState<Reply | null>(null);
-  const [history, setHistory] = useState<History>([]);
+  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' } | null>(null);
+  const [reply, setReply] = useState<Reply | null>(memory && memory.turnIndex === startTurn ? memory.reply : null);
+  const [history, setHistory] = useState<History>(memory?.history ?? []);
+  const [autoHelp, setAutoHelp] = useState(readAutoHelp);
+  const [helpLevel, setHelpLevel] = useState(0);
+  const [partnerHelp, setPartnerHelp] = useState(false);
+  const freshReply = useRef(false);
+  const discard = useRef(false);
   const recorder = useRef<MediaRecorder | null>(null);
   const stream = useRef<MediaStream | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -60,6 +72,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
   const mounted = useRef(true);
   const turn = course.turns[turnIndex];
   const partner = course.lines.find(line => line.id === turn.partnerLineId)!;
+  const learner = course.lines.find(line => line.id === turn.learnerLineId)!;
+  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; }
 
   function release() {
     if (timer.current) clearTimeout(timer.current);
@@ -71,10 +85,29 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
     mounted.current = true;
     return () => { mounted.current = false; if (recorder.current?.state === 'recording') recorder.current.stop(); release(); };
   }, []);
-  useEffect(() => { if (reply) audio.current?.play().catch(() => {}); }, [reply]);
+  useEffect(() => { if (reply && freshReply.current) { freshReply.current = false; audio.current?.play().catch(() => {}); } }, [reply]);
+  // Silence after the partner has finished earns help: first how to begin, then the whole answer with a model.
+  // Nothing is offered while the partner is still talking, while the learner is speaking, or once they answered.
+  useEffect(() => {
+    if (!autoHelp || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy) return;
+    const id = setTimeout(() => { if (document.visibilityState !== 'hidden') setHelpLevel(level => level + 1); }, HELP_DELAY_MS);
+    return () => clearTimeout(id);
+  }, [autoHelp, stage, reply, helpLevel, mediaBusy, turnIndex]);
+  // Going to the background ends the recording without sending it and gives the microphone back.
+  useEffect(() => {
+    const hidden = () => {
+      if (document.visibilityState === 'hidden' && recorder.current?.state === 'recording') { discard.current = true; recorder.current.stop(); }
+    };
+    document.addEventListener('visibilitychange', hidden);
+    return () => document.removeEventListener('visibilitychange', hidden);
+  }, []);
+  function changeAutoHelp(on: boolean) {
+    setAutoHelp(on); if (!on) setHelpLevel(0);
+    try { window.localStorage.setItem(AUTO_HELP_KEY, on ? 'on' : 'off'); } catch { /* the choice still holds for this visit */ }
+  }
 
   async function start() {
-    setNotice(null); setReply(null); setStage('opening');
+    setNotice(null); setReply(null); setHelpLevel(0); discard.current = false; setStage('opening');
     try {
       const media = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (!mounted.current) { media.getTracks().forEach(track => track.stop()); return; }
@@ -83,7 +116,11 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
       const rec = new MediaRecorder(media, type ? { mimeType: type } : undefined);
       const chunks: Blob[] = [];
       rec.ondataavailable = event => { if (event.data?.size) chunks.push(event.data); };
-      rec.onstop = () => { release(); void send(new Blob(chunks, { type: rec.mimeType || type || '' })); };
+      rec.onstop = () => {
+        release();
+        if (discard.current) { discard.current = false; if (mounted.current) { setStage('idle'); setNotice({ kind: 'status', key: 'paused' }); } return; }
+        void send(new Blob(chunks, { type: rec.mimeType || type || '' }));
+      };
       recorder.current = rec;
       rec.start();
       timer.current = setTimeout(() => { if (rec.state === 'recording') rec.stop(); }, MAX_RECORDING_MS);
@@ -111,6 +148,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
       if (data?.kind === 'silence') { setNotice({ kind: 'status', key: 'silence' }); return; }
       const r = data?.reply;
       if (data?.kind !== 'reply' || typeof data.transcript !== 'string' || typeof r?.text !== 'string' || typeof r.audioBase64 !== 'string' || !/^audio\/[a-z0-9.+-]+$/.test(r.mimeType)) { setNotice({ kind: 'alert', key: 'failed' }); return; }
+      freshReply.current = true;
       setReply({ transcript: data.transcript, text: r.text, src: `data:${r.mimeType};base64,${r.audioBase64}` });
       setHistory(previous => [...previous, { learner: data.transcript.slice(0, 500), partner: r.text.slice(0, 500) }].slice(-10));
     } catch {
@@ -122,14 +160,17 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
 
   function nextTurn() {
     const next = turnIndex + 1;
-    setTurnIndex(next); setReply(null); setNotice(null);
+    setTurnIndex(next); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false);
     playPartner(course.turns[next].partnerLineId);
   }
 
   const busy = stage !== 'idle';
   return <div data-testid="scene-panel-5">
     <p>{copy.intro}</p>
-    <article className="scene-card"><p data-testid="practice-partner" lang="en">{partner.text}</p><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button></article>
+    <article className="scene-card"><p data-testid="practice-partner" lang="en">{partner.text}</p>
+      {partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations?.[language]}</p>}
+      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => setPartnerHelp(open => !open)}>{partnerHelp ? tools.helpClose : tools.help}</button></div>
+    </article>
     <div className="scene-actions">
       {stage === 'recording'
         ? <button type="button" className="guide-primary" onClick={() => recorder.current?.stop()}>{copy.done}</button>
@@ -138,7 +179,13 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
     </div>
     {stage === 'recording' && <p role="status">{copy.listening}</p>}
     {stage === 'sending' && <p role="status">{copy.sending}</p>}
-    {notice && <p role={notice.kind}>{copy[notice.key]}</p>}
+    {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : copy[notice.key]}</p>}
+    {helpLevel > 0 && !reply && stage === 'idle' && <div data-testid="practice-auto-help" className="scene-card practice-help" role="status">
+      {helpLevel === 1
+        ? <p>{tools.helpStart}<span lang="en">{learner.text.split(/\s+/).slice(0, 3).join(' ')}…</span></p>
+        : <><p>{tools.helpFull}<span lang="en">{learner.text}</span></p><button type="button" onClick={() => playPartner(learner.id)}>{tools.demo}</button></>}
+    </div>}
+    <label className="practice-help"><input type="checkbox" checked={autoHelp} onChange={event => changeAutoHelp(event.target.checked)} /> {tools.autoHelp}</label>
     {reply && <article className="scene-card">
       <p data-testid="practice-heard">{copy.heard} <span lang="en">{reply.transcript}</span></p>
       <p data-testid="practice-reply" lang="en">{reply.text}</p>
