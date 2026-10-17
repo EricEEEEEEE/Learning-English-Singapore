@@ -450,12 +450,12 @@ const review = (session, outcomes, help = { hints: 1, autoHelp: 0, translations:
 test('C9-6 / F10.4: a saved review comes back with the previous review of the same course; re-saving the same session updates it', async () => {
   const { f, open, store } = await reviewSetup();
   const first = await store.save({ ...f.a, ...review('session-one-1', ['after_hint', 'unobserved', 'unobserved']) });
-  expect(first).toEqual({ review: { session: 'session-one-1', turns: review('x', ['after_hint', 'unobserved', 'unobserved']).turns, help: { hints: 1, autoHelp: 0, translations: 0, native: 0 }, at: now }, previous: null });
+  expect(first).toEqual({ review: { session: 'session-one-1', turns: review('x', ['after_hint', 'unobserved', 'unobserved']).turns, help: { hints: 1, autoHelp: 0, translations: 0, native: 0 }, at: f.a.now }, previous: null });
   const again = await store.save({ ...f.a, ...review('session-one-1', ['independent', 'after_hint', 'unobserved']) });
   expect(again.previous).toBeNull();
-  const second = await open().save({ ...f.a, now: now + 60_000, ...review('session-two-2', ['independent', 'independent', 'needs_help'], { hints: 0, autoHelp: 0, translations: 1, native: 1 }) });
+  const second = await open().save({ ...f.a, now: f.a.now + 60_000, ...review('session-two-2', ['independent', 'independent', 'needs_help'], { hints: 0, autoHelp: 0, translations: 1, native: 1 }) });
   expect(second.previous).toMatchObject({ session: 'session-one-1', turns: [{ turnIndex: 0, outcome: 'independent' }, { turnIndex: 1, outcome: 'after_hint' }, { turnIndex: 2, outcome: 'unobserved' }] });
-  expect(second.review).toMatchObject({ session: 'session-two-2', at: now + 60_000 });
+  expect(second.review).toMatchObject({ session: 'session-two-2', at: f.a.now + 60_000 });
 });
 
 test('C9-6: reviews are private to the owner and refuse turns the course does not have, unknown outcomes and no session', async () => {

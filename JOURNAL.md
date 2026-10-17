@@ -694,3 +694,6 @@
 - [audit] phase → test-writing @ 2026-10-17T16:04:38+00:00
 - [audit] phase → test-writing @ 2026-10-17T16:09:34+00:00
 - C9 红：新增 tests/domain/c9-audit-gaps.spec.mjs 47 题（改目标 13、用母语说 12、多练听不清 2、医疗/手续提示词 3、对练路由 1、句子报告状态与同句定位 8、回顾分类与保存 6、生成记录已取消/已停止 1、五语文案 1）与 tests/e2e/c9-audit-gaps.spec.mjs 14 题（改目标 3、用母语说 2、多练听不清 1、报告状态 3、回顾保存与对比 4、生成记录 1），新夹具 tests/fixtures/c9-practice-browser.mjs。domain 41 红均因缺 goalChange/mode/suggest/focus unclear/safety 字段、缺 safetyPromptRule、setStatus、createSameSentenceFinder、practice-reviews 模块和两条新路由、记录状态和新文案；6 绿为守卫（坏目标/未知模式在预留前拒绝、英文回合转写请求不变、坏 goalChange/超长建议被适配器拒绝）。phone 13 红均为找不到新界面或请求里没有新字段，1 绿为守卫（没有停用时提示页照常显示答案）。考题改写（合同扩宽，不删断言）：t63b 与 c6 domain 的回应 schema 键加 goalChange、替身回应补 goalChange:null；c6 e2e T23A 原断言“结束练习后不发任何请求”改为“只发一次 /api/practice-reviews 保存”，因为 C9-6 要求按账号保存回顾，回顾仍不发给模型。零模型调用。
+- [audit] phase → implementing @ 2026-10-17T16:20:01+00:00
+- [audit] phase → test-writing @ 2026-10-17T16:28:32+00:00
+- C9 考题纠错：c9 domain 回顾保存题的时间戳用错了常量（题里的 now 是 C9 自己的，会话来自 C5 夹具 f.a.now），改为 f.a.now；断言内容不变。
