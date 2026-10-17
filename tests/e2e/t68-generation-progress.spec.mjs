@@ -8,6 +8,9 @@ test('T68 / K4: generate first saves all fields as one version and shows only it
   const main = await openBackground(page);
   const generate = main.getByRole('button', { name: '生成场景', exact: true });
   await expect(generate).toBeVisible(); await generate.click();
+  // C7 T14A: generating now asks for confirmation first; nothing is saved or sent before it.
+  expect(state.writes).toHaveLength(0); expect(state.posts).toHaveLength(0);
+  await main.getByRole('button', { name: '确认生成', exact: true }).click();
   await expect(main.getByRole('heading', { name: progressTitle, exact: true })).toBeVisible();
   await expect(main.getByText('场景需求已保存，尚未开始生成。', { exact: true })).toBeVisible();
   await expect(page).toHaveURL(/\?generation=1$/);
@@ -22,6 +25,7 @@ test('T68 / K4: a failed requirement save never creates a task or abandons the i
   const state = await setupBrowser(page, context, baseURL); const main = await openBackground(page);
   state.writeStatus = 503;
   await main.getByRole('button', { name: '生成场景', exact: true }).click();
+  await main.getByRole('button', { name: '确认生成', exact: true }).click();
   await expect(main.getByRole('alert')).toContainText('输入仍在');
   for (let index = 0; index < keywordLabels.length; index++) await expect(main.getByRole('textbox', { name: keywordLabels[index], exact: true })).toHaveValue(keywordValues[index]);
   expect(state.posts).toHaveLength(0); await expect(page).toHaveURL(baseURL + '/');
@@ -31,6 +35,7 @@ test('T68 / K4: a conflicting save cannot generate from a previous snapshot', as
   const state = await setupBrowser(page, context, baseURL, requirement()); const main = await openBackground(page);
   state.records[ownerA] = requirement(2, '另一页面保存的新需求');
   await main.getByRole('button', { name: '生成场景', exact: true }).click();
+  await main.getByRole('button', { name: '确认生成', exact: true }).click();
   await expect(main.getByRole('alert')).toContainText('其他页面');
   await expect(main.getByRole('textbox', { name: keywordLabels[0], exact: true })).toHaveValue(keywordValues[0]);
   expect(state.posts).toEqual([]);
@@ -41,7 +46,8 @@ test('T68 / K4: rapid repeated generation clicks create one task and refresh onl
   let release; state.postGate = new Promise(resolve => { release = resolve; });
   try {
     const main = await openBackground(page);
-    await main.getByRole('button', { name: '生成场景', exact: true }).evaluate(button => { button.click(); button.click(); });
+    await main.getByRole('button', { name: '生成场景', exact: true }).click();
+    await main.getByRole('button', { name: '确认生成', exact: true }).evaluate(button => { button.click(); button.click(); });
     await expect.poll(() => state.posts.length).toBe(1);
     release(); await expect(main.getByText('场景需求已保存，尚未开始生成。', { exact: true })).toBeVisible();
     await page.reload();
@@ -64,6 +70,7 @@ test('T68 / K4: a lost creation acknowledgement recovers the existing task by GE
   const state = await setupBrowser(page, context, baseURL); state.postMode = 'lost';
   const main = await openBackground(page);
   await main.getByRole('button', { name: '生成场景', exact: true }).click();
+  await main.getByRole('button', { name: '确认生成', exact: true }).click();
   await expect(main.getByText('场景需求已保存，尚未开始生成。', { exact: true })).toBeVisible();
   expect(state.posts).toHaveLength(1); expect(state.gets.length).toBeGreaterThan(0);
   const readsBeforeReload = state.gets.length;
@@ -76,6 +83,7 @@ test('T68 / K4: an unknown submit with no immediately visible task stays query-o
   const state = await setupBrowser(page, context, baseURL); state.postMode = 'lost-later';
   const main = await openBackground(page);
   await main.getByRole('button', { name: '生成场景', exact: true }).click();
+  await main.getByRole('button', { name: '确认生成', exact: true }).click();
   await expect(main.getByText('暂未查到生成任务，可以重新检查。', { exact: true })).toBeVisible();
   await main.getByRole('button', { name: '重新检查', exact: true }).click();
   await expect.poll(() => state.gets.length).toBeGreaterThan(1);
@@ -208,6 +216,7 @@ test('T68 / K4: a delayed creation acknowledgement cannot replace another owner 
     const main = await openBackground(page);
     const generate = main.getByRole('button', { name: '生成场景', exact: true });
     await expect(generate).toBeVisible(); await generate.click();
+    await main.getByRole('button', { name: '确认生成', exact: true }).click();
     await expect.poll(() => state.posts.length).toBe(1);
     await expect(page).toHaveURL(/\?generation=1$/);
     state.owner = ownerB; await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
@@ -295,11 +304,11 @@ test('T68 / K4: invalid or absent requirement links cannot create a task and pro
 });
 
 const languages = [
-  { code: 'zh-Hans', next: '下一步', generate: '生成场景', title: progressTitle },
-  { code: 'id', next: 'Lanjut', generate: 'Buat situasi', title: 'Menyiapkan situasi Anda' },
-  { code: 'ja', next: '次へ', generate: '場面を生成', title: '場面を準備しています' },
-  { code: 'ko', next: '다음', generate: '상황 만들기', title: '상황을 준비하고 있어요' },
-  { code: 'hi', next: 'आगे', generate: 'दृश्य बनाएँ', title: 'आपका दृश्य तैयार किया जा रहा है' },
+  { code: 'zh-Hans', next: '下一步', generate: '生成场景', confirm: '确认生成', title: progressTitle },
+  { code: 'id', next: 'Lanjut', generate: 'Buat situasi', confirm: 'Ya, buat sekarang', title: 'Menyiapkan situasi Anda' },
+  { code: 'ja', next: '次へ', generate: '場面を生成', confirm: '生成する', title: '場面を準備しています' },
+  { code: 'ko', next: '다음', generate: '상황 만들기', confirm: '네, 만들어 주세요', title: '상황을 준비하고 있어요' },
+  { code: 'hi', next: 'आगे', generate: 'दृश्य बनाएँ', confirm: 'हाँ, बनाएँ', title: 'आपका दृश्य तैयार किया जा रहा है' },
 ];
 for (const language of languages) test(`T68 / K4: ${language.code} can submit and refresh the same requirement-bound progress page`, async ({ page, context, baseURL }) => {
   const state = await setupBrowser(page, context, baseURL);
@@ -308,6 +317,7 @@ for (const language of languages) test(`T68 / K4: ${language.code} can submit an
   await page.getByRole('combobox').selectOption(language.code);
   await main.getByRole('button', { name: language.next, exact: true }).click();
   await main.getByRole('button', { name: language.generate, exact: true }).click();
+  await main.getByRole('button', { name: language.confirm, exact: true }).click();
   await expect(main.getByRole('heading', { name: language.title, exact: true })).toBeVisible();
   expect(state.records[ownerA].content.language).toBe(language.code);
   const readsBeforeReload = state.gets.length;
