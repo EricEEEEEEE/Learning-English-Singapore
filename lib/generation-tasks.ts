@@ -1,3 +1,4 @@
+import { sceneVideoPrompt } from './scene-video-prompt';
 import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
@@ -32,12 +33,12 @@ type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['se
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDuration?: number; segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
-type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
+type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; prompt?: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number]) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number], cast?: { partnerGender?: 'female' | 'male' }) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   const budget = liveBudget ? { ...liveBudget } : undefined;
   function transact<T>(work: (db: DatabaseSync) => T): T {
@@ -229,7 +230,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const line = task.script!.lines[index];
       let saved: SavedAudio | undefined;
       try {
-        const result = await audioProvider.generate(structuredClone(line));
+        const result = await audioProvider.generate(structuredClone(line), task.script?.scene ? { partnerGender: task.script.scene.partnerGender } : undefined);
         if (!result || result.lineId !== line.id || result.role !== line.role || !(result.bytes instanceof Uint8Array) || result.bytes.length > 4_000_000) throw new Error('Invalid audio result');
         const duration = wavDuration(result.bytes);
         if (duration !== result.duration || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256) throw new Error('Invalid audio integrity');
@@ -383,7 +384,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       let id: string | undefined;
       try {
         const response = encodedVideoProvider && encoded
-          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal, ...(referenceImage ? { referenceImage } : {}) })
+          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal, prompt: sceneVideoPrompt(task.goal, task.script), ...(referenceImage ? { referenceImage } : {}) })
           : await videoProvider!.submit({ bytes: media.bytes, duration: segment.duration, goal: task.goal });
         if (response?.status === 'pending' && typeof response.jobId === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(response.jobId)) id = response.jobId;
       } catch { /* Unknown submission: retain reservation and never resubmit automatically. */ }
@@ -442,6 +443,34 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         current.videoAssets = [...(current.videoAssets ?? []), { segmentIndex: job.segmentIndex, assetId: metadata.assetId, sha256: metadata.sha256, size: metadata.size }];
         // Stored bytes are not yet a probed, playable video or an accepted course.
         save(db, current); return current;
+      });
+    },
+    // Continuity between segments: the next segment starts from the last frame of the checked previous one,
+    // so the same person and place carry on instead of a fresh, unrelated shot. Local extraction only, no provider call.
+    async chainReferenceImage(input: Session & { id: string }) {
+      if ((!simulation && !budget) || !mediaStore || !referenceExtractor) throw new Error('Reference preparation disabled');
+      const ownerId = await owner(input);
+      const snapshot = transact(db => read(db, input.id, ownerId));
+      const job = snapshot?.videoJobs?.at(-1), index = job?.segmentIndex;
+      const asset = snapshot?.videoAssets?.find(value => value.segmentIndex === index);
+      const check = snapshot?.videoChecks?.find(value => value.segmentIndex === index && value.sha256 === asset?.sha256);
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'video_pending' || !job || job.status !== 'completed' || index === undefined || !asset || !check || (snapshot.videoJobs?.length ?? 0) >= (snapshot.audioAssembly?.segments.length ?? 0)) throw new Error('Reference prohibited');
+      if (snapshot.referenceImage?.sourceCourseId === snapshot.id && snapshot.referenceImage.sourceAssetId === asset.assetId && snapshot.referenceImage.sourceVideoSha256 === asset.sha256) return snapshot;
+      // Last whole frame: a frame duration before the verified end, inside the 20-second extractor bound.
+      const timeSeconds = Math.min(19.9, Math.max(0, Math.floor((check.duration - 1 / 24) * 1000) / 1000));
+      let reference: SavedReference;
+      try {
+        const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
+        if (!media || media.sha256 !== asset.sha256 || media.size !== asset.size || createHash('sha256').update(media.bytes).digest('hex') !== asset.sha256) throw new Error('Invalid reference source media');
+        const result = await referenceExtractor({ bytes: media.bytes, sha256: asset.sha256, timeSeconds });
+        if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length > 5_249_982 || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256 || result.sourceVideoSha256 !== asset.sha256 || result.timeSeconds !== timeSeconds || result.mimeType !== 'image/png' || result.width !== 720 || result.height !== 1280 || result.decoded !== true) throw new Error('Invalid extracted reference');
+        const metadata = await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: `reference-${result.sha256}`, bytes: result.bytes, sha256: result.sha256 });
+        reference = { assetId: metadata.assetId, sha256: result.sha256, sourceCourseId: snapshot.id, sourceRevision: snapshot.revision, sourceAssetId: asset.assetId, sourceVideoSha256: asset.sha256, timeSeconds, mimeType: 'image/png', width: 720, height: 1280, decoded: true };
+      } catch { throw new Error('Reference preparation failed'); }
+      return transact(db => {
+        const current = read(db, snapshot.id, ownerId);
+        if (!current || JSON.stringify(current) !== JSON.stringify(snapshot)) throw new Error('Task changed during reference preparation');
+        current.referenceImage = reference; save(db, current); return current;
       });
     },
     async prepareReferenceImage(input: Session & { id: string; sourceCourseId: string; sourceRevision: number; sourceAssetId: string; timeSeconds: number }) {

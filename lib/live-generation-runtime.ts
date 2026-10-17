@@ -40,11 +40,11 @@ export function createLiveGenerationRuntime(options: Options) {
     maxReservedMicros: b.maxReservedMicros, liveBudget: { scope: b.scope, priorSpentMicros: b.priorSpentMicros },
     mediaStore: createPrivateMediaStore({ directory: join(options.directory, 'media'), sessionSecret: options.sessionSecret }),
     scriptProvider: { reservedMicros: b.scriptMicros, generate: input => generateSceneScript(input, openai) },
-    audioProvider: { reservedMicros: b.audioMicros, generate: line => generateLineAudio(line, openai) },
+    audioProvider: { reservedMicros: b.audioMicros, generate: (line, cast) => generateLineAudio(line, { ...openai, ...(cast?.partnerGender ? { partnerGender: cast.partnerGender } : {}) }) },
     audioEncoder: input => encodeVideoAudio(input, media),
     encodedVideoProvider: {
       reservedMicros: b.videoMicros,
-      submit: input => submitEncodedVideoSegment({ audio: input.audio, prompt: input.goal, referenceImage: input.referenceImage }, { ...video, reviewedSha256: input.reviewedSha256 }),
+      submit: input => submitEncodedVideoSegment({ audio: input.audio, prompt: input.prompt ?? input.goal, referenceImage: input.referenceImage }, { ...video, reviewedSha256: input.reviewedSha256 }),
       query: id => queryVideoSegment(id, video),
     },
     videoDownload: url => downloadGeneratedMedia(url, { allowedHosts: media.allowedHosts, maxBytes: media.maxBytes, fetch: transport }),

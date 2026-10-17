@@ -1,6 +1,6 @@
 import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
 
-type Store = Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
+type Store = Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
 type Input = { cookie?: string | null; now?: number; id: string };
 type Encoded = NonNullable<GenerationTask['encodedAudio']>[number];
 type Segment = NonNullable<GenerationTask['audioAssembly']>['segments'][number];
@@ -67,6 +67,8 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
           return null;
         }
         const segments = task.audioAssembly?.segments.length ?? 0;
+        // A segment after the first continues from the previous one's last frame (scripts with a scene only).
+        if (jobs.length < segments && task.script?.scene && !(task.referenceImage?.sourceCourseId === task.id && task.referenceImage.sourceAssetId === asset.assetId)) { await store.chainReferenceImage(input); return null; }
         if (jobs.length < segments) await store.runVideo(input);
         else await store.assembleVideo(input);
         return null;
