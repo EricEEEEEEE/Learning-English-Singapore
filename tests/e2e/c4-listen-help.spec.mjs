@@ -45,7 +45,8 @@ test('T16A / F6.5: one sentence loops until the learner stops it', async ({ page
   test.setTimeout(40_000);
   const { main, state } = await openSentences(page, context, baseURL);
   const video = main.locator('video'); await mediaReady(video); await trackTimes(video);
-  const loop = main.getByTestId('scene-sentence').first().getByRole('button', { name: '循环这句', exact: true });
+  // The loop control sits beside, not inside, each sentence card: older pages press the card's only button.
+  const loop = main.getByRole('button', { name: `循环这句：${first.text}`, exact: true });
   await expect(loop).toHaveAttribute('aria-pressed', 'false');
   await loop.click();
   await expect(loop).toHaveAttribute('aria-pressed', 'true');
