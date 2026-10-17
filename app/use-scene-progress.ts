@@ -4,9 +4,10 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { SceneProgressPosition as Position, SceneProgressRecord as Record } from '../lib/scene-progress';
 import type { SceneCoursePointer } from '../lib/scene-generation';
 import { LearningRequestFailure, requestLearningJson } from './learning-request';
+import { isOffline } from './use-online';
 
 export type ProgressContext = SceneCoursePointer & { mediaSha256: string; duration: number; turns: number };
-type Stage = 'loading' | 'empty' | 'restored' | 'saving' | 'saved' | 'readFailed' | 'saveFailed' | 'conflict';
+type Stage = 'loading' | 'empty' | 'restored' | 'saving' | 'saved' | 'readFailed' | 'saveFailed' | 'conflict' | 'offline';
 type Operation = { expectedVersion: number; position: Position };
 type Session = { key: string; context: ProgressContext; active: boolean; enabled: boolean; started: boolean; readable: boolean; busy: boolean; blocked: boolean; record: Record | null; desired: Position | null; unknown: Operation | null; waiters: Set<() => void>; controller?: AbortController; timer?: number };
 const same = (a: Position, b: Position) => a.page === b.page && a.time === b.time && a.turnIndex === b.turnIndex;
@@ -18,7 +19,7 @@ function recordValue(data: unknown, context: ProgressContext): Record | null {
   const c = row?.course, p = row?.position;
   if (!c || c.id !== context.id || c.revision !== context.revision || c.materialsRevision !== context.materialsRevision || c.mediaSha256 !== context.mediaSha256
     || !Number.isSafeInteger(row.version) || row.version < 1 || !Number.isSafeInteger(row.updatedAt) || row.updatedAt < 0
-    || !p || Object.keys(p).length !== 3 || !['watch', 'role', 'terms', 'sentences', 'prompt'].includes(p.page)
+    || !p || Object.keys(p).length !== 3 || !['watch', 'role', 'terms', 'sentences', 'prompt', 'practice'].includes(p.page)
     || !Number.isFinite(p.time) || p.time < 0 || p.time > context.duration || !Number.isSafeInteger(p.turnIndex) || p.turnIndex < 0 || p.turnIndex >= context.turns) throw new Error('Invalid learning position');
   return structuredClone(row);
 }
@@ -54,6 +55,8 @@ export function useSceneProgress(context: ProgressContext | null, enabled: boole
   async function drain(s: Session) {
     if (!valid(s) || !s.enabled || !s.readable || s.blocked || s.busy || !s.desired) return;
     if (same(s.desired, s.record?.position ?? start)) { s.desired = null; publish(s, s.record ? 'saved' : 'empty'); return; }
+    // C8-1: offline, the latest position waits here and is sent once when the browser is back online.
+    if (isOffline()) { publish(s, 'offline'); return; }
     const operation = { expectedVersion: s.record?.version ?? 0, position: { ...s.desired } }, controller = new AbortController();
     s.busy = true; s.controller = controller; publish(s, 'saving');
     try {
@@ -103,6 +106,15 @@ export function useSceneProgress(context: ProgressContext | null, enabled: boole
     return () => { s.active = false; s.controller?.abort(); window.clearTimeout(s.timer); notify(s); };
     // The serialized context contains every course/material/media field.
   }, [key]);
+  useEffect(() => {
+    const online = () => { const s = session.current; if (s && valid(s) && s.desired && !s.blocked) void drain(s); };
+    const offline = () => {
+      const s = session.current;
+      if (s && valid(s) && s.desired && !s.busy && !s.blocked) { window.clearTimeout(s.timer); s.timer = undefined; publish(s, 'offline'); }
+    };
+    window.addEventListener('online', online); window.addEventListener('offline', offline);
+    return () => { window.removeEventListener('online', online); window.removeEventListener('offline', offline); };
+  }, []);
   useLayoutEffect(() => {
     const s = session.current;
     if (s?.key === key) {
@@ -126,6 +138,7 @@ export function useSceneProgress(context: ProgressContext | null, enabled: boole
       if (!s.desired && same(value, s.record?.position ?? start)) return;
       s.desired = value;
       if (s.blocked) return;
+      if (isOffline()) { window.clearTimeout(s.timer); s.timer = undefined; publish(s, 'offline'); return; }
       publish(s, 'saving');
       if (flush) { window.clearTimeout(s.timer); s.timer = undefined; void drain(s); }
       else if (s.timer === undefined) s.timer = window.setTimeout(() => { s.timer = undefined; void drain(s); }, 750);

@@ -1,11 +1,11 @@
 import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
 
-type Store = Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
+type Store = Partial<Pick<ReturnType<typeof createGenerationTaskStore>, 'stopState'>> & Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
 type Input = { cookie?: string | null; now?: number; id: string };
 type Encoded = NonNullable<GenerationTask['encodedAudio']>[number];
 type Segment = NonNullable<GenerationTask['audioAssembly']>['segments'][number];
 export type AudioReview = (input: Input & { task: GenerationTask; segmentIndex: number; encoded: Encoded; segment: Segment }) => Promise<boolean>;
-export type RunStop = 'ready' | 'waiting' | 'unknown' | 'failed' | 'budget' | 'needs_review' | 'review_failed' | 'error';
+export type RunStop = 'ready' | 'waiting' | 'unknown' | 'failed' | 'budget' | 'needs_review' | 'review_failed' | 'cancelled' | 'error';
 export type RunResult = { stopped: RunStop; status?: GenerationTask['status'] };
 
 const MAX_STEPS = 500;
@@ -88,6 +88,9 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
       for (let i = 0; i < MAX_STEPS; i++) {
         task = await store.get(input);
         if (!task) return { stopped: 'error' };
+        // C8-4: a learner's cancel is checked before every step, so a step already running finishes and is kept,
+        // and nothing after it starts. The store also refuses new submissions on its own.
+        if (task.status !== 'video_assembled' && store.stopState && await store.stopState(input)) return { stopped: 'cancelled', status: task.status };
         const stop = await step(input, task, polls);
         if (stop) return { stopped: stop, status: task.status };
       }
@@ -95,6 +98,7 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
     } catch (error) {
       const latest = await store.get(input).catch(() => null) ?? task;
       if (error instanceof Error && error.message === 'Total reservation limit exceeded') return { stopped: 'budget', status: latest?.status };
+      if (error instanceof Error && error.message === 'Generation stopped') return { stopped: 'cancelled', status: latest?.status };
       if (latest?.status === 'submission_unknown') return { stopped: 'unknown', status: latest.status };
       return { stopped: 'error', status: latest?.status };
     }

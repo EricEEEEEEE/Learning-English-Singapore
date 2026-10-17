@@ -4,6 +4,9 @@ import { useEffect, useId, useRef, useState } from 'react';
 import type { EntryLanguage } from './entry-copy';
 import { listenToolsCopy } from './listen-tools-copy';
 import { practiceQualityCopy } from './practice-quality-copy';
+import { resumeSafetyCopy } from './resume-safety-copy';
+import { useOnline, isOffline } from './use-online';
+import { meaningOptions } from '../lib/practice-meanings';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
@@ -14,7 +17,7 @@ type Correction = 'normal' | 'less';
 // What this visit observed, for the review after practice. Nothing here is sent anywhere.
 type Stats = { hints: number; autoHelp: number; translations: number };
 // Kept by the course page so a detour to the hint page does not lose the conversation so far.
-export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null; focus?: Focus; ending?: 'done' | 'ended' | null; stats?: Stats; answered?: Record<number, string> };
+export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null; focus?: Focus; ending?: 'done' | 'ended' | null; stats?: Stats; answered?: Record<number, string>; chosen?: Record<number, string> };
 type Copy = { start: string; done: string; hint: string; next: string; listening: string; sending: string; heard: string; silence: string; unavailable: string; budget: string; failed: string; login: string; mic: string; tooLong: string; intro: string; replay: string };
 
 export const scenePracticeCopy: Record<EntryLanguage, Copy & { title: string; enter: string; promptHint: string }> = {
@@ -60,20 +63,28 @@ async function toBase64(blob: Blob) {
 
 // One spoken exchange at a time: the microphone opens only on an explicit start, the turn is sent once when the
 // learner says they are done, and every failure waits for the learner instead of retrying.
-export default function ScenePractice({ course, language, startTurn, onHint, onLeave, playPartner, memory, mediaBusy = false }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; onLeave?: () => void; playPartner: (lineId: string, rate?: number) => void; memory?: PracticeMemory; mediaBusy?: boolean }) {
+export default function ScenePractice({ course, language, startTurn, onHint, onLeave, playPartner, stopPartner, onTurn, resumed = false, memory, mediaBusy = false }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; onLeave?: () => void; playPartner: (lineId: string, rate?: number) => void; stopPartner?: () => void; onTurn?: (turnIndex: number) => void; resumed?: boolean; memory?: PracticeMemory; mediaBusy?: boolean }) {
   const copy = scenePracticeCopy[language];
   const tools = listenToolsCopy[language];
   const quality = practiceQualityCopy[language];
+  const extra = resumeSafetyCopy[language];
+  const online = useOnline();
   const choiceId = useId();
   const [focus, setFocus] = useState<Focus>(memory?.focus ?? 'normal');
   const [correction, setCorrection] = useState<Correction>(readCorrection);
   const [ending, setEnding] = useState<'done' | 'ended' | null>(memory?.ending ?? null);
-  const [feedback, setFeedback] = useState<'idle' | 'busy' | 'saved' | 'failed'>('idle');
+  const [feedback, setFeedback] = useState<'idle' | 'busy' | 'saved' | 'failed' | 'offline'>('idle');
   const stats = useRef<Stats>(memory?.stats ?? { hints: 0, autoHelp: 0, translations: 0 });
   const answered = useRef<Record<number, string>>(memory?.answered ?? {});
+  // C8-5: meanings picked without speaking, per turn (line id). The review shows them as "picked, not spoken".
+  const chosen = useRef<Record<number, string>>(memory?.chosen ?? {});
   const [turnIndex, setTurnIndex] = useState(startTurn);
   const [stage, setStage] = useState<'idle' | 'opening' | 'recording' | 'sending'>('idle');
-  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' } | null>(null);
+  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' | 'offline' } | null>(null);
+  const [thinking, setThinking] = useState(false);
+  const [choosing, setChoosing] = useState(false);
+  const [chosenLine, setChosenLine] = useState<string | null>(memory && memory.turnIndex === startTurn ? memory.chosen?.[startTurn] ?? null : null);
+  const [resumeChoice, setResumeChoice] = useState(resumed);
   const [reply, setReply] = useState<Reply | null>(memory && memory.turnIndex === startTurn ? memory.reply : null);
   const [history, setHistory] = useState<History>(memory?.history ?? []);
   const [autoHelp, setAutoHelp] = useState(readAutoHelp);
@@ -89,7 +100,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const turn = course.turns[turnIndex];
   const partner = course.lines.find(line => line.id === turn.partnerLineId)!;
   const learner = course.lines.find(line => line.id === turn.learnerLineId)!;
-  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; }
+  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; memory.chosen = chosen.current; }
 
   function release() {
     if (timer.current) clearTimeout(timer.current);
@@ -105,10 +116,10 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   // Silence after the partner has finished earns help: first how to begin, then the whole answer with a model.
   // Nothing is offered while the partner is still talking, while the learner is speaking, or once they answered.
   useEffect(() => {
-    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy) return;
+    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy || thinking || chosenLine || choosing || resumeChoice) return;
     const id = setTimeout(() => { if (document.visibilityState !== 'hidden') { stats.current.autoHelp++; setHelpLevel(level => level + 1); } }, HELP_DELAY_MS);
     return () => clearTimeout(id);
-  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex]);
+  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex, thinking, chosenLine, choosing, resumeChoice]);
   // Going to the background ends the recording without sending it and gives the microphone back.
   useEffect(() => {
     const hidden = () => {
@@ -127,6 +138,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   }
 
   async function start() {
+    if (isOffline()) { setNotice({ kind: 'alert', key: 'offline' }); return; }
+    setResumeChoice(false); setChoosing(false);
     setNotice(null); setReply(null); setFeedback('idle'); setHelpLevel(0); discard.current = false; setStage('opening');
     try {
       const media = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -156,6 +169,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     if (!blob.size) { setStage('idle'); setNotice({ kind: 'status', key: 'silence' }); return; }
     if (blob.size > MAX_AUDIO_BYTES) { setStage('idle'); setNotice({ kind: 'alert', key: 'tooLong' }); return; }
     if (!AUDIO_TYPES.includes(mimeType)) { setStage('idle'); setNotice({ kind: 'alert', key: 'mic' }); return; }
+    // C8-1: a recording finished offline is not sent and not retried; the learner can say it again once back online.
+    if (isOffline()) { setStage('idle'); setNotice({ kind: 'alert', key: 'offline' }); return; }
     setStage('sending');
     try {
       const response = await fetch('/api/practice-turn', {
@@ -183,19 +198,29 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     }
   }
 
+  function resetTurn() { setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); }
   function nextTurn() {
     const next = turnIndex + 1;
-    setTurnIndex(next); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle');
+    setTurnIndex(next); resetTurn(); onTurn?.(next);
     playPartner(course.turns[next].partnerLineId);
   }
   function practiseAgain() {
-    setTurnIndex(0); setHistory([]); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setEnding(null);
+    setTurnIndex(0); setHistory([]); resetTurn(); setEnding(null); onTurn?.(0);
     Object.assign(stats.current, { hints: 0, autoHelp: 0, translations: 0 });
     for (const key of Object.keys(answered.current)) delete answered.current[Number(key)];
+    for (const key of Object.keys(chosen.current)) delete chosen.current[Number(key)];
     playPartner(course.turns[0].partnerLineId);
   }
+  // C8-5: picking a meaning shows and plays the course's own English line for it; nothing is sent or scored.
+  function pickMeaning(lineId: string) {
+    chosen.current[turnIndex] = lineId;
+    setChosenLine(lineId); setChoosing(false); setHelpLevel(0); setResumeChoice(false);
+    playPartner(lineId);
+  }
+  function pause() { stopPartner?.(); audio.current?.pause(); }
   // "This feedback is wrong": one same-origin write with a 5 second deadline; only a 201 counts as recorded.
   async function markWrong(note: string) {
+    if (isOffline()) { setFeedback('offline'); return; }
     setFeedback('busy');
     const controller = new AbortController(), deadline = window.setTimeout(() => controller.abort(), 5000);
     try {
@@ -220,20 +245,42 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         {radio('correction', 'normal', correction, quality.correctionNormal, changeCorrection)}{radio('correction', 'less', correction, quality.correctionLess, changeCorrection)}
       </fieldset>
     </div>
+    {resumeChoice && !ending && <div data-testid="practice-resume" className="scene-card" role="group" aria-label={extra.resumeTitle}>
+      <p>{extra.resumeTitle}</p>
+      <div className="scene-actions">
+        <button type="button" className="guide-primary" onClick={() => { setResumeChoice(false); playPartner(partner.id); }}>{extra.resumeListen}</button>
+        <button type="button" onClick={() => setResumeChoice(false)}>{extra.resumeContinue}</button>
+      </div>
+    </div>}
     <article className="scene-card"><p data-testid="practice-partner" lang="en">{partner.text}</p>
       {partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations?.[language]}</p>}
-      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => { if (!partnerHelp) stats.current.translations++; setPartnerHelp(open => !open); }}>{partnerHelp ? tools.helpClose : tools.help}</button></div>
+      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => { if (!partnerHelp) stats.current.translations++; setPartnerHelp(open => !open); }}>{partnerHelp ? tools.helpClose : tools.help}</button><button type="button" onClick={pause}>{extra.pause}</button></div>
     </article>
     {!ending && <div className="scene-actions">
       {stage === 'recording'
         ? <button type="button" className="guide-primary" onClick={() => recorder.current?.stop()}>{copy.done}</button>
-        : <button type="button" className="guide-primary" disabled={busy} onClick={start}>{copy.start}</button>}
+        : <button type="button" className="guide-primary" disabled={busy || !online} aria-describedby={!online ? `${choiceId}-offline` : undefined} onClick={start}>{copy.start}</button>}
+      <button type="button" disabled={busy || thinking} onClick={() => { setThinking(true); setHelpLevel(0); setResumeChoice(false); }}>{extra.think}</button>
+      <button type="button" disabled={busy} aria-expanded={choosing} onClick={() => { setChoosing(open => !open); setResumeChoice(false); }}>{extra.choose}</button>
       <button type="button" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; onHint(turnIndex); }}>{copy.hint}</button>
       <button type="button" disabled={busy} onClick={() => setEnding('ended')}>{quality.end}</button>
     </div>}
     {stage === 'recording' && <p role="status">{copy.listening}</p>}
     {stage === 'sending' && <p role="status">{copy.sending}</p>}
-    {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : copy[notice.key]}</p>}
+    {!online && !ending && <p id={`${choiceId}-offline`} data-testid="practice-offline" role="status">{extra.practiceOffline}</p>}
+    {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : copy[notice.key]}</p>}
+    {thinking && !ending && !reply && stage === 'idle' && <p data-testid="practice-thinking" role="status">{extra.thinking}</p>}
+    {choosing && !ending && <fieldset className="practice-choice practice-meanings"><legend>{extra.chooseLegend}</legend>
+      {meaningOptions(course, turnIndex, language).map(option => <button key={option.lineId} type="button" lang={language} onClick={() => pickMeaning(option.lineId)}>{option.meaning}</button>)}
+    </fieldset>}
+    {chosenLine && !ending && (() => {
+      const line = course.lines.find(item => item.id === chosenLine);
+      return line ? <article data-testid="practice-chosen" className="scene-card">
+        <p>{extra.chosenSay}<span lang="en">{line.text}</span></p>
+        {line.id !== learner.id && <p>{extra.chosenScene}<span lang="en">{learner.text}</span></p>}
+        <button type="button" onClick={() => playPartner(line.id)}>{tools.demo}</button>
+      </article> : null;
+    })()}
     {helpLevel > 0 && !reply && !ending && stage === 'idle' && <div data-testid="practice-auto-help" className="scene-card practice-help" role="status">
       {helpLevel === 1
         ? <p>{tools.helpStart}<span lang="en">{learner.text.split(/\s+/).slice(0, 3).join(' ')}…</span></p>
@@ -249,15 +296,15 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         <p>{quality.coach}{reply.coachNote}</p>
         {feedback === 'saved'
           ? <p role="status">{quality.wrongSaved}</p>
-          : <><button type="button" className="text-button" disabled={feedback === 'busy'} onClick={() => markWrong(reply.coachNote!)}>{quality.wrong}</button>{feedback === 'failed' && <p role="alert">{quality.wrongFailed}</p>}</>}
+          : <><button type="button" className="text-button" disabled={feedback === 'busy'} onClick={() => markWrong(reply.coachNote!)}>{quality.wrong}</button>{feedback === 'failed' && <p role="alert">{quality.wrongFailed}</p>}{feedback === 'offline' && <p role="alert">{extra.unsavedOffline}</p>}</>}
       </div>}
     </article>}
-    {!ending && reply && turnIndex < course.turns.length - 1 && <div className="scene-actions"><button type="button" onClick={nextTurn}>{copy.next}</button></div>}
+    {!ending && (reply || chosenLine) && turnIndex < course.turns.length - 1 && <div className="scene-actions"><button type="button" onClick={nextTurn}>{copy.next}</button></div>}
     {ending && <section data-testid="practice-ending" className="scene-card practice-ending">
       <h3>{ending === 'done' ? quality.doneTitle : quality.endedTitle}</h3>
       <div data-testid="practice-review">
         <h4>{quality.reviewTitle}</h4>
-        <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? quality.turnAnswered(i + 1, answered.current[i]) : quality.turnSilent(i + 1)}</li>)}</ul>
+        <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? quality.turnAnswered(i + 1, answered.current[i]) : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
         <ul><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{quality.unknownTransfer}</li></ul>
         <p>{quality.reviewNote}</p>
       </div>

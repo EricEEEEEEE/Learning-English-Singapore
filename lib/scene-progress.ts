@@ -7,7 +7,7 @@ import { ownerIdFromSessionCookie } from './private-owner';
 type Session = { cookie?: string | null; now?: number };
 type Course = { id: string; revision: number; materialsRevision?: number; media: { sha256: string; duration: number }; turns: unknown[] };
 export type SceneProgressPointer = { id: string; revision: number; materialsRevision?: number; mediaSha256: string };
-export type SceneProgressPosition = { page: 'watch' | 'role' | 'terms' | 'sentences' | 'prompt'; time: number; turnIndex: number };
+export type SceneProgressPosition = { page: 'watch' | 'role' | 'terms' | 'sentences' | 'prompt' | 'practice'; time: number; turnIndex: number };
 export type SceneProgressRecord = { course: SceneProgressPointer; version: number; position: SceneProgressPosition; updatedAt: number };
 type Row = { id: unknown; revision: unknown; materials: unknown; media_hash: unknown; version: unknown; position: unknown; updated_at: unknown };
 const identifier = (value: unknown): value is string => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,120}$/.test(value);
@@ -26,7 +26,7 @@ function positionValue(value: unknown, course?: Course): SceneProgressPosition {
   if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Invalid progress position');
   const p = value as SceneProgressPosition;
   if (Object.keys(p).length !== 3 || !['page', 'time', 'turnIndex'].every(key => Object.hasOwn(p, key))
-    || !['watch', 'role', 'terms', 'sentences', 'prompt'].includes(p.page)
+    || !['watch', 'role', 'terms', 'sentences', 'prompt', 'practice'].includes(p.page)
     || typeof p.time !== 'number' || !Number.isFinite(p.time) || p.time < 0 || !nonnegative(p.turnIndex)
     || course && (p.time > course.media.duration || p.turnIndex >= course.turns.length)) throw new Error('Invalid progress position');
   return { page: p.page, time: p.time, turnIndex: p.turnIndex };

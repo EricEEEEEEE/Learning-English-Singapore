@@ -8,7 +8,7 @@ const reply = (body: object, status = 200) => Response.json(body, { status, head
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 function position(value: unknown) {
   if (!object(value) || Object.keys(value).length !== 3 || !['page', 'time', 'turnIndex'].every(key => Object.hasOwn(value, key))
-    || typeof value.page !== 'string' || !['watch', 'role', 'terms', 'sentences', 'prompt'].includes(value.page)
+    || typeof value.page !== 'string' || !['watch', 'role', 'terms', 'sentences', 'prompt', 'practice'].includes(value.page)
     || typeof value.time !== 'number' || !Number.isFinite(value.time) || value.time < 0 || !Number.isSafeInteger(value.turnIndex) || (value.turnIndex as number) < 0) throw new Error('Invalid progress position');
   return { page: value.page, time: value.time, turnIndex: value.turnIndex };
 }

@@ -336,3 +336,11 @@ h1 span { display: block; }
 .practice-ending h4 { margin: 12px 0 4px; }
 .practice-ending ul { margin: 4px 0 8px; padding-left: 20px; overflow-wrap: anywhere; }
 .scene-card audio { display: block; width: 100%; max-width: 100%; }
+/* C8: offline notice, display switches on the main path, safety note, meaning choices. */
+.offline-banner { margin: 0 0 16px; padding: 10px 14px; border: 1px solid #be7232; border-radius: 8px; background: #fbf1e6; color: #6b3a12; font-size: calc(14px * var(--text-scale)); line-height: 1.6; }
+.display-switches { border: 0; margin: 0 0 8px; padding: 0; display: flex; flex-wrap: wrap; column-gap: 24px; }
+.display-switches legend { padding: 0; font-size: calc(12px * var(--text-scale)); }
+.display-switches .setting { margin-top: 4px; min-height: 44px; font-size: calc(14px * var(--text-scale)); color: var(--ink, inherit); }
+.scene-safety { margin-top: 8px; color: #6b3a12; }
+.practice-meanings { display: flex; flex-direction: column; gap: 8px; }
+.practice-meanings button { text-align: left; }

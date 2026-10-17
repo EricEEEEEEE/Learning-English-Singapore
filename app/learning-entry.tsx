@@ -17,6 +17,8 @@ import { SignOutButton, SceneDelete, DeleteAllData, StoredData, GenerationRecord
 import { sceneSeedCategories, sceneSeeds, type SceneSeed, type SceneSeedCategory } from '../lib/scene-seeds';
 import { sceneSeedCopy } from './scene-seed-copy';
 import { sceneConfirmCopy } from './scene-confirm-copy';
+import { resumeSafetyCopy } from './resume-safety-copy';
+import { useOnline } from './use-online';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -136,6 +138,7 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
     </div>)}</div>
     {requirements.saveFailed || requirements.conflict ? <p className="scene-entry-error" role="alert">{requirements.conflict ? requirementCopy.conflict : requirementCopy.saveError}</p> : null}
     {requirements.conflict ? <button className="text-button" type="button" onClick={requirements.retry}>{requirementCopy.loadSaved}</button> : null}
+    {requirements.unsavedOffline ? <p className="scene-entry-error" role="alert">{resumeSafetyCopy[language].unsavedOffline}</p> : null}
     <button className="guide-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{sceneGenerationCopy[language].generate}</button>
     <button className="text-button" type="button" disabled={generation.preparing || requirements.saving || requirements.conflict} onClick={() => void requirements.save()}>{requirements.saving ? requirementCopy.saving : requirementCopy.save}</button>
     {requirements.saved ? <p className="scene-save-status" role="status">{requirementCopy.saved}</p> : null}
@@ -152,6 +155,7 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
   }}>
     <h1 id="scene-entry-title">{title}</h1>
     <p className="panel-copy" id="scene-entry-hint">{hint}</p>
+    <p className="scene-note" data-testid="scene-privacy">{resumeSafetyCopy[language].privacy}</p>
     <textarea ref={input} aria-labelledby="scene-entry-title" aria-describedby={`scene-entry-hint${invalid ? ' scene-entry-error' : ''}`}
       aria-invalid={invalid || undefined} maxLength={2000} value={draft.text}
       onChange={event => { setInvalid(false); setPicked(false); onChange({ ...draft, text: event.target.value }); }} />
@@ -213,6 +217,11 @@ export default function LearningEntry() {
   const requirementCopy = sceneRequirementCopy[language];
   const trustCopy = dataTrustCopy[language];
   const [recordsOpen, setRecordsOpen] = useState(false);
+  const online = useOnline();
+  const extra = resumeSafetyCopy[language];
+  // C8-4: after a provider call, cancelling first explains what can and cannot be undone.
+  const [stopAsk, setStopAsk] = useState(false);
+  useEffect(() => { setStopAsk(false); }, [generation.target, requirementsOwner]);
   const [dataNotice, setDataNotice] = useState<{ text: 'sceneDeleted' | 'sceneDeleteFailed' | 'allDeleted' | 'allDeleteFailed'; error: boolean } | null>(null);
   useEffect(() => { setRecordsOpen(false); setDataNotice(null); }, [requirementsOwner, library.open]);
 
@@ -247,6 +256,14 @@ export default function LearningEntry() {
   }, []);
 
   useEffect(() => { document.documentElement.lang = language; }, [language]);
+
+  // C8-2: the same stored display preferences as before, now switchable from the main path; applied at once.
+  function changeDisplay(change: Partial<Omit<Preferences, 'language'>>) {
+    const next = { ...preferences, ...change };
+    setPreferences(next);
+    try { localStorage.setItem(storageKey, JSON.stringify(next)); setPreferenceError(null); }
+    catch { setPreferenceError('save'); }
+  }
 
   function changeLanguage(value: string) {
     const selected = supportedLanguage(value);
@@ -285,6 +302,7 @@ export default function LearningEntry() {
       </select></label>
     </header>
     <main className="simple-main">
+      {!online ? <p className="offline-banner" data-testid="offline-banner" role="alert">{extra.offline}</p> : null}
       {player}
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
         : account.authenticated && account.accountKey ? viewing ? null
@@ -311,8 +329,19 @@ export default function LearningEntry() {
           <h1>{sceneGenerationCopy[language].title}</h1>
           {generation.view ? <p className="scene-description">{generation.view.requirement.content.description}</p> : null}
           {generation.error ? <p className="scene-entry-error" role="alert">{sceneGenerationCopy[language][generation.error === 'version' ? 'version' : 'error']}</p>
-            : <p className="panel-copy" role="status">{generation.view ? sceneGenerationCopy[language].phases[generation.view.phase] : sceneGenerationCopy[language].loading}</p>}
+            : <p className="panel-copy" role="status" data-testid={generation.view?.phase === 'cancelled' ? 'generation-cancelled' : generation.view?.phase === 'stopped' ? 'generation-stopped' : undefined}>
+              {!generation.view ? sceneGenerationCopy[language].loading : generation.view.phase === 'cancelled' ? extra.cancelled : generation.view.phase === 'stopped' ? extra.stopped : sceneGenerationCopy[language].phases[generation.view.phase]}</p>}
           {generation.view?.phase === 'ready' ? <button className="guide-primary" type="button" onClick={generation.watch}>{sceneGenerationCopy[language].watch}</button> : null}
+          {generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(generation.view.phase) ? stopAsk
+            ? <div className="scene-card" data-testid="generation-stop-explain">
+              <p>{extra.stopExplain}</p>
+              <button className="guide-primary" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => { void generation.cancel(); setStopAsk(false); }}>{extra.stopConfirm}</button>
+              <button className="text-button" type="button" onClick={() => setStopAsk(false)}>{extra.keepGoing}</button>
+            </div>
+            : <button className="text-button" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => {
+              if (generation.view?.task?.providerCalls === 0) void generation.cancel(); else setStopAsk(true);
+            }}>{extra.cancel}</button> : null}
+          {generation.cancelling === 'failed' ? <p className="scene-entry-error" role="alert">{extra.cancelFailed}</p> : null}
           <button className="text-button" type="button" disabled={generation.preparing} onClick={generation.retry}>{sceneGenerationCopy[language].retry}</button>
           <button className="text-button" type="button" onClick={() => {
             if (requirements.draft) requirements.change({ ...requirements.draft, page: 'background' });
@@ -337,6 +366,11 @@ export default function LearningEntry() {
         </section>}
       <p className="entry-status" role="status" aria-live="polite">{status}</p>
     </main>
-    <footer className="simple-footer"><details><summary>{copy.respectTitle}</summary><p>{copy.respect}</p></details><p>{copy.trial}</p></footer>
+    <footer className="simple-footer">
+      <fieldset className="display-switches"><legend>{extra.display}</legend>
+        <label className="setting"><input type="checkbox" checked={preferences.largeText} disabled={!ready} onChange={event => changeDisplay({ largeText: event.target.checked })} />{extra.largeText}</label>
+        <label className="setting"><input type="checkbox" checked={preferences.reducedMotion} disabled={!ready} onChange={event => changeDisplay({ reducedMotion: event.target.checked })} />{extra.reducedMotion}</label>
+      </fieldset>
+      <details><summary>{copy.respectTitle}</summary><p>{copy.respect}</p></details><p>{copy.trial}</p></footer>
   </div>;
 }

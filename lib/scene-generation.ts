@@ -3,12 +3,12 @@ import { parseSceneRequirement, type SceneRequirement } from './scene-requiremen
 import type { createSceneRequirementStore } from './scene-requirements';
 import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
 
-export type SceneGenerationPhase = 'not_submitted' | Exclude<GenerationTask['status'], 'deleted'> | 'failed' | 'simulation' | 'media_unavailable' | 'ready';
+export type SceneGenerationPhase = 'not_submitted' | Exclude<GenerationTask['status'], 'deleted'> | 'failed' | 'simulation' | 'media_unavailable' | 'ready' | 'cancelled' | 'stopped';
 export type SceneCoursePointer = { id: string; revision: number; materialsRevision?: number };
 export type SceneGenerationView = { requirement: SceneRequirement; task: null | Pick<GenerationTask, 'id' | 'revision' | 'status' | 'simulation' | 'providerCalls'> & { requirementRevision: number }; phase: SceneGenerationPhase; course: SceneCoursePointer | null };
 type Session = { cookie?: string | null; now?: number };
 type Input = Session & { requirementRevision: number };
-type Tasks = Pick<ReturnType<typeof createGenerationTaskStore>, 'create' | 'findForRequirement' | 'getCourse'>;
+type Tasks = Pick<ReturnType<typeof createGenerationTaskStore>, 'create' | 'findForRequirement' | 'getCourse'> & Partial<Pick<ReturnType<typeof createGenerationTaskStore>, 'cancel' | 'stopState'>>;
 
 export function createSceneGenerationService({ requirements, tasks }: { requirements: ReturnType<typeof createSceneRequirementStore>; tasks: Tasks }) {
   async function project(input: Input, requirement: SceneRequirement, task: GenerationTask | null): Promise<SceneGenerationView> {
@@ -17,6 +17,11 @@ export function createSceneGenerationService({ requirements, tasks }: { requirem
     const visible = { id: task.id, revision: task.revision, requirementRevision: requirement.revision, status: task.status, simulation: task.simulation, providerCalls: task.providerCalls };
     const view = (phase: SceneGenerationPhase, course: SceneCoursePointer | null = null): SceneGenerationView => ({ requirement, task: visible, phase, course });
     if (task.simulation) return view('simulation');
+    // C8-4: a cancelled task (no provider call) or a stopped one (stopped after its current step) says so.
+    if (task.status !== 'video_assembled' && tasks.stopState) {
+      const stop = await tasks.stopState({ cookie: input.cookie, now: input.now, id: task.id });
+      if (stop) return view(stop.kind === 'cancelled' ? 'cancelled' : 'stopped');
+    }
     if (task.videoJobs?.some(job => job.status === 'failed')) return view('failed');
     if (task.status !== 'video_assembled') {
       if (!['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(task.status)) throw new Error('Invalid task status');
@@ -45,6 +50,13 @@ export function createSceneGenerationService({ requirements, tasks }: { requirem
       const requestKey = 'scene-' + createHash('sha256').update(JSON.stringify(requirement)).digest('hex');
       const task = await tasks.create({ cookie: input.cookie, now: input.now, goal: requirement.content.description, revision: requirement.revision, requirement, requestKey });
       // Read again to pin the same latest material revision as subsequent GETs.
+      return project(input, requirement, await tasks.findForRequirement({ cookie: input.cookie, now: input.now, requirement }) ?? task);
+    },
+    async cancel(input: Input) {
+      const requirement = await readRequirement(input);
+      const task = await tasks.findForRequirement({ cookie: input.cookie, now: input.now, requirement });
+      if (!task || !tasks.cancel) throw new Error('Task not found');
+      await tasks.cancel({ cookie: input.cookie, now: input.now, id: task.id });
       return project(input, requirement, await tasks.findForRequirement({ cookie: input.cookie, now: input.now, requirement }) ?? task);
     },
   };

@@ -38,6 +38,7 @@ type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; prompt?: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
 export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled' | 'deleted'; deletedAt?: number; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type StopState = { kind: 'cancelled' | 'stop'; at: number };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number], cast?: { partnerGender?: 'female' | 'male' }) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
@@ -49,7 +50,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     const db = new DatabaseSync(path, { timeout: 5000 });
     try {
       chmodSync(path, 0o600);
-      db.exec('PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, owner TEXT NOT NULL, fingerprint TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(owner,fingerprint)); CREATE TABLE IF NOT EXISTS requests (owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, PRIMARY KEY(owner,key)); CREATE TABLE IF NOT EXISTS final_assembly_locks (task TEXT PRIMARY KEY, owner TEXT NOT NULL, token TEXT NOT NULL, pid INTEGER NOT NULL); BEGIN IMMEDIATE;');
+      db.exec('PRAGMA synchronous=FULL; CREATE TABLE IF NOT EXISTS jobs (id TEXT PRIMARY KEY, owner TEXT NOT NULL, fingerprint TEXT NOT NULL, body TEXT NOT NULL, UNIQUE(owner,fingerprint)); CREATE TABLE IF NOT EXISTS requests (owner TEXT NOT NULL, key TEXT NOT NULL, fingerprint TEXT NOT NULL, PRIMARY KEY(owner,key)); CREATE TABLE IF NOT EXISTS final_assembly_locks (task TEXT PRIMARY KEY, owner TEXT NOT NULL, token TEXT NOT NULL, pid INTEGER NOT NULL); CREATE TABLE IF NOT EXISTS generation_stops (task TEXT PRIMARY KEY, owner TEXT NOT NULL, kind TEXT NOT NULL, at INTEGER NOT NULL); BEGIN IMMEDIATE;');
       const result = work(db); db.exec('COMMIT'); return result;
     } finally { db.close(); }
   }
@@ -99,6 +100,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
     db.prepare('DELETE FROM learning_materials WHERE owner=? AND task=?').run(task.ownerId, task.id);
     db.prepare('DELETE FROM final_assembly_locks WHERE task=? AND owner=?').run(task.id, task.ownerId);
+    db.prepare('DELETE FROM generation_stops WHERE task=? AND owner=?').run(task.id, task.ownerId);
     db.prepare('UPDATE jobs SET body=?, fingerprint=? WHERE id=? AND owner=?').run(JSON.stringify(grave), `deleted:${task.id}`, task.id, task.ownerId);
   }
   function read(db: DatabaseSync, id: string, ownerId: string): GenerationTask | null {
@@ -111,6 +113,19 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (dead) { task.status = 'submission_unknown'; save(db, task); }
     }
     return task;
+  }
+  // C8-4: a learner's cancel lives in its own table, not in the task body, because a step already in flight
+  // writes its result from an earlier snapshot of the body and would otherwise erase the request.
+  // 'cancelled' = stopped before any provider call; 'stop' = finish the current step, then submit nothing new.
+  // Neither touches reservedMicros or providerCalls: the spending ledger never shrinks.
+  function stopOf(db: DatabaseSync, id: string, ownerId: string): StopState | null {
+    const row = db.prepare('SELECT kind, at FROM generation_stops WHERE task=? AND owner=?').get(id, ownerId);
+    if (!row) return null;
+    if ((row.kind !== 'cancelled' && row.kind !== 'stop') || !Number.isSafeInteger(Number(row.at))) throw new Error('Invalid stop record');
+    return { kind: row.kind as StopState['kind'], at: Number(row.at) };
+  }
+  function refuseStopped(db: DatabaseSync, id: string, ownerId: string) {
+    if (stopOf(db, id, ownerId)) throw new Error('Generation stopped');
   }
   async function readCourse(input: Session & { id: string; revision: number; materialsRevision?: number }) {
     const ownerId = await owner(input);
@@ -166,6 +181,8 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (existing) {
           const task = read(db, String(existing.id), ownerId)!;
           if (task.simulation !== simulation) throw new Error('Task execution mode conflict');
+          // An explicit new submit restarts a task that was cancelled before any provider call; a stopped task stays stopped.
+          if (stopOf(db, task.id, ownerId)?.kind === 'cancelled' && task.status === 'awaiting_budget' && task.providerCalls === 0) db.prepare('DELETE FROM generation_stops WHERE task=? AND owner=?').run(task.id, ownerId);
           db.prepare('INSERT OR IGNORE INTO requests VALUES(?,?,?)').run(ownerId, input.requestKey, fingerprint);
           return task;
         }
@@ -189,6 +206,23 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async get(input: Session & { id: string }) { const id = await owner(input); return transact(db => read(db, input.id, id)); },
+    async stopState(input: Session & { id: string }): Promise<StopState | null> {
+      const ownerId = await owner(input);
+      return transact(db => stopOf(db, input.id, ownerId));
+    },
+    // C8-4: cancel before any provider call, or ask a task that already called one to stop after its current step.
+    async cancel(input: Session & { id: string }): Promise<StopState> {
+      const ownerId = await owner(input), at = input.now ?? Date.now();
+      return transact(db => {
+        const task = read(db, input.id, ownerId);
+        if (!task || task.status === 'deleted' || task.status === 'video_assembled') throw new Error('Cancel prohibited');
+        const existing = stopOf(db, task.id, ownerId);
+        if (existing) return existing;
+        const stop: StopState = { kind: task.status === 'awaiting_budget' && task.providerCalls === 0 ? 'cancelled' : 'stop', at };
+        db.prepare('INSERT INTO generation_stops VALUES(?,?,?,?)').run(task.id, ownerId, stop.kind, stop.at);
+        return stop;
+      });
+    },
     async tombstone(input: Session & { id: string }) {
       const id = await owner(input), at = input.now ?? Date.now();
       return transact(db => { const task = read(db, input.id, id); if (!task) throw new Error('Course unavailable'); bury(db, task, at); return read(db, input.id, id)!; });
@@ -217,6 +251,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
         if (!value || value.simulation !== simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+        refuseStopped(db, input.id, ownerId);
         checkReservation(db, reservedMicros);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = reservedMicros; value.providerCalls = 1;
         save(db, value); return value;
@@ -244,6 +279,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (!value || value.simulation !== simulation || value.status !== 'script_ready' || !value.script) throw new Error('Submission prohibited');
         const count = value.audioAssets?.length ?? 0;
         if (count >= value.script.lines.length || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        refuseStopped(db, input.id, ownerId);
         checkReservation(db, reservation);
         value.status = 'submitting'; value.pid = process.pid;
         value.reservedMicros += reservation; value.providerCalls++;
@@ -406,6 +442,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
         if (!value || value.status !== snapshot.status || JSON.stringify(value.referenceImage) !== JSON.stringify(snapshot.referenceImage) || JSON.stringify(value.encodedAudio) !== JSON.stringify(snapshot.encodedAudio) || JSON.stringify(value.audioReviews) !== JSON.stringify(snapshot.audioReviews) || JSON.stringify(value.videoJobs) !== JSON.stringify(snapshot.videoJobs) || JSON.stringify(value.videoChecks) !== JSON.stringify(snapshot.videoChecks) || JSON.stringify(value.audioAssembly) !== JSON.stringify(snapshot.audioAssembly) || !Number.isSafeInteger(value.reservedMicros + reservation)) throw new Error('Submission prohibited');
+        refuseStopped(db, input.id, ownerId);
         checkReservation(db, reservation);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros += reservation; value.providerCalls++;
         save(db, value); return value;
@@ -667,6 +704,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const task = transact(db => {
         const value = read(db, input.id, ownerId);
         if (!value || !value.simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+        refuseStopped(db, input.id, ownerId);
         checkReservation(db, input.reservedMicros);
         value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = input.reservedMicros; value.providerCalls = 1; save(db, value); return value;
       });

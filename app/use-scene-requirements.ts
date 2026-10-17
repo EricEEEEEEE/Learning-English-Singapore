@@ -2,10 +2,11 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { EntryLanguage } from './entry-copy';
+import { isOffline } from './use-online';
 import { emptySceneKeywords, parseSceneRequirementContent, type SceneKeywords, type SceneRequirement, type SceneRequirementContent } from '../lib/scene-requirement-content';
 
 export type SceneDraft = { owner: string; text: string; page: 'scene' | 'background'; keywords: SceneKeywords };
-type Editor = { draft: SceneDraft; revision: number; saved: SceneRequirementContent | null; read: 'loading' | 'ready' | 'failed'; save: 'idle' | 'saving' | 'saved' | 'failed' | 'conflict' };
+type Editor = { draft: SceneDraft; revision: number; saved: SceneRequirementContent | null; read: 'loading' | 'ready' | 'failed'; save: 'idle' | 'saving' | 'saved' | 'failed' | 'conflict' | 'offline' };
 class RequestFailure extends Error { constructor(readonly status: number) { super('Requirement request failed'); } }
 
 async function requestRequirement(method: 'GET' | 'PUT', controller: AbortController, body?: object): Promise<SceneRequirement | null> {
@@ -50,6 +51,12 @@ export function useSceneRequirements(owner: string | null, language: EntryLangua
     return () => { active = false; controller.abort(); pendingSave.current?.abort(); pendingSave.current = null; };
   }, [owner, readAttempt, restoreLanguage]);
 
+  // C8-1: an explicit save attempted offline sends nothing and says so; coming back online clears that notice.
+  useEffect(() => {
+    const online = () => setEditor(previous => previous?.save === 'offline' ? { ...previous, save: 'idle' } : previous);
+    window.addEventListener('online', online);
+    return () => window.removeEventListener('online', online);
+  }, []);
   const current = editor?.draft.owner === owner ? editor : null;
   function change(draft: SceneDraft) {
     setEditor(previous => previous?.draft.owner === draft.owner && currentOwner.current === draft.owner ? {
@@ -58,6 +65,7 @@ export function useSceneRequirements(owner: string | null, language: EntryLangua
   }
   async function save() {
     if (!owner || !current || current.read !== 'ready' || current.save === 'conflict' || pendingSave.current) return;
+    if (isOffline()) { setEditor(previous => previous?.draft.owner === owner ? { ...previous, save: 'offline' } : previous); return; }
     const controller = new AbortController();
     pendingSave.current = controller;
     const content: SceneRequirementContent = { description: current.draft.text, language, keywords: { ...current.draft.keywords } };
@@ -77,6 +85,6 @@ export function useSceneRequirements(owner: string | null, language: EntryLangua
   }
   const matchesSaved = current && current.saved && JSON.stringify(current.saved) === JSON.stringify({ description: current.draft.text, language, keywords: current.draft.keywords });
   return { draft: current?.draft, loading: !current || current.read === 'loading', readFailed: current?.read === 'failed',
-    saving: current?.save === 'saving', saveFailed: current?.save === 'failed', conflict: current?.save === 'conflict', saved: current?.save === 'saved' && !!matchesSaved,
+    saving: current?.save === 'saving', saveFailed: current?.save === 'failed', unsavedOffline: current?.save === 'offline', conflict: current?.save === 'conflict', saved: current?.save === 'saved' && !!matchesSaved,
     change, save, retry: () => setReadAttempt(attempt => attempt + 1) };
 }

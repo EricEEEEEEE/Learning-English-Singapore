@@ -14,6 +14,8 @@ export function createLocalCourseStore(directory: string, sessionSecret: string)
     ...access,
     create: generationStore.create,
     findForRequirement: generationStore.findForRequirement,
+    cancel: generationStore.cancel,
+    stopState: generationStore.stopState,
     async get(input: Parameters<typeof generationStore.get>[0]) {
       if (!input.id.startsWith('copy-')) return generationStore.get(input);
       return (await access.list(input)).find(course => course.id === input.id);
