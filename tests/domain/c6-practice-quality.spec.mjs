@@ -16,7 +16,8 @@ const secret = 'c6-practice-quality-synthetic-secret-at-least-32';
 const now = Date.UTC(2026, 9, 17, 14);
 const identity = s => ({ provider: 'google', issuer: 'https://accounts.google.com', providerSubject: s, email: 'synthetic@example.invalid' });
 const voice = Buffer.from('synthetic learner speech');
-const answer = over => ({ reply: 'Sure, no problem. What time is better for you?', understood: true, done: false, coachNote: null, ...over });
+// C9 widened the strict reply contract with a nullable goal change; the model must always return the key.
+const answer = over => ({ reply: 'Sure, no problem. What time is better for you?', understood: true, done: false, coachNote: null, goalChange: null, ...over });
 
 async function setup({ respond = async () => answer() } = {}) {
   const { createPracticeTurnService } = await import('../../lib/practice-turn.ts');
@@ -116,12 +117,12 @@ test('T19A adapter: the strict schema asks for reply, understood, done and an op
   const { body, result } = await ask({}, answer({ done: true, coachNote: '可以说 Friday works better.' }));
   const schema = body.text.format.schema;
   expect(body.text.format.strict).toBe(true);
-  expect(Object.keys(schema.properties).sort()).toEqual(['coachNote', 'done', 'reply', 'understood']);
-  expect([...schema.required].sort()).toEqual(['coachNote', 'done', 'reply', 'understood']);
+  expect(Object.keys(schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
+  expect([...schema.required].sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
   expect(schema.additionalProperties).toBe(false);
   expect(schema.properties.done.type).toBe('boolean');
   expect([...schema.properties.coachNote.type].sort()).toEqual(['null', 'string']);
-  expect(result).toEqual({ reply: answer().reply, understood: true, done: true, coachNote: '可以说 Friday works better.' });
+  expect(result).toEqual({ reply: answer().reply, understood: true, done: true, coachNote: '可以说 Friday works better.', goalChange: null });
 });
 
 test('T19A / F9.1–F9.5 adapter: the prompt keeps the conversation going and ends it when the goal is done', async () => {

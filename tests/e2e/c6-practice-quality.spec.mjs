@@ -191,7 +191,8 @@ test('T23A / F10.1: "end practice" shows what was answered and how much help was
   await expect(review).toContainText('能不能应对没练过的问法：尚不能判断');
   for (const word of ['掌握', '发音', '分数', '%', '口音', '学会']) await expect(review).not.toContainText(word);
   await page.waitForTimeout(300);
-  expect(api).toEqual([]);
+  // C9-6 saves the review per owner and course revision: the only request is that one save; nothing goes to a model.
+  expect(api.map(url => new URL(url).pathname)).toEqual(['/api/practice-reviews']);
   expect(bodies).toHaveLength(1);
 });
 
