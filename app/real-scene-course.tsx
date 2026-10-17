@@ -11,6 +11,7 @@ import { useSceneProgress, type ProgressContext } from './use-scene-progress';
 import type { SceneProgressPosition } from '../lib/scene-progress';
 import { requestLearningJson } from './learning-request';
 import { learningLibraryCopy } from './learning-library-copy';
+import { SentenceReport, useSentenceReports } from './data-trust';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
 export const realSceneCopy: Record<EntryLanguage, Copy> = {
@@ -67,6 +68,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const libraryCopy = learningLibraryCopy[language];
   const practiceCopy = scenePracticeCopy[language];
   const tools = listenToolsCopy[language];
+  const reports = useSentenceReports(saved && course && (!guided || page === 'learn') && step === 3 ? saved : null);
   const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : step === 5 ? practiceCopy.title : copy.steps[step - 1] : copy.title;
   useLayoutEffect(() => {
     if (guided && focusNext.current) { heading.current?.focus(); focusNext.current = false; }
@@ -257,7 +259,8 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     </div>}
     {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
     {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => <div key={line.id} className="sentence-row"><article data-testid="scene-sentence" className="scene-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>
-        <button type="button" className="text-button" aria-pressed={loopKey === line.id} aria-label={`${tools.loopLine}：${line.text}`} onClick={() => toggleLoop(line.id, line.start, line.end)}>{tools.loopLine}</button></div>)}
+        <button type="button" className="text-button" aria-pressed={loopKey === line.id} aria-label={`${tools.loopLine}：${line.text}`} onClick={() => toggleLoop(line.id, line.start, line.end)}>{tools.loopLine}</button>
+        {saved ? <SentenceReport language={language} course={saved} lineId={line.id} text={line.text} received={reports.has(line.id)} onReceived={reports.mark} /> : null}</div>)}
       {(() => {
         const a = ab?.a ?? course.lines[0].id, b = ab?.b ?? course.lines[course.lines.length - 1].id;
         const ai = course.lines.findIndex(line => line.id === a), bi = course.lines.findIndex(line => line.id === b);

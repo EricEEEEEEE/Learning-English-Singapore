@@ -64,6 +64,16 @@ export function createSceneProgressStore({ directory, sessionSecret }: { directo
       .get(ownerId, pointer.id, pointer.revision, pointer.materialsRevision ?? 0, pointer.mediaSha256) as Row | undefined;
   }
   return {
+    // Learner-requested deletion (C5): every saved position of one course, or all of this owner's positions.
+    async removeCourse(input: Session & { id: string }) {
+      const request = { ...input }, id = await owner(request);
+      if (!identifier(request.id)) throw new Error('Invalid progress course');
+      return transact(db => { db.prepare('DELETE FROM scene_progress WHERE owner=? AND id=?').run(id, request.id); });
+    },
+    async removeAll(input: Session) {
+      const id = await owner(input);
+      return transact(db => { db.prepare('DELETE FROM scene_progress WHERE owner=?').run(id); });
+    },
     async get(input: Session & { course: Course }): Promise<SceneProgressRecord | null> {
       const request = { cookie: input.cookie, now: input.now, course: structuredClone(input.course) };
       const id = await owner(request), pointer = coursePointer(request.course);

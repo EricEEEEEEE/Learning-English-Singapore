@@ -80,6 +80,14 @@ export function createLocalCourseLibrary({ directory, sessionSecret, mediaStore 
         return copied;
       });
     },
+    async remove(input: Session & { id: string }) {
+      const id = await owner(input);
+      return transaction(db => Number(db.prepare('DELETE FROM copies WHERE owner=? AND id=?').run(id, input.id).changes) > 0);
+    },
+    async removeAll(input: Session) {
+      const id = await owner(input);
+      return transaction(db => { db.prepare('DELETE FROM copies WHERE owner=?').run(id); });
+    },
     async list(input: Session): Promise<Course[]> {
       const id = await owner(input);
       return transaction(db => db.prepare('SELECT body FROM copies WHERE owner=? ORDER BY rowid DESC').all(id).map(row => JSON.parse(String(row.body))));

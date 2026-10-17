@@ -37,7 +37,7 @@ type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDura
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; prompt?: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled'; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
+export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled' | 'deleted'; deletedAt?: number; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[] };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor }: { directory: string; sessionSecret: string; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number], cast?: { partnerGender?: 'female' | 'male' }) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
@@ -87,7 +87,20 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     const value = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
     if (!value) throw new Error('Authenticated session required'); return value;
   }
-  const save = (db: DatabaseSync, task: GenerationTask) => db.prepare('UPDATE jobs SET body=? WHERE id=? AND owner=?').run(JSON.stringify(task), task.id, task.ownerId);
+  // A deleted task keeps only its cost ledger fields; no later step may write content back into it.
+  const save = (db: DatabaseSync, task: GenerationTask) => db.prepare("UPDATE jobs SET body=? WHERE id=? AND owner=? AND fingerprint NOT LIKE 'deleted:%'").run(JSON.stringify(task), task.id, task.ownerId);
+  // Keep the reservation (the spending ledger must never shrink) and drop everything the learner wrote or received.
+  function bury(db: DatabaseSync, task: GenerationTask, at: number) {
+    if (task.status === 'deleted') return;
+    const grave: GenerationTask = { id: task.id, ownerId: task.ownerId, goal: '', revision: task.revision, status: 'deleted', deletedAt: at, reservedMicros: task.reservedMicros, providerCalls: task.providerCalls, simulation: task.simulation };
+    const row = db.prepare('SELECT fingerprint FROM jobs WHERE id=? AND owner=?').get(task.id, task.ownerId);
+    if (!row) throw new Error('Course unavailable');
+    db.prepare('DELETE FROM requests WHERE owner=? AND fingerprint=?').run(task.ownerId, String(row.fingerprint));
+    db.exec('CREATE TABLE IF NOT EXISTS learning_materials (owner TEXT NOT NULL, task TEXT NOT NULL, source_revision INTEGER NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL, PRIMARY KEY(owner,task,source_revision,version))');
+    db.prepare('DELETE FROM learning_materials WHERE owner=? AND task=?').run(task.ownerId, task.id);
+    db.prepare('DELETE FROM final_assembly_locks WHERE task=? AND owner=?').run(task.id, task.ownerId);
+    db.prepare('UPDATE jobs SET body=?, fingerprint=? WHERE id=? AND owner=?').run(JSON.stringify(grave), `deleted:${task.id}`, task.id, task.ownerId);
+  }
   function read(db: DatabaseSync, id: string, ownerId: string): GenerationTask | null {
     const row = db.prepare('SELECT body FROM jobs WHERE id=? AND owner=?').get(id, ownerId);
     if (!row) return null;
@@ -156,7 +169,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
           db.prepare('INSERT OR IGNORE INTO requests VALUES(?,?,?)').run(ownerId, input.requestKey, fingerprint);
           return task;
         }
-        const count = db.prepare('SELECT count(*) AS n FROM jobs WHERE owner=?').get(ownerId);
+        const count = db.prepare("SELECT count(*) AS n FROM jobs WHERE owner=? AND fingerprint NOT LIKE 'deleted:%'").get(ownerId);
         if (Number(count?.n) >= 50) throw new Error('Task limit');
         const task: GenerationTask = { id: randomUUID(), ownerId, goal, revision: input.revision, status: 'awaiting_budget', reservedMicros: 0, providerCalls: 0, simulation, ...(requirement ? { requirement } : {}) };
         db.prepare('INSERT INTO jobs VALUES(?,?,?,?)').run(task.id, ownerId, fingerprint, JSON.stringify(task));
@@ -176,6 +189,14 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       });
     },
     async get(input: Session & { id: string }) { const id = await owner(input); return transact(db => read(db, input.id, id)); },
+    async tombstone(input: Session & { id: string }) {
+      const id = await owner(input), at = input.now ?? Date.now();
+      return transact(db => { const task = read(db, input.id, id); if (!task) throw new Error('Course unavailable'); bury(db, task, at); return read(db, input.id, id)!; });
+    },
+    async tombstoneAll(input: Session) {
+      const id = await owner(input), at = input.now ?? Date.now();
+      return transact(db => { for (const row of db.prepare('SELECT id FROM jobs WHERE owner=?').all(id)) bury(db, read(db, String(row.id), id)!, at); });
+    },
     async list(input: Session) {
       const id = await owner(input);
       return transact(db => {

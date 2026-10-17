@@ -12,6 +12,8 @@ import { sceneGenerationCopy } from './scene-generation-copy';
 import RealSceneCourse from './real-scene-course';
 import { useLearningLibrary } from './use-learning-library';
 import { learningLibraryCopy } from './learning-library-copy';
+import { dataTrustCopy } from './data-trust-copy';
+import { SignOutButton, SceneDelete, DeleteAllData, StoredData, GenerationRecords } from './data-trust';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -137,6 +139,10 @@ export default function LearningEntry() {
   const library = useLearningLibrary(requirementsOwner, verified);
   const libraryCopy = learningLibraryCopy[language];
   const requirementCopy = sceneRequirementCopy[language];
+  const trustCopy = dataTrustCopy[language];
+  const [recordsOpen, setRecordsOpen] = useState(false);
+  const [dataNotice, setDataNotice] = useState<{ text: 'sceneDeleted' | 'sceneDeleteFailed' | 'allDeleted' | 'allDeleteFailed'; error: boolean } | null>(null);
+  useEffect(() => { setRecordsOpen(false); setDataNotice(null); }, [requirementsOwner, library.open]);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -210,14 +216,23 @@ export default function LearningEntry() {
       {player}
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
         : account.authenticated && account.accountKey ? viewing ? null
-        : library.open ? <section>
+        : library.open ? recordsOpen ? <GenerationRecords language={language} onBack={() => setRecordsOpen(false)} /> : <section>
           <h1>{libraryCopy.title}</h1><p className="panel-copy">{libraryCopy.local}</p>
+          {dataNotice ? <p className={dataNotice.error ? 'scene-entry-error' : 'scene-save-status'} role={dataNotice.error ? 'alert' : 'status'}>{trustCopy[dataNotice.text]}</p> : null}
           {!library.result || library.result.status === 'loading' ? <p role="status">{libraryCopy.loading}</p> : library.result.status === 'failed'
             ? <><p role="alert">{libraryCopy.error}</p><button className="text-button" type="button" onClick={library.retry}>{libraryCopy.retry}</button></>
             : <>{library.result.unavailable > 0 && <p role="status">{libraryCopy.unavailable(library.result.unavailable)}</p>}
               {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map(scene => <li key={`${scene.course.id}:${scene.course.revision}:${scene.course.materialsRevision ?? 0}`} className="scene-card">
                 <p className="scene-description">{scene.description}</p><button className="text-button" type="button" onClick={() => library.choose(scene)}>{libraryCopy.learn}</button>
+                <SceneDelete language={language} description={scene.description} course={scene.course}
+                  onDeleted={() => { library.drop(scene.course); setDataNotice({ text: 'sceneDeleted', error: false }); }}
+                  onFailed={() => setDataNotice({ text: 'sceneDeleteFailed', error: true })} />
               </li>)}</ul> : library.result.unavailable === 0 ? <p>{libraryCopy.empty}</p> : null}</>}
+          <button className="text-button" type="button" onClick={() => setRecordsOpen(true)}>{trustCopy.records}</button>
+          <StoredData language={language} />
+          <DeleteAllData language={language}
+            onDeleted={() => { library.drop(null); requirements.retry(); setDataNotice({ text: 'allDeleted', error: false }); }}
+            onFailed={() => setDataNotice({ text: 'allDeleteFailed', error: true })} />
           <button className="text-button" type="button" onClick={library.close}>{libraryCopy.input}</button>
         </section>
         : generation.target !== null ? <section className="scene-form">
@@ -238,7 +253,8 @@ export default function LearningEntry() {
         </section> : requirements.loading || !requirements.draft ? <p role="status">{requirementCopy.loading}</p>
         : <><SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
           draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} generation={generation} />
-          <button className="text-button" type="button" onClick={library.show}>{libraryCopy.title}</button></>
+          <button className="text-button" type="button" onClick={library.show}>{libraryCopy.title}</button>
+          <SignOutButton language={language} /></>
         : <section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">

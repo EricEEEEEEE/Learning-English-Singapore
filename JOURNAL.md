@@ -670,3 +670,5 @@
 - [audit] phase → test-writing @ 2026-10-17T12:33:53+00:00
 - [audit] phase → test-writing @ 2026-10-17T12:37:29+00:00
 - C5 红：新增 tests/domain/c5-data-store.spec.mjs 12 题、c5-data-http.spec.mjs 10 题（夹具 c5-data-store.mjs，临时目录真 SQLite/私有媒体，两个签名合成账号）与 tests/e2e/c5-data-trust.spec.mjs 15 题（夹具 c5-data-browser.mjs）。domain 22 红全是缺 lib/my-data.ts、lib/sentence-reports.ts、新路由或 handleSceneDelete；phone 15 红全是等不到删除/退出/报告/生成记录等新控件。服务地区检查记 BLOCKED B-C5。零模型调用。
+- [audit] phase → implementing @ 2026-10-17T12:50:15+00:00
+- C5 ✅ 37红→全绿 | T24A/T13A/T25A/T34A；verify 1765/1765（verify-20261017-130440），没有删断言预警；零费用。T24A 选墓碑、不选物理删除任务行：理由是预算账本需要保留预留费用。

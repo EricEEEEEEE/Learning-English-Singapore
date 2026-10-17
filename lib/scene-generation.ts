@@ -3,7 +3,7 @@ import { parseSceneRequirement, type SceneRequirement } from './scene-requiremen
 import type { createSceneRequirementStore } from './scene-requirements';
 import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
 
-export type SceneGenerationPhase = 'not_submitted' | GenerationTask['status'] | 'failed' | 'simulation' | 'media_unavailable' | 'ready';
+export type SceneGenerationPhase = 'not_submitted' | Exclude<GenerationTask['status'], 'deleted'> | 'failed' | 'simulation' | 'media_unavailable' | 'ready';
 export type SceneCoursePointer = { id: string; revision: number; materialsRevision?: number };
 export type SceneGenerationView = { requirement: SceneRequirement; task: null | Pick<GenerationTask, 'id' | 'revision' | 'status' | 'simulation' | 'providerCalls'> & { requirementRevision: number }; phase: SceneGenerationPhase; course: SceneCoursePointer | null };
 type Session = { cookie?: string | null; now?: number };
@@ -20,7 +20,7 @@ export function createSceneGenerationService({ requirements, tasks }: { requirem
     if (task.videoJobs?.some(job => job.status === 'failed')) return view('failed');
     if (task.status !== 'video_assembled') {
       if (!['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(task.status)) throw new Error('Invalid task status');
-      return view(task.status);
+      return view(task.status as Exclude<GenerationTask['status'], 'deleted' | 'video_assembled'>);
     }
     const pointer = { id: task.id, revision: task.revision, ...(task.materialsRevision !== undefined ? { materialsRevision: task.materialsRevision } : {}) };
     try {

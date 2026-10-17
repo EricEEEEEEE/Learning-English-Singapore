@@ -295,3 +295,18 @@ h1 span { display: block; }
 .ab-loop label { display: block; margin: 8px 0 4px; }
 .ab-loop select { display: block; width: 100%; font: inherit; padding: 8px; }
 .practice-help { margin: 12px 0; }
+.danger-text { color: #9b2c22; }
+.danger-button { min-height: 44px; padding: 10px 16px; border: 1px solid #9b2c22; border-radius: 8px; background: #9b2c22; color: white; font: inherit; }
+.data-confirm { margin: 10px 0; padding: 12px; border-left: 3px solid #9b2c22; background: #fbf1ef; border-radius: 0 8px 8px 0; }
+.data-confirm-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin-top: 10px; }
+.data-explain { margin: 16px 0; padding: 12px 16px; background: var(--surface); border-radius: 8px; line-height: 1.7; }
+.data-explain summary { cursor: pointer; color: var(--ink); font-weight: 600; min-height: 44px; display: flex; align-items: center; }
+.data-explain ul { margin: 8px 0; padding-left: 1.2em; list-style: disc; }
+.data-explain p { margin-top: 8px; }
+.data-action { margin-top: 8px; }
+.generation-records, .deletion-events { margin: 12px 0; padding: 0; list-style: none; }
+.deletion-events li { color: var(--muted); margin: 4px 0; }
+.report-form { margin: 0 0 12px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+.report-form [role="radiogroup"] label { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+.report-form input[type="text"] { display: block; width: 100%; font: inherit; padding: 8px; margin: 4px 0 8px; }
+.report-status { margin: -4px 0 8px; color: var(--accent); }

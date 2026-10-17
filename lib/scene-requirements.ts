@@ -35,6 +35,20 @@ export function createSceneRequirementStore({ directory, sessionSecret }: { dire
     catch { throw new Error('Stored requirement unavailable'); }
   }
   return {
+    // Learner-requested deletion (C5): only the exact saved revision a deleted course was made from, or everything.
+    async remove(input: Session & { revision: number; content: unknown }) {
+      const id = await owner(input);
+      if (!Number.isSafeInteger(input.revision) || input.revision < 1) throw new Error('Invalid revision');
+      const content = JSON.stringify(parseSceneRequirementContent(input.content));
+      return transact(db => {
+        const saved = read(db, id, input.revision);
+        if (saved && JSON.stringify(saved.content) === content) db.prepare('DELETE FROM requirements WHERE owner=? AND revision=?').run(id, input.revision);
+      });
+    },
+    async removeAll(input: Session) {
+      const id = await owner(input);
+      return transact(db => { db.prepare('DELETE FROM requirements WHERE owner=?').run(id); });
+    },
     async get(input: Session & { revision?: number }) {
       const id = await owner(input);
       if (input.revision !== undefined && (!Number.isSafeInteger(input.revision) || input.revision < 1)) throw new Error('Invalid revision');

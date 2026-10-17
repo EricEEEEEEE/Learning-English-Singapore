@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, writeFileSync, linkSync, unlinkSync, lstatSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync, linkSync, unlinkSync, lstatSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { ownerIdFromSessionCookie } from './private-owner';
@@ -48,7 +48,31 @@ export function createPrivateMediaStore({ directory, sessionSecret }: { director
       }
     } finally { unlinkSync(temp); }
   }
+  async function ownerFolder(input: { cookie?: string | null; now?: number }) {
+    const owner = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
+    if (!owner) throw new Error('Authenticated session required');
+    const folder = join(root, digest(owner));
+    try { if (!lstatSync(folder).isDirectory()) throw new Error('Invalid owner directory'); } catch (error) { if (missing(error)) return null; throw error; }
+    return folder;
+  }
   return {
+    // Learner-requested deletion (C5): remove every asset of one course, then any bytes no other asset still uses.
+    async removeCourse(input: { cookie?: string | null; now?: number; courseId: string }) {
+      if (!identifier(input.courseId)) throw new Error('Invalid asset locator');
+      const folder = await ownerFolder(input);
+      if (!folder) return;
+      const manifests = readdirSync(folder).filter(name => /^[a-f0-9]{64}\.json$/.test(name));
+      const kept = new Set<string>(), dropped = new Set<string>();
+      for (const name of manifests) {
+        const meta = JSON.parse(read(join(folder, name)).toString('utf8')) as Metadata;
+        if (meta?.courseId === input.courseId) { unlinkSync(join(folder, name)); dropped.add(meta.sha256); } else kept.add(meta?.sha256);
+      }
+      for (const sha256 of dropped) if (/^[a-f0-9]{64}$/.test(sha256) && !kept.has(sha256)) rmSync(join(folder, `${sha256}.bin`), { force: true });
+    },
+    async removeAll(input: { cookie?: string | null; now?: number }) {
+      const folder = await ownerFolder(input);
+      if (folder) rmSync(folder, { recursive: true });
+    },
     async put(input: Locator & { bytes: Uint8Array; sha256: string }): Promise<Metadata> {
       const { folder, manifest } = await paths(input);
       if (!(input.bytes instanceof Uint8Array) || !input.bytes.length || input.bytes.length > 100_000_000 || digest(input.bytes) !== input.sha256) throw new Error('Invalid asset bytes');

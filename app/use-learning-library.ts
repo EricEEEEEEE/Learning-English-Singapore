@@ -45,5 +45,8 @@ export function useLearningLibrary(owner: string | null, enabled: boolean) {
     close: () => { setOpenOwner(null); setSelected(null); },
     choose: (scene: LearningScene) => { if (owner && enabled) setSelected({ owner, scene }); },
     closeCourse: () => setSelected(null), retry: () => setAttempt(value => value + 1),
+    // After a confirmed server-side delete: drop the scene (or all scenes) without pretending a fresh read happened.
+    drop: (course: { id: string } | null) => setResult(previous => previous && previous.owner === owner && previous.status === 'ready'
+      ? { ...previous, scenes: course ? previous.scenes.filter(scene => scene.course.id !== course.id) : [], unavailable: course ? previous.unavailable : 0 } : previous),
   };
 }
