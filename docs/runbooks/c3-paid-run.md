@@ -29,7 +29,8 @@ npm ci && (cd tests && npm ci) && npm run build
 export AUTH_SESSION_SECRET=$(node -e "console.log(require('crypto').randomBytes(32).toString('hex'))")
 export LES_LIVE_GENERATION=1 LES_LIVE_BUDGET_SCOPE=C3-T71-$(date +%Y%m%d) LES_LIVE_MAX_MICROS=20000000 LES_LIVE_PRIOR_SPENT_MICROS=0
 export LES_FFMPEG=$(command -v ffmpeg) LES_FFPROBE=$(command -v ffprobe)
-export LES_MEDIA_HOSTS=placeholder.invalid   # 先占位，第 2 步查到 LTX 媒体下载主机后改掉再重启
+export NODE_USE_ENV_PROXY=1   # 云端必需：Node 内置 fetch 默认不走 HTTPS_PROXY，不设会让首个请求变成 submission_unknown
+export LES_MEDIA_HOSTS=storage.googleapis.com   # 2026-10-17 实测 LTX 成片下载主机
 rm -rf tmp/generation-tasks   # 用全新目录，避免旧 live_budget 范围冲突
 npm run start -- --hostname 127.0.0.1 --port 3300 &
 ```

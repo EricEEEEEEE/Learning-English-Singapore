@@ -80,6 +80,8 @@ T61A已绿，T61P材料已授权。实际生成须按docs/proposals/first-short-
 
 ## B-C3 · 付费实测（T71D/T63C）零花费停下（2026-10-16 16:06 UTC）
 
+- **已解除（2026-10-17）**：用户把环境网络改为 Full 后在同一会话跑完 T71D、T63C，见 docs/evidence/t71/c3-live-generation.md 与 docs/evidence/t63/c3-live-practice.md。以下为当时记录。
+
 - 计划任务会话按 docs/runbooks/c3-paid-run.md 第 0 步预检，未发出任何付费请求，花费 USD 0。
 - 网络：环境代理对 `api.openai.com:443` 与 `api.ltx.io:443` 的 CONNECT 均回 403（策略拒绝）。需要把该云环境（env_01UMzbevMAdmEvkeRK52XHAt）的网络访问设为 Full，或放行这两个主机。
 - 密钥：环境里有 `LTX_API_KEY`；没有 `OPENAI_API_KEY`，但有一个名为 `OPEN_API_KEY` 的变量，疑似变量名少了 "AI"。代码与手册只读 `OPENAI_API_KEY`，~~请把该环境变量改名~~ 2026-10-17 更正：不需要用户改名，执行会话在本会话内 `export OPENAI_API_KEY="$OPEN_API_KEY"` 即可，仓库不加别名。未打印、未记录任何密钥值。
