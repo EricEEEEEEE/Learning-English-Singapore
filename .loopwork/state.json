@@ -16,8 +16,8 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-10-17T12:33:53+00:00",
-  "authorized_batch": "C4_listen_help_zero_cost",
+  "last_session": "2026-10-17T12:37:29+00:00",
+  "authorized_batch": "C5_data_trust_zero_cost",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",
   "audit_bytes": 1367381,
