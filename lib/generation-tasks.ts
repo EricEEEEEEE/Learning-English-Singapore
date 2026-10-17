@@ -464,8 +464,9 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const check = snapshot?.videoChecks?.find(value => value.segmentIndex === index && value.sha256 === asset?.sha256);
       if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'video_pending' || !job || job.status !== 'completed' || index === undefined || !asset || !check || (snapshot.videoJobs?.length ?? 0) >= (snapshot.audioAssembly?.segments.length ?? 0)) throw new Error('Reference prohibited');
       if (snapshot.referenceImage?.sourceCourseId === snapshot.id && snapshot.referenceImage.sourceAssetId === asset.assetId && snapshot.referenceImage.sourceVideoSha256 === asset.sha256) return snapshot;
-      // Last whole frame: a frame duration before the verified end, inside the 20-second extractor bound.
-      const timeSeconds = Math.min(19.9, Math.max(0, Math.floor((check.duration - 1 / 24) * 1000) / 1000));
+      // Near-last frame: two frame durations before the verified end. The container end can run past the last
+      // video frame, and a seek beyond the last frame start yields no image at all (seen in the C3 preview).
+      const timeSeconds = Math.min(19.9, Math.max(0, Math.floor((check.duration - 2 / 24) * 1000) / 1000));
       let reference: SavedReference;
       try {
         const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
