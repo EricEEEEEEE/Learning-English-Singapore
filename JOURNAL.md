@@ -680,3 +680,6 @@
 - [audit] phase → test-writing @ 2026-10-17T14:23:12+00:00
 - [audit] phase → test-writing @ 2026-10-17T14:27:38+00:00
 - C7 红：新增 tests/domain/c7-content-languages.spec.mjs 9 题（T31A 五语审计：逐个 *-copy.ts 导出分类、键齐全/不为空/非中文语言不混中文/不回退成英文，tsx 内联语言记录扫描、审计自检、试验语言提示；T30A 36 种子：编号/六类对应样例A–F/五语/长度/过 parseSceneRequirement/不点名真实机构品牌/不贴国籍标签/互不重复；种子与确认卡文案）、c7-script-regression.spec.mjs 19 题（T32A 离线夹具 tests/fixtures/c7-script-outputs.mjs 共14份+1份已知盲区，校验器与适配器两层、替身 fetch）、tests/e2e/c7-content-languages.spec.mjs 27 题（T30A 浏览/选中填入不保存不生成/仍走确认、T14A 确认卡/再改改/确认生成一次/无关键词/保存失败、五语）。domain 12 红（缺 lib/scene-seeds.ts、两个新文案文件；校验器缺轮流、相邻回合、英文台词三条规则；提示词没写每行用英文），16 绿为守卫（审计自检、现有拒绝规则、试验语言提示；现有文案审计没发现问题）；phone c7 27 红（没有种子浏览、没有确认卡）。T68 改写 11 题：按“生成场景”后再按“确认生成”（五语加 confirm 标签、连点题改为连点确认），第一题加“确认前不写不交”的断言，没有删断言；这 11 题现红，因为还没有确认按钮。零模型调用。
+- [audit] phase → implementing @ 2026-10-17T14:40:33+00:00
+- [audit] phase → test-writing @ 2026-10-17T14:42:41+00:00
+- C7 考题纠错：五语审计两处写错。①测试运行器把 .ts 转成 CommonJS 时多出 __esModule 和 default 两个导出（不是文案文件自己的），原题把它们算作“没解释的导出”；改为跳过这两个互操作键。②遍历数量下限原写 19，实际是 C7 前 11 个五语记录 + 4 个按语言取文案的函数 = 15，加 C7 两个新文件 = 17；改为 17。其余断言不变。

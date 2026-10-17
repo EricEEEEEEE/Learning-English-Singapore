@@ -89,6 +89,8 @@ test('C7 T31A: every *-copy.ts export is a five-language record, a per-language 
   for (const file of files) {
     const module = await import(`../../app/${file}`);
     for (const [name, value] of Object.entries(module)) {
+      // `__esModule` and `default` are added by the test runner's module interop, not by the copy file.
+      if (name === '__esModule' || name === 'default') continue;
       if (isLanguageRecord(value) || byLanguage[file]?.includes(name) || notCopy[file]?.[name] || /Reviewed$/.test(name)) continue;
       unexplained.push(`${file}:${name}`);
     }
@@ -110,7 +112,8 @@ test('C7 T31A: no help language is missing a key, has an empty string, carries C
       }
     }
   }
-  expect(walked).toBeGreaterThanOrEqual(19);
+  // 11 records before C7 + 4 per-language functions = 15, plus the two C7 copy files.
+  expect(walked).toBeGreaterThanOrEqual(17);
   expect(issues).toEqual([]);
 });
 
