@@ -12,7 +12,7 @@ const secret = 'offline-t71b-session-secret-at-least-32-characters';
 const now = Date.UTC(2026, 9, 16);
 const sha = bytes => createHash('sha256').update(bytes).digest('hex');
 const translations = Object.fromEntries(['zh-Hans', 'id', 'ja', 'ko', 'hi'].map(k => [k, 'synthetic']));
-const lines = Array.from({ length: 4 }, (_, i) => ({ id: 'line' + i, role: i % 2 ? 'learner' : 'partner', text: i % 2 ? 'Hi' : 'Hello', translations }));
+const lines = Array.from({ length: 4 }, (_, i) => ({ id: 'line' + i, role: i % 2 ? 'learner' : 'partner', text: i % 2 ? 'Hi ' + 'okay '.repeat(15).trim() : 'Hello ' + 'friend '.repeat(46).trim(), translations })); // 128 words: above the scene minimum
 const scene = { setting: 'A busy hawker centre chicken rice stall at lunchtime.', partnerGender: 'male', partnerLook: 'in his fifties, white apron' };
 const script = { scene, lines, phrases: [{ id: 'phrase', text: 'Hello', lineId: 'line0', translations }], turns: [{ partnerLineId: 'line0', learnerLineId: 'line1' }, { partnerLineId: 'line2', learnerLineId: 'line3' }] };
 const pcm = Buffer.alloc(240044);
@@ -69,8 +69,8 @@ test('C3 scene: later segments start from the previous last frame, every segment
   for (const submit of seen.submits) {
     expect(submit.prompt).toContain('first-person');
     expect(submit.prompt).toContain('adult man');
-    expect(submit.prompt).toContain('"Hello"');
-    expect(submit.prompt).not.toContain('"Hi"');
+    expect(submit.prompt).toContain('"Hello friend');
+    expect(submit.prompt).not.toContain('"Hi okay');
     expect(submit.prompt).toContain('no cuts');
   }
 });
@@ -113,6 +113,18 @@ test('C3 scene: script validation accepts a scene, rejects a malformed one and s
   expect(validateGeneratedScript((({ scene: _, ...rest }) => rest)(script)).ok).toBe(true);
   for (const bad of [{ ...scene, partnerGender: 'robot' }, { ...scene, partnerLook: '' }, { ...scene, extra: 'x' }, 'scene'])
     expect(validateGeneratedScript({ ...script, scene: bad })).toEqual({ ok: false, issues: ['scene'] });
+});
+
+test('C3 scene: a scene script must hold 115 to 160 spoken words; scripts without a scene are not length-checked', async () => {
+  const { validateGeneratedScript } = await import('../../lib/generated-script.ts');
+  // Short words keep every line under the 500-character line limit.
+  const withWords = n => ({ ...script, lines: script.lines.map((line, i) => ({ ...line, text: i === 0 ? ['Hello', ...Array(n - 4).fill('w')].join(' ') : 'w' })) });
+  expect(validateGeneratedScript(withWords(115)).ok).toBe(true);
+  expect(validateGeneratedScript(withWords(160)).ok).toBe(true);
+  expect(validateGeneratedScript(withWords(114))).toEqual({ ok: false, issues: ['length'] });
+  expect(validateGeneratedScript(withWords(161))).toEqual({ ok: false, issues: ['length'] });
+  const { scene: _, ...legacy } = withWords(10);
+  expect(validateGeneratedScript(legacy).ok).toBe(true);
 });
 
 test('C3 scene: the partner voice follows the on-camera gender and the learner takes the other voice', async () => {

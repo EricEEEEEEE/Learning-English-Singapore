@@ -16,9 +16,11 @@ export function buildGeneratedCourse(task: GenerationTask) {
   let previousEnd = 0;
   const lines = script.value.lines.map((line, index) => {
     const timing = timeline.lines[index];
-    if (!timing || timing.lineId !== line.id || !finite(timing.start) || !finite(timing.end) || timing.start < previousEnd || timing.end <= timing.start || timing.end > media.duration) throw new Error('Invalid course line timing');
+    if (!timing || timing.lineId !== line.id || !finite(timing.start) || !finite(timing.end) || timing.start < previousEnd || timing.end <= timing.start || timing.end > media.duration + 0.001001) throw new Error('Invalid course line timing');
     previousEnd = timing.end;
-    return { ...line, revision: task.revision, start: timing.start, end: timing.end };
+    // The timeline may end a fraction of a millisecond after the probed media (frame vs. millisecond rounding,
+    // seen in the C3 preview: 54.358333 vs 54.358); the same 1 ms tolerance as timeline vs. media applies.
+    return { ...line, revision: task.revision, start: timing.start, end: Math.min(timing.end, media.duration) };
   });
   return {
     id: task.id, revision: task.revision,

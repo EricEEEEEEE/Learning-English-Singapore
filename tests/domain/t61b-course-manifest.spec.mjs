@@ -30,6 +30,13 @@ test('T61B course manifest: binds script materials and measured timing to one pr
   expect(course.media).not.toHaveProperty('src');
 });
 
+test('T61B course manifest: a last line ending under 1 ms past the probed media is clamped to the media end', async () => {
+  const { buildGeneratedCourse } = await import('../../lib/generated-course.ts');
+  const input = task();
+  input.videoTimeline.duration = 4.042333; input.videoTimeline.lines[1].end = 4.042333; // frame-exact timeline vs ms-rounded probe
+  expect(buildGeneratedCourse(input).lines[1].end).toBe(4.042);
+});
+
 const invalid = {
   pending: t => { t.status = 'video_pending'; },
   undecoded: t => { t.finalVideo.decoded = false; },
