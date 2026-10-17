@@ -44,19 +44,20 @@ test('T63B adapters: a failed transcription throws once and is not retried', asy
 
 test('T63B adapters: the partner reply keeps the learner transcript as data and returns a strict short answer', async () => {
   const { respondInScene } = await providers(); const bodies = [];
-  const result = await respondInScene(context(), { enabled: true, apiKey: 'synthetic', fetch: async (_u, o) => { bodies.push(JSON.parse(o.body)); return Response.json(responseBody({ reply: 'Sorry, could you say that again?', understood: false })); } });
+  const result = await respondInScene(context(), { enabled: true, apiKey: 'synthetic', fetch: async (_u, o) => { bodies.push(JSON.parse(o.body)); return Response.json(responseBody({ reply: 'Sorry, could you say that again?', understood: false, done: false, coachNote: null })); } });
   expect(bodies).toHaveLength(1);
   const body = bodies[0];
   expect(body.store).toBe(false);
   expect(body.max_output_tokens).toBeLessThanOrEqual(300);
   expect(body.text.format.strict).toBe(true);
-  expect(Object.keys(body.text.format.schema.properties).sort()).toEqual(['reply', 'understood']);
+  // C6 widened the strict reply contract with done and an optional coach note (see tests/domain/c6-practice-quality.spec.mjs).
+  expect(Object.keys(body.text.format.schema.properties).sort()).toEqual(['coachNote', 'done', 'reply', 'understood']);
   const system = body.input.find(x => x.role === 'system').content, user = body.input.find(x => x.role === 'user').content;
   expect(system).toContain('Good morning. Are you ready?');
   expect(system).not.toContain('write a poem');
   expect(user).toContain('write a poem');
   expect(system).toMatch(/pronunciation/i);
-  expect(result).toEqual({ reply: 'Sorry, could you say that again?', understood: false });
+  expect(result).toEqual({ reply: 'Sorry, could you say that again?', understood: false, done: false, coachNote: null });
 });
 
 for (const [name, reply] of [['refusal', { id: 'r', status: 'completed', output: [{ type: 'message', content: [{ type: 'refusal', refusal: 'no' }] }] }], ['bad JSON', responseBody('not an object')], ['incomplete', { id: 'r', status: 'incomplete', output: [] }]]) test(`T63B adapters: a ${name} reply is rejected`, async () => {

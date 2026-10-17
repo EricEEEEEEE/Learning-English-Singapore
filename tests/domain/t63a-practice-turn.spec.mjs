@@ -25,7 +25,7 @@ async function setup({ maxReservedMicros = 1_000_000, turnMicros = 100_000, maxT
     directory: dir, sessionSecret: secret, maxReservedMicros, turnMicros, maxTurnsPerCourse,
     getCourse: async input => { calls.course++; if (await ownerIdFromSessionCookie(input.cookie, secret, input.now) !== ownerA || input.id !== course.id) throw new Error('Course not found'); return course; },
     transcribe: async input => { calls.transcribe.push(input); return { text: transcript }; },
-    respond: respond ?? (async input => { calls.respond.push(input); return { reply: 'Great. Please follow me.', understood: true }; }),
+    respond: respond ?? (async input => { calls.respond.push(input); return { reply: 'Great. Please follow me.', understood: true, done: false, coachNote: null }; }),
     speak: async input => { calls.speak.push(input); return { bytes: Buffer.from('partner wav'), mimeType: 'audio/wav' }; },
   };
   const service = createPracticeTurnService(options);
@@ -112,7 +112,7 @@ for (const [name, over] of [
 
 test('T63A: the partner reply is bounded and an overlong or empty reply is not spoken', async () => {
   for (const reply of ['', 'x'.repeat(301)]) {
-    const { turn, calls } = await setup({ respond: async () => ({ reply, understood: true }) });
+    const { turn, calls } = await setup({ respond: async () => ({ reply, understood: true, done: false, coachNote: null }) });
     await expect(turn()).rejects.toThrow('Practice turn failed');
     expect(calls.speak).toHaveLength(0);
   }
