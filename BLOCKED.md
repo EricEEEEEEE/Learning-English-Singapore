@@ -82,5 +82,6 @@ T61A已绿，T61P材料已授权。实际生成须按docs/proposals/first-short-
 
 - 计划任务会话按 docs/runbooks/c3-paid-run.md 第 0 步预检，未发出任何付费请求，花费 USD 0。
 - 网络：环境代理对 `api.openai.com:443` 与 `api.ltx.io:443` 的 CONNECT 均回 403（策略拒绝）。需要把该云环境（env_01UMzbevMAdmEvkeRK52XHAt）的网络访问设为 Full，或放行这两个主机。
-- 密钥：环境里有 `LTX_API_KEY`；没有 `OPENAI_API_KEY`，但有一个名为 `OPEN_API_KEY` 的变量，疑似变量名少了 "AI"。代码与手册只读 `OPENAI_API_KEY`，请把该环境变量改名为 `OPENAI_API_KEY`。未打印、未记录任何密钥值。
+- 密钥：环境里有 `LTX_API_KEY`；没有 `OPENAI_API_KEY`，但有一个名为 `OPEN_API_KEY` 的变量，疑似变量名少了 "AI"。代码与手册只读 `OPENAI_API_KEY`，~~请把该环境变量改名~~ 2026-10-17 更正：不需要用户改名，执行会话在本会话内 `export OPENAI_API_KEY="$OPEN_API_KEY"` 即可，仓库不加别名。未打印、未记录任何密钥值。
+- 2026-10-17 05:33 UTC 复查：两个主机仍被环境网络策略拒绝（403），这是唯一需要用户改的设置。
 - 恢复条件：以上两项改好后，开一个新会话（环境设置只对之后启动的会话生效）重跑手册，USD30 总上限不变、尚未动用。
