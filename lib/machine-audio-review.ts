@@ -52,7 +52,8 @@ export function measureSpeech(bytes: Uint8Array) {
 export function createMachineAudioReview({ read }: { read: Read }): AudioReview {
   return async ({ cookie, now, task, encoded, segment }) => {
     try {
-      if (encoded.sourceSha256 !== segment.sha256 || encoded.sourceDuration !== segment.duration) return false;
+      // The encoded track is the partner-only drive when the segment has one; speech is measured on the full segment.
+      if (encoded.sourceSha256 !== ((segment as { driveSha256?: string }).driveSha256 ?? segment.sha256) || encoded.sourceDuration !== segment.duration) return false;
       const media = await read({ cookie, now, courseId: task.id, revision: task.revision, assetId: segment.assetId });
       if (!media || !(media.bytes instanceof Uint8Array) || createHash('sha256').update(media.bytes).digest('hex') !== segment.sha256) return false;
       const m = measureSpeech(media.bytes);

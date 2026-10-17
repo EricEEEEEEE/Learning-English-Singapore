@@ -12,6 +12,11 @@ test('T61B tail repair: observed shortfall preserves full approved audio and pad
  expect(input).toEqual(before);
 });
 
+test('T61B tail repair: a slightly longer video is trimmed to the audio, not padded',async()=>{
+ const {planVideoTailRepair}=await import('../../lib/video-tail-repair.ts');
+ expect(planVideoTailRepair({...valid(),videoDuration:16.3})).toMatchObject({targetDuration:16.25,padSeconds:0,padFrames:0,replaceWithSourceAudio:true});
+});
+
 test('T61B tail repair: already aligned video does not request frame padding',async()=>{
  const {planVideoTailRepair}=await import('../../lib/video-tail-repair.ts');
  expect(planVideoTailRepair({...valid(),videoDuration:16.25})).toMatchObject({targetDuration:16.25,padSeconds:0,padFrames:0,replaceWithSourceAudio:true});
@@ -24,7 +29,7 @@ test('T61B tail repair: seven-frame live LTX shortfall is padded, not rejected',
 
 for(const [name,change] of [
  ['more than eight frames missing',{videoDuration:15.9}],
- ['longer video',{videoDuration:16.3}],
+ ['more than eight frames longer',{videoDuration:16.7}],
  ['shifted picture',{videoStart:0.1}],
  ['shifted audio',{audioStart:0.1}],
  ['wrong frame rate',{fps:30}],

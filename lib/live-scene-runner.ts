@@ -20,14 +20,16 @@ export function createLiveSceneRunner(env: Env, directory: string, options: { fe
   const maxReservedMicros = whole(env.LES_LIVE_MAX_MICROS), priorSpentMicros = whole(env.LES_LIVE_PRIOR_SPENT_MICROS ?? '0');
   const hosts = (env.LES_MEDIA_HOSTS ?? '').split(',').map(host => host.trim()).filter(Boolean);
   const ffmpeg = env.LES_FFMPEG ?? '/usr/bin/ffmpeg', ffprobe = env.LES_FFPROBE ?? '/usr/bin/ffprobe';
-  if (!filled(env.OPENAI_API_KEY) || !filled(env.LTX_API_KEY) || !filled(env.AUTH_SESSION_SECRET) || !filled(env.LES_LIVE_BUDGET_SCOPE)) return null;
+  const preview = env.LES_VIDEO_PREVIEW === '1';
+  if (!filled(env.OPENAI_API_KEY) || (!preview && !filled(env.LTX_API_KEY)) || !filled(env.AUTH_SESSION_SECRET) || !filled(env.LES_LIVE_BUDGET_SCOPE)) return null;
   if (!Number.isSafeInteger(maxReservedMicros) || maxReservedMicros <= 0 || maxReservedMicros > C3_BATCH_CEILING_MICROS) return null;
   if (!Number.isSafeInteger(priorSpentMicros) || priorSpentMicros > maxReservedMicros) return null;
   if (!hosts.length || !isAbsolute(ffmpeg) || !isAbsolute(ffprobe) || !isAbsolute(directory)) return null;
   try {
     const store = createLiveGenerationRuntime({
-      enabled: true, directory, sessionSecret: env.AUTH_SESSION_SECRET, openaiKey: env.OPENAI_API_KEY, ltxKey: env.LTX_API_KEY,
-      budget: { scope: env.LES_LIVE_BUDGET_SCOPE.trim(), priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS },
+      enabled: true, directory, sessionSecret: env.AUTH_SESSION_SECRET, openaiKey: env.OPENAI_API_KEY, ltxKey: env.LTX_API_KEY ?? '', previewVideo: preview,
+      // A preview reserves only the script and voices; its local video cards cost nothing.
+      budget: { scope: env.LES_LIVE_BUDGET_SCOPE.trim(), priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS, ...(preview ? { videoMicros: 1 } : {}) },
       media: { ffmpeg, ffprobe, allowedHosts: hosts, maxBytes: 100_000_000 },
       ...(options.fetch ? { fetch: options.fetch } : {}),
     });

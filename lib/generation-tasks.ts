@@ -29,7 +29,9 @@ type SavedEncodedAudio = Omit<EncodedAudio, 'bytes'> & { segmentIndex: number; a
 type FinalCheck = Awaited<ReturnType<typeof verifyFinalVideo>>;
 type VideoCheck = Awaited<ReturnType<typeof probeVideoBytes>>;
 type Assembly = ReturnType<typeof assembleCourseAudio>;
-type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes'> & { assetId: string })[] };
+type SavedAssembly = Omit<Assembly, 'segments'> & { segments: (Omit<Assembly['segments'][number], 'bytes' | 'drive'> & { assetId: string; driveAssetId?: string; driveSha256?: string })[] };
+// The audio actually sent to the video provider: the partner-only drive track when there is one.
+const videoSource = (segment: SavedAssembly['segments'][number]) => ({ assetId: segment.driveAssetId ?? segment.assetId, sha256: segment.driveSha256 ?? segment.sha256 });
 type SavedAudio = Omit<AudioAsset, 'bytes'> & { assetId: string };
 type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDuration?: number; segmentIndex: number; jobId: string; status: 'pending' | 'processing' | 'failed' | 'completed' };
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
@@ -262,14 +264,20 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         if (asset.lineId !== line.id || asset.role !== line.role) throw new Error('Audio source mismatch');
         const source = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId: asset.assetId });
         if (!source || source.sha256 !== asset.sha256) throw new Error('Audio source unavailable');
-        sources.push({ lineId: line.id, bytes: source.bytes, sha256: asset.sha256 });
+        sources.push({ lineId: line.id, bytes: source.bytes, sha256: asset.sha256, silence: !!task.script.scene && line.role === 'learner' });
       }
       const assembled = assembleCourseAudio(sources);
       const segments: SavedAssembly['segments'] = [];
       for (let i = 0; i < assembled.segments.length; i++) {
         const segment = assembled.segments[i], assetId = `audio-segment-${i}`;
         await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId, bytes: segment.bytes, sha256: segment.sha256 });
-        segments.push({ assetId, lineIds: segment.lineIds, duration: segment.duration, sha256: segment.sha256 });
+        let drive = {};
+        if ('drive' in segment && segment.drive) {
+          const driveAssetId = `audio-drive-${i}`;
+          await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: task.id, revision: task.revision, assetId: driveAssetId, bytes: segment.drive.bytes, sha256: segment.drive.sha256 });
+          drive = { driveAssetId, driveSha256: segment.drive.sha256 };
+        }
+        segments.push({ assetId, lineIds: segment.lineIds, duration: segment.duration, sha256: segment.sha256, ...drive });
       }
       // Publish references only after every immutable asset is saved. Concurrent assembly is idempotent.
       return transact(db => {
@@ -291,21 +299,21 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       if (count > segments.length) throw new Error('Invalid encoded references');
       for (let i = 0; i < count; i++) {
         const saved = snapshot.encodedAudio![i], source = segments[i];
-        if (saved.segmentIndex !== i || saved.sourceSha256 !== source.sha256 || saved.sourceDuration !== source.duration) throw new Error('Encoded source mismatch');
+        if (saved.segmentIndex !== i || saved.sourceSha256 !== videoSource(source).sha256 || saved.sourceDuration !== source.duration) throw new Error('Encoded source mismatch');
         const stored = await mediaStore.get({ ...locator, assetId: saved.assetId });
         if (!stored || stored.sha256 !== saved.sha256 || stored.size !== saved.size) throw new Error('Encoded media unavailable');
       }
       if (count === segments.length) return snapshot;
-      const segment = segments[count];
-      const source = await mediaStore.get({ ...locator, assetId: segment.assetId });
-      if (!source || source.sha256 !== segment.sha256 || createHash('sha256').update(source.bytes).digest('hex') !== segment.sha256 || wavDuration(source.bytes) !== segment.duration) throw new Error('Audio source unavailable');
-      const result = await audioEncoder({ bytes: Buffer.from(source.bytes), sha256: segment.sha256 });
-      if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length >= 10_000_000 || result.sourceSha256 !== segment.sha256 || result.sourceDuration !== segment.duration || result.mimeType !== 'audio/mp4' || result.decoded !== true || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - segment.duration) > 1024 / 8000 + 0.001001) throw new Error('Invalid encoded audio');
+      const segment = segments[count], drive = videoSource(segment);
+      const source = await mediaStore.get({ ...locator, assetId: drive.assetId });
+      if (!source || source.sha256 !== drive.sha256 || createHash('sha256').update(source.bytes).digest('hex') !== drive.sha256 || wavDuration(source.bytes) !== segment.duration) throw new Error('Audio source unavailable');
+      const result = await audioEncoder({ bytes: Buffer.from(source.bytes), sha256: drive.sha256 });
+      if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length >= 10_000_000 || result.sourceSha256 !== drive.sha256 || result.sourceDuration !== segment.duration || result.mimeType !== 'audio/mp4' || result.decoded !== true || !Number.isFinite(result.duration) || result.duration <= 0 || result.duration > 20 || Math.abs(result.duration - segment.duration) > 1024 / 8000 + 0.001001) throw new Error('Invalid encoded audio');
       const bytes = Buffer.from(result.bytes), sha256 = createHash('sha256').update(bytes).digest('hex');
       if (sha256 !== result.sha256) throw new Error('Invalid encoded integrity');
       const assetId = `encoded-${count}-${sha256}`;
       const metadata = await mediaStore.put({ ...locator, assetId, bytes, sha256 });
-      const saved: SavedEncodedAudio = { segmentIndex: count, assetId, size: metadata.size, sha256, sourceSha256: segment.sha256, sourceDuration: segment.duration, duration: result.duration, mimeType: 'audio/mp4', decoded: true };
+      const saved: SavedEncodedAudio = { segmentIndex: count, assetId, size: metadata.size, sha256, sourceSha256: drive.sha256, sourceDuration: segment.duration, duration: result.duration, mimeType: 'audio/mp4', decoded: true };
       return transact(db => {
         const current = read(db, snapshot.id, ownerId);
         if (!current || current.status !== 'audio_assembled' || JSON.stringify(current.audioAssembly) !== JSON.stringify(snapshot.audioAssembly)) throw new Error('Task changed during encoding');
@@ -323,7 +331,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       const snapshot = transact(db => read(db, input.id, ownerId));
       const encoded = snapshot?.encodedAudio?.[input.segmentIndex];
       const source = snapshot?.audioAssembly?.segments[input.segmentIndex];
-      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'audio_assembled' || snapshot.revision !== input.revision || !encoded || !source || encoded.segmentIndex !== input.segmentIndex || encoded.sha256 !== input.sha256 || encoded.sourceSha256 !== source.sha256 || encoded.sourceDuration !== source.duration) throw new Error('Audio confirmation prohibited');
+      if (!snapshot || snapshot.simulation !== simulation || snapshot.status !== 'audio_assembled' || snapshot.revision !== input.revision || !encoded || !source || encoded.segmentIndex !== input.segmentIndex || encoded.sha256 !== input.sha256 || encoded.sourceSha256 !== videoSource(source).sha256 || encoded.sourceDuration !== source.duration) throw new Error('Audio confirmation prohibited');
       const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: encoded.assetId });
       if (!media || media.sha256 !== encoded.sha256 || media.size !== encoded.size || createHash('sha256').update(media.bytes).digest('hex') !== encoded.sha256) throw new Error('Audio confirmation media unavailable');
       const confirmedAt = input.now ?? Date.now();
@@ -360,7 +368,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         for (const [index, source] of snapshot.audioAssembly.segments.entries()) {
           const saved = snapshot.encodedAudio?.find(audio => audio.segmentIndex === index);
           const review = snapshot.audioReviews?.find(value => value.segmentIndex === index);
-          if (!saved || saved.sourceSha256 !== source.sha256 || saved.sourceDuration !== source.duration || !review || review.revision !== snapshot.revision || review.sha256 !== saved.sha256 || review.sourceSha256 !== source.sha256) throw new Error('All encoded audio must be confirmed');
+          if (!saved || saved.sourceSha256 !== videoSource(source).sha256 || saved.sourceDuration !== source.duration || !review || review.revision !== snapshot.revision || review.sha256 !== saved.sha256 || review.sourceSha256 !== source.sha256) throw new Error('All encoded audio must be confirmed');
           const stored = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: saved.assetId });
           if (!stored || stored.size !== saved.size || stored.sha256 !== saved.sha256 || createHash('sha256').update(stored.bytes).digest('hex') !== saved.sha256) throw new Error('Encoded audio unavailable');
           if (index === segmentIndex) encoded = { bytes: Buffer.from(stored.bytes), sha256: saved.sha256, sourceSha256: saved.sourceSha256, sourceDuration: saved.sourceDuration, duration: saved.duration, mimeType: saved.mimeType, decoded: saved.decoded };

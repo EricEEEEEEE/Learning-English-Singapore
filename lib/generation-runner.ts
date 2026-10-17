@@ -57,6 +57,10 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
         const asset = task.videoAssets?.find(item => item.segmentIndex === job.segmentIndex);
         if (!asset) { await store.collectVideo(input); return null; }
         const checked = task.videoChecks?.some(item => item.segmentIndex === job.segmentIndex && item.sha256 === asset.sha256);
+        // A segment driven by partner-only audio gets the full course audio (learner lines included) put back
+        // by the repair step before its probe; the provider's own audio track is never kept.
+        const driven = !!(task.audioAssembly?.segments[job.segmentIndex] as { driveSha256?: string } | undefined)?.driveSha256;
+        if (driven && !task.videoRepairs?.some(item => item.segmentIndex === job.segmentIndex)) { await store.repairVideo(input); return null; }
         if (!checked) {
           try { await store.probeVideo(input); }
           catch {

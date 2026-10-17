@@ -12,8 +12,11 @@ export function planVideoTailRepair(input: Timing) {
     || input.videoDuration <= 0 || input.videoDuration > 20
     || input.videoStart !== 0 || input.audioStart !== 0
     || input.fps !== 24 || input.width !== 720 || input.height !== 1280) throw new Error('Invalid tail repair input');
-  const padSeconds = input.sourceAudioDuration - input.videoDuration;
-  if (padSeconds < 0 || padSeconds > 8 / input.fps) throw new Error('Tail difference exceeds repair limit');
+  const difference = input.sourceAudioDuration - input.videoDuration;
+  // Up to 8 frames short is padded with the last frame; up to 8 frames long is trimmed to the audio length
+  // (partner-only drive segments always go through this step to restore the full audio).
+  if (Math.abs(difference) > 8 / input.fps) throw new Error('Tail difference exceeds repair limit');
+  const padSeconds = Math.max(0, difference);
   // ffprobe reports seconds to six decimals; avoid rounding a five-frame gap to six.
   const padFrames = Math.ceil(Math.max(0, padSeconds * input.fps - 0.000024));
   return { targetDuration: input.sourceAudioDuration, padSeconds, padFrames, replaceWithSourceAudio: true as const };

@@ -17,18 +17,21 @@ const scene = { setting: 'A busy hawker centre chicken rice stall at lunchtime.'
 const script = { scene, lines, phrases: [{ id: 'phrase', text: 'Hello', lineId: 'line0', translations }], turns: [{ partnerLineId: 'line0', learnerLineId: 'line1' }, { partnerLineId: 'line2', learnerLineId: 'line3' }] };
 const pcm = Buffer.alloc(240044);
 pcm.write('RIFF'); pcm.writeUInt32LE(240036, 4); pcm.write('WAVE', 8); pcm.write('fmt ', 12); pcm.writeUInt32LE(16, 16); pcm.writeUInt16LE(1, 20); pcm.writeUInt16LE(1, 22); pcm.writeUInt32LE(8000, 24); pcm.writeUInt32LE(16000, 28); pcm.writeUInt16LE(2, 32); pcm.writeUInt16LE(16, 34); pcm.write('data', 36); pcm.writeUInt32LE(240000, 40);
-const delta = 0.04, duration = 4 * (15 + 2 * delta);
+for (let i = 44; i < pcm.length; i += 2) pcm.writeInt16LE(Math.round(8000 * Math.sin(i / 20)), i); // audible speech stand-in
+const delta = 0.04, legacyDuration = 4 * (15 + 2 * delta);
 const video = Buffer.from('synthetic video'), aac = Buffer.from('synthetic AAC');
 
 const png = Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), Buffer.from('synthetic frame')]);
 
 async function setup(withScene = true) {
+  // Scene segments are repaired to exactly the 15-second source audio; legacy ones keep the probe timing.
+  const duration = withScene ? 60 : legacyDuration;
   const { createGenerationTaskStore } = await import('../../lib/generation-tasks.ts');
   const { createPrivateMediaStore } = await import('../../lib/private-media-store.ts');
   const { sealGoogleSession } = await import('../../lib/google-auth.ts');
   const { validateFinalVideoProbe } = await import('../../lib/final-video-probe.ts');
   const directory = await mkdtemp(join(tmpdir(), 'les-c3-scene-'));
-  const seen = { cast: [], submits: [], extracts: [] };
+  const seen = { cast: [], submits: [], extracts: [], encoded: [], repairs: [] };
   let jobs = 0;
   const chosen = withScene ? script : (({ scene: _, ...rest }) => rest)(script);
   const store = createGenerationTaskStore({
@@ -36,7 +39,7 @@ async function setup(withScene = true) {
     mediaStore: createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret: secret }),
     scriptProvider: { reservedMicros: 100, generate: async () => ({ requestId: 'synthetic', script: chosen }) },
     audioProvider: { reservedMicros: 100, generate: async (line, cast) => { seen.cast.push(cast); return { lineId: line.id, role: line.role, bytes: pcm, sha256: sha(pcm), duration: 15 }; } },
-    audioEncoder: async input => ({ bytes: aac, sha256: sha(aac), sourceSha256: input.sha256, sourceDuration: 15, duration: 15 + delta, mimeType: 'audio/mp4', decoded: true }),
+    audioEncoder: async input => { seen.encoded.push(input.bytes); return { bytes: aac, sha256: sha(aac), sourceSha256: input.sha256, sourceDuration: 15, duration: 15 + delta, mimeType: 'audio/mp4', decoded: true }; },
     encodedVideoProvider: {
       reservedMicros: 1000,
       submit: async input => { seen.submits.push({ prompt: input.prompt, reference: input.referenceImage?.sha256 }); return { status: 'pending', jobId: 'job' + ++jobs }; },
@@ -44,6 +47,7 @@ async function setup(withScene = true) {
     },
     videoDownload: async () => ({ bytes: video, sha256: sha(video) }),
     videoProbe: async input => ({ sha256: input.sha256, duration: input.expectedDuration + delta, width: 720, height: 1280, fps: 24, videoCodec: 'h264', audioCodec: 'aac' }),
+    videoRepair: async input => { seen.repairs.push(input.audio.bytes); const bytes = Buffer.concat([video, Buffer.from('+full audio')]); return { bytes, sha256: sha(bytes), sourceVideoSha256: input.video.sha256, sourceAudioSha256: input.audio.sha256, decoded: true, duration: 15, width: 720, height: 1280, fps: 24, videoCodec: 'h264', audioCodec: 'aac', targetDuration: 15, padSeconds: 0, padFrames: 0, replaceWithSourceAudio: true }; },
     referenceExtractor: async input => { seen.extracts.push(input.timeSeconds); return { bytes: png, sha256: sha(png), sourceVideoSha256: input.sha256, timeSeconds: input.timeSeconds, mimeType: 'image/png', width: 720, height: 1280, decoded: true }; },
     videoConcat: async () => ({ bytes: video, sha256: sha(video) }),
     finalVideoVerify: async input => ({ ...validateFinalVideoProbe({ format: { format_name: 'mp4', start_time: 0, duration }, streams: [{ codec_type: 'video', codec_name: 'h264', width: 720, height: 1280, avg_frame_rate: '24/1', duration, start_time: 0, disposition: { attached_pic: 0 } }, { codec_type: 'audio', codec_name: 'aac', profile: 'LC', sample_rate: 8000, channels: 1, duration, start_time: 0 }] }, input.plan), sha256: sha(video), decoded: true }),
@@ -61,7 +65,7 @@ test('C3 scene: later segments start from the previous last frame, every segment
   expect(seen.submits[0].reference).toBeUndefined();
   for (const submit of seen.submits.slice(1)) expect(submit.reference).toBe(sha(png));
   expect(seen.extracts).toHaveLength(3);
-  for (const time of seen.extracts) expect(time).toBeCloseTo(15 + 2 * delta - 1 / 24, 2); // probe reports the encoded duration plus delta
+  for (const time of seen.extracts) expect(time).toBeCloseTo(15 - 1 / 24, 2); // the repaired segment matches the 15-second source audio
   for (const submit of seen.submits) {
     expect(submit.prompt).toContain('first-person');
     expect(submit.prompt).toContain('adult man');
@@ -69,6 +73,24 @@ test('C3 scene: later segments start from the previous last frame, every segment
     expect(submit.prompt).not.toContain('"Hi"');
     expect(submit.prompt).toContain('no cuts');
   }
+});
+
+test('C3 scene: the video provider hears only the partner, and the full audio is put back on every segment', async () => {
+  const { store, seen, input } = await setup();
+  await (await run(store))(input);
+  const task = await store.get(input);
+  expect(task.audioAssembly.segments).toHaveLength(4);
+  // Each segment holds one partner line (line0/line2) or one learner line (line1/line3) of 15 s.
+  for (const [i, segment] of task.audioAssembly.segments.entries()) {
+    const learner = i % 2 === 1, drive = seen.encoded[i];
+    expect(segment.driveSha256).toBe(sha(drive));
+    expect(drive.subarray(0, 44)).toEqual(pcm.subarray(0, 44));
+    if (learner) { expect(segment.driveSha256).not.toBe(segment.sha256); expect(drive.subarray(44).every(byte => byte === 0)).toBe(true); }
+    else expect(segment.driveSha256).toBe(segment.sha256);
+  }
+  expect(seen.repairs).toHaveLength(4);
+  for (const audio of seen.repairs) expect(sha(audio)).toBe(sha(pcm));
+  expect(task.videoRepairs.map(item => item.segmentIndex)).toEqual([0, 1, 2, 3]);
 });
 
 test('C3 scene: every audio line is generated with the on-camera partner gender', async () => {

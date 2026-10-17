@@ -14,9 +14,12 @@ import { concatVideoBytes } from './concat-video-bytes';
 import { verifyFinalVideo } from './verify-final-video';
 import { repairAndVerifyVideoTail } from './repair-and-verify-video-tail';
 import { extractReferenceImage } from './extract-reference-image';
+import { createPreviewVideoProvider } from './preview-video-provider';
 
 type Options = {
   enabled?: boolean; directory: string; sessionSecret: string; openaiKey: string; ltxKey: string;
+  // Preview: real script and voices, but each video segment is a local card instead of a paid video.
+  previewVideo?: boolean;
   budget: { scope: string; priorSpentMicros: number; maxReservedMicros: number; scriptMicros: number; audioMicros: number; videoMicros: number };
   media: { ffmpeg: string; ffprobe: string; allowedHosts: string[]; maxBytes: number };
   fetch?: typeof fetch;
@@ -28,11 +31,12 @@ const positive = (value: unknown): value is number => Number.isSafeInteger(value
 // Each returned operation is explicit; this factory never auto-confirms audio or advances stages.
 export function createLiveGenerationRuntime(options: Options) {
   const b = options?.budget, m = options?.media;
-  if (options?.enabled !== true || !nonempty(options.directory) || !isAbsolute(options.directory) || !nonempty(options.sessionSecret) || !nonempty(options.openaiKey) || !nonempty(options.ltxKey)) throw new Error('Live runtime configuration required');
+  if (options?.enabled !== true || !nonempty(options.directory) || !isAbsolute(options.directory) || !nonempty(options.sessionSecret) || !nonempty(options.openaiKey) || (!options.previewVideo && !nonempty(options.ltxKey))) throw new Error('Live runtime configuration required');
   if (!b || !nonempty(b.scope) || b.scope.length > 128 || !Number.isSafeInteger(b.priorSpentMicros) || b.priorSpentMicros < 0 || !positive(b.maxReservedMicros) || b.priorSpentMicros > b.maxReservedMicros || !positive(b.scriptMicros) || !positive(b.audioMicros) || !positive(b.videoMicros)) throw new Error('Live runtime budget required');
   if (!m || !nonempty(m.ffmpeg) || !isAbsolute(m.ffmpeg) || !nonempty(m.ffprobe) || !isAbsolute(m.ffprobe) || !positive(m.maxBytes) || m.maxBytes > 100_000_000 || !Array.isArray(m.allowedHosts) || !m.allowedHosts.length || m.allowedHosts.some(host => typeof host !== 'string' || !/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(host) || isIP(host) || host === 'localhost' || host.endsWith('.localhost'))) throw new Error('Live runtime media configuration required');
   const media = { ...m, allowedHosts: [...m.allowedHosts] };
   const openai = { enabled: true, apiKey: options.openaiKey, fetch: options.fetch };
+  const preview = options.previewVideo ? createPreviewVideoProvider({ ffmpeg: media.ffmpeg }) : undefined;
   const video = { enabled: true, apiKey: options.ltxKey, fetch: options.fetch };
   const transport = options.fetch;
   return createGenerationTaskStore({
@@ -42,12 +46,16 @@ export function createLiveGenerationRuntime(options: Options) {
     scriptProvider: { reservedMicros: b.scriptMicros, generate: input => generateSceneScript(input, openai) },
     audioProvider: { reservedMicros: b.audioMicros, generate: (line, cast) => generateLineAudio(line, { ...openai, ...(cast?.partnerGender ? { partnerGender: cast.partnerGender } : {}) }) },
     audioEncoder: input => encodeVideoAudio(input, media),
-    encodedVideoProvider: {
+    encodedVideoProvider: preview ? {
+      reservedMicros: b.videoMicros,
+      submit: input => preview.submit({ audio: input.audio, prompt: input.prompt ?? input.goal, referenceImage: input.referenceImage }),
+      query: id => preview.query(id),
+    } : {
       reservedMicros: b.videoMicros,
       submit: input => submitEncodedVideoSegment({ audio: input.audio, prompt: input.prompt ?? input.goal, referenceImage: input.referenceImage }, { ...video, reviewedSha256: input.reviewedSha256 }),
       query: id => queryVideoSegment(id, video),
     },
-    videoDownload: url => downloadGeneratedMedia(url, { allowedHosts: media.allowedHosts, maxBytes: media.maxBytes, fetch: transport }),
+    videoDownload: async url => preview?.download(url) ?? downloadGeneratedMedia(url, { allowedHosts: media.allowedHosts, maxBytes: media.maxBytes, fetch: transport }),
     videoProbe: input => probeVideoBytes(input, { executable: media.ffprobe }),
     videoRepair: input => repairAndVerifyVideoTail(input, media),
     referenceExtractor: input => extractReferenceImage(input, media),
