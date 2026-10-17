@@ -6,7 +6,7 @@ import { createLivePracticeService } from '../../../lib/live-practice';
 export const runtime = 'nodejs';
 const reply = (body: object, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'private, no-store, max-age=0' } });
 type Service = { turn: (input: Record<string, unknown>) => Promise<unknown> };
-const KEYS = ['courseId', 'revision', 'materialsRevision', 'turnIndex', 'language', 'history', 'mimeType', 'audioBase64'];
+const KEYS = ['courseId', 'revision', 'materialsRevision', 'turnIndex', 'language', 'history', 'focus', 'correction', 'mimeType', 'audioBase64'];
 const MAX_BODY = 1_500_000;
 
 export async function handlePracticeTurn(request: Request, { service, now }: { service?: Service | null; now: number }) {

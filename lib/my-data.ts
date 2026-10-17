@@ -8,6 +8,7 @@ import { createLocalCourseLibrary } from './local-course-library';
 import { createSceneProgressStore } from './scene-progress';
 import { createSceneRequirementStore } from './scene-requirements';
 import { createSentenceReportStore } from './sentence-reports';
+import { createPracticeFeedbackStore } from './practice-feedback';
 
 type Session = { cookie?: string | null; now?: number };
 export type GenerationRecordStatus = 'ready' | 'failed' | 'unknown' | 'in_progress' | 'simulation' | 'deleted';
@@ -24,7 +25,7 @@ function recordStatus(task: GenerationTask): GenerationRecordStatus {
 }
 
 // The learner's own local data: delete one scene, delete everything, and read a cost-honest history.
-// Deletion removes content (course, media, positions, requirement text, reports) but keeps each task's reserved
+// Deletion removes content (course, media, positions, requirement text, reports, practice feedback marks) but keeps each task's reserved
 // cost, because the spending ledger that enforces the budget ceiling must never shrink.
 export function createMyDataStore({ directory, requirementsDirectory, sessionSecret }: { directory: string; requirementsDirectory: string; sessionSecret: string }) {
   if (!directory || !requirementsDirectory || !sessionSecret) throw new Error('Data store configuration required');
@@ -34,6 +35,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
   const progress = createSceneProgressStore({ directory, sessionSecret });
   const requirements = createSceneRequirementStore({ directory: requirementsDirectory, sessionSecret });
   const reports = createSentenceReportStore({ directory, sessionSecret });
+  const feedback = createPracticeFeedbackStore({ directory, sessionSecret });
   async function owner(input: Session) {
     const id = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
     if (!id) throw new Error('Authenticated session required');
@@ -61,6 +63,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
         if (!copy) throw new Error('Course unavailable');
         await progress.removeCourse({ ...session, id: courseId });
         await reports.removeCourse({ ...session, id: courseId });
+        await feedback.removeCourse({ ...session, id: courseId });
         await media.removeCourse({ ...session, courseId });
         await copies.remove({ ...session, now: at, id: courseId });
       } else {
@@ -68,6 +71,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
         if (!task || task.status === 'deleted' || task.revision !== revision) throw new Error('Course unavailable');
         await progress.removeCourse({ ...session, id: courseId });
         await reports.removeCourse({ ...session, id: courseId });
+        await feedback.removeCourse({ ...session, id: courseId });
         if (task.requirement) await requirements.remove({ ...session, revision: task.requirement.revision, content: task.requirement.content });
         await media.removeCourse({ ...session, courseId });
         await tasks.tombstone({ ...session, now: at, id: courseId });
@@ -79,6 +83,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
       const session = { cookie: input.cookie, now: input.now }, id = await owner(session), at = session.now ?? Date.now();
       await progress.removeAll(session);
       await reports.removeAll(session);
+      await feedback.removeAll(session);
       await requirements.removeAll(session);
       await media.removeAll(session);
       await copies.removeAll({ ...session, now: at });

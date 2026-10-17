@@ -1,15 +1,20 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import type { EntryLanguage } from './entry-copy';
 import { listenToolsCopy } from './listen-tools-copy';
+import { practiceQualityCopy } from './practice-quality-copy';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
 type History = { learner: string; partner: string }[];
-type Reply = { transcript: string; text: string; src: string };
+type Reply = { transcript: string; text: string; src: string; understood?: boolean; coachNote?: string | null };
+type Focus = 'normal' | 'refusal' | 'rephrase';
+type Correction = 'normal' | 'less';
+// What this visit observed, for the review after practice. Nothing here is sent anywhere.
+type Stats = { hints: number; autoHelp: number; translations: number };
 // Kept by the course page so a detour to the hint page does not lose the conversation so far.
-export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null };
+export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null; focus?: Focus; ending?: 'done' | 'ended' | null; stats?: Stats; answered?: Record<number, string> };
 type Copy = { start: string; done: string; hint: string; next: string; listening: string; sending: string; heard: string; silence: string; unavailable: string; budget: string; failed: string; login: string; mic: string; tooLong: string; intro: string; replay: string };
 
 export const scenePracticeCopy: Record<EntryLanguage, Copy & { title: string; enter: string; promptHint: string }> = {
@@ -42,6 +47,9 @@ const errorKey: Record<number, keyof Copy> = { 401: 'login', 429: 'budget', 502:
 const HELP_DELAY_MS = 6000;
 const AUTO_HELP_KEY = 'les.practice.autoHelp';
 function readAutoHelp() { try { return window.localStorage.getItem(AUTO_HELP_KEY) !== 'off'; } catch { return true; } }
+const CORRECTION_KEY = 'les.practice.correction';
+function readCorrection(): Correction { try { return window.localStorage.getItem(CORRECTION_KEY) === 'less' ? 'less' : 'normal'; } catch { return 'normal'; } }
+const MAX_COACH_NOTE = 120;
 
 async function toBase64(blob: Blob) {
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -52,9 +60,17 @@ async function toBase64(blob: Blob) {
 
 // One spoken exchange at a time: the microphone opens only on an explicit start, the turn is sent once when the
 // learner says they are done, and every failure waits for the learner instead of retrying.
-export default function ScenePractice({ course, language, startTurn, onHint, playPartner, memory, mediaBusy = false }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; playPartner: (lineId: string, rate?: number) => void; memory?: PracticeMemory; mediaBusy?: boolean }) {
+export default function ScenePractice({ course, language, startTurn, onHint, onLeave, playPartner, memory, mediaBusy = false }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; onLeave?: () => void; playPartner: (lineId: string, rate?: number) => void; memory?: PracticeMemory; mediaBusy?: boolean }) {
   const copy = scenePracticeCopy[language];
   const tools = listenToolsCopy[language];
+  const quality = practiceQualityCopy[language];
+  const choiceId = useId();
+  const [focus, setFocus] = useState<Focus>(memory?.focus ?? 'normal');
+  const [correction, setCorrection] = useState<Correction>(readCorrection);
+  const [ending, setEnding] = useState<'done' | 'ended' | null>(memory?.ending ?? null);
+  const [feedback, setFeedback] = useState<'idle' | 'busy' | 'saved' | 'failed'>('idle');
+  const stats = useRef<Stats>(memory?.stats ?? { hints: 0, autoHelp: 0, translations: 0 });
+  const answered = useRef<Record<number, string>>(memory?.answered ?? {});
   const [turnIndex, setTurnIndex] = useState(startTurn);
   const [stage, setStage] = useState<'idle' | 'opening' | 'recording' | 'sending'>('idle');
   const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' } | null>(null);
@@ -73,7 +89,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
   const turn = course.turns[turnIndex];
   const partner = course.lines.find(line => line.id === turn.partnerLineId)!;
   const learner = course.lines.find(line => line.id === turn.learnerLineId)!;
-  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; }
+  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; }
 
   function release() {
     if (timer.current) clearTimeout(timer.current);
@@ -89,10 +105,10 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
   // Silence after the partner has finished earns help: first how to begin, then the whole answer with a model.
   // Nothing is offered while the partner is still talking, while the learner is speaking, or once they answered.
   useEffect(() => {
-    if (!autoHelp || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy) return;
-    const id = setTimeout(() => { if (document.visibilityState !== 'hidden') setHelpLevel(level => level + 1); }, HELP_DELAY_MS);
+    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy) return;
+    const id = setTimeout(() => { if (document.visibilityState !== 'hidden') { stats.current.autoHelp++; setHelpLevel(level => level + 1); } }, HELP_DELAY_MS);
     return () => clearTimeout(id);
-  }, [autoHelp, stage, reply, helpLevel, mediaBusy, turnIndex]);
+  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex]);
   // Going to the background ends the recording without sending it and gives the microphone back.
   useEffect(() => {
     const hidden = () => {
@@ -105,9 +121,13 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
     setAutoHelp(on); if (!on) setHelpLevel(0);
     try { window.localStorage.setItem(AUTO_HELP_KEY, on ? 'on' : 'off'); } catch { /* the choice still holds for this visit */ }
   }
+  function changeCorrection(next: Correction) {
+    setCorrection(next);
+    try { window.localStorage.setItem(CORRECTION_KEY, next); } catch { /* the choice still holds for this visit */ }
+  }
 
   async function start() {
-    setNotice(null); setReply(null); setHelpLevel(0); discard.current = false; setStage('opening');
+    setNotice(null); setReply(null); setFeedback('idle'); setHelpLevel(0); discard.current = false; setStage('opening');
     try {
       const media = await navigator.mediaDevices.getUserMedia({ audio: true });
       if (!mounted.current) { media.getTracks().forEach(track => track.stop()); return; }
@@ -140,16 +160,21 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
     try {
       const response = await fetch('/api/practice-turn', {
         method: 'POST', headers: { 'content-type': 'application/json' }, cache: 'no-store',
-        body: JSON.stringify({ courseId: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}), turnIndex, language, history, mimeType, audioBase64: await toBase64(blob) }),
+        body: JSON.stringify({ courseId: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}), turnIndex, language, history, ...(focus !== 'normal' ? { focus } : {}), ...(correction === 'less' ? { correction } : {}), mimeType, audioBase64: await toBase64(blob) }),
       });
       const data = await response.json().catch(() => null);
       if (!mounted.current) return;
       if (!response.ok) { setNotice({ kind: 'alert', key: errorKey[response.status] ?? 'failed' }); return; }
       if (data?.kind === 'silence') { setNotice({ kind: 'status', key: 'silence' }); return; }
       const r = data?.reply;
-      if (data?.kind !== 'reply' || typeof data.transcript !== 'string' || typeof r?.text !== 'string' || typeof r.audioBase64 !== 'string' || !/^audio\/[a-z0-9.+-]+$/.test(r.mimeType)) { setNotice({ kind: 'alert', key: 'failed' }); return; }
+      const note = data?.coachNote;
+      if (data?.kind !== 'reply' || typeof data.transcript !== 'string' || typeof r?.text !== 'string' || typeof r.audioBase64 !== 'string' || !/^audio\/[a-z0-9.+-]+$/.test(r.mimeType)
+        || (data.done !== undefined && typeof data.done !== 'boolean') || (data.understood !== undefined && typeof data.understood !== 'boolean')
+        || !(note === undefined || note === null || typeof note === 'string' && note.length <= MAX_COACH_NOTE)) { setNotice({ kind: 'alert', key: 'failed' }); return; }
       freshReply.current = true;
-      setReply({ transcript: data.transcript, text: r.text, src: `data:${r.mimeType};base64,${r.audioBase64}` });
+      answered.current[turnIndex] = data.transcript;
+      setReply({ transcript: data.transcript, text: r.text, src: `data:${r.mimeType};base64,${r.audioBase64}`, understood: data.understood !== false, coachNote: typeof note === 'string' && note.trim() ? note.trim() : null });
+      if (data.done === true) setEnding('done');
       setHistory(previous => [...previous, { learner: data.transcript.slice(0, 500), partner: r.text.slice(0, 500) }].slice(-10));
     } catch {
       if (mounted.current) setNotice({ kind: 'alert', key: 'failed' });
@@ -160,27 +185,56 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
 
   function nextTurn() {
     const next = turnIndex + 1;
-    setTurnIndex(next); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false);
+    setTurnIndex(next); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle');
     playPartner(course.turns[next].partnerLineId);
+  }
+  function practiseAgain() {
+    setTurnIndex(0); setHistory([]); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setEnding(null);
+    Object.assign(stats.current, { hints: 0, autoHelp: 0, translations: 0 });
+    for (const key of Object.keys(answered.current)) delete answered.current[Number(key)];
+    playPartner(course.turns[0].partnerLineId);
+  }
+  // "This feedback is wrong": one same-origin write with a 5 second deadline; only a 201 counts as recorded.
+  async function markWrong(note: string) {
+    setFeedback('busy');
+    const controller = new AbortController(), deadline = window.setTimeout(() => controller.abort(), 5000);
+    try {
+      const response = await fetch('/api/practice-feedback', { method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: controller.signal, headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ course: { id: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}) }, turnIndex, note }) });
+      if (mounted.current) setFeedback(response.status === 201 ? 'saved' : 'failed');
+    } catch { if (mounted.current) setFeedback('failed'); }
+    finally { window.clearTimeout(deadline); }
   }
 
   const busy = stage !== 'idle';
+  const showCoach = reply?.coachNote && !(correction === 'less' && reply.understood);
+  const radio = <T extends string>(group: string, value: T, current: T, label: string, change: (v: T) => void) =>
+    <label key={value}><input type="radio" name={`${choiceId}-${group}`} value={value} checked={current === value} disabled={busy} onChange={() => change(value)} /> {label}</label>;
   return <div data-testid="scene-panel-5">
     <p>{copy.intro}</p>
+    <div className="practice-choices">
+      <fieldset className="practice-choice"><legend>{quality.focusLegend}</legend>
+        {radio('focus', 'normal', focus, quality.focusNormal, setFocus)}{radio('focus', 'refusal', focus, quality.focusRefusal, setFocus)}{radio('focus', 'rephrase', focus, quality.focusRephrase, setFocus)}
+      </fieldset>
+      <fieldset className="practice-choice"><legend>{quality.correctionLegend}</legend>
+        {radio('correction', 'normal', correction, quality.correctionNormal, changeCorrection)}{radio('correction', 'less', correction, quality.correctionLess, changeCorrection)}
+      </fieldset>
+    </div>
     <article className="scene-card"><p data-testid="practice-partner" lang="en">{partner.text}</p>
       {partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations?.[language]}</p>}
-      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => setPartnerHelp(open => !open)}>{partnerHelp ? tools.helpClose : tools.help}</button></div>
+      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => { if (!partnerHelp) stats.current.translations++; setPartnerHelp(open => !open); }}>{partnerHelp ? tools.helpClose : tools.help}</button></div>
     </article>
-    <div className="scene-actions">
+    {!ending && <div className="scene-actions">
       {stage === 'recording'
         ? <button type="button" className="guide-primary" onClick={() => recorder.current?.stop()}>{copy.done}</button>
         : <button type="button" className="guide-primary" disabled={busy} onClick={start}>{copy.start}</button>}
-      <button type="button" disabled={stage === 'recording' || stage === 'sending'} onClick={() => onHint(turnIndex)}>{copy.hint}</button>
-    </div>
+      <button type="button" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; onHint(turnIndex); }}>{copy.hint}</button>
+      <button type="button" disabled={busy} onClick={() => setEnding('ended')}>{quality.end}</button>
+    </div>}
     {stage === 'recording' && <p role="status">{copy.listening}</p>}
     {stage === 'sending' && <p role="status">{copy.sending}</p>}
     {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : copy[notice.key]}</p>}
-    {helpLevel > 0 && !reply && stage === 'idle' && <div data-testid="practice-auto-help" className="scene-card practice-help" role="status">
+    {helpLevel > 0 && !reply && !ending && stage === 'idle' && <div data-testid="practice-auto-help" className="scene-card practice-help" role="status">
       {helpLevel === 1
         ? <p>{tools.helpStart}<span lang="en">{learner.text.split(/\s+/).slice(0, 3).join(' ')}…</span></p>
         : <><p>{tools.helpFull}<span lang="en">{learner.text}</span></p><button type="button" onClick={() => playPartner(learner.id)}>{tools.demo}</button></>}
@@ -190,7 +244,28 @@ export default function ScenePractice({ course, language, startTurn, onHint, pla
       <p data-testid="practice-heard">{copy.heard} <span lang="en">{reply.transcript}</span></p>
       <p data-testid="practice-reply" lang="en">{reply.text}</p>
       <audio data-testid="practice-reply-audio" ref={audio} src={reply.src} controls />
+      {!reply.understood && <p data-testid="practice-clarify" role="status">{quality.clarify}</p>}
+      {showCoach && <div data-testid="practice-coach" className="practice-coach" lang={language}>
+        <p>{quality.coach}{reply.coachNote}</p>
+        {feedback === 'saved'
+          ? <p role="status">{quality.wrongSaved}</p>
+          : <><button type="button" className="text-button" disabled={feedback === 'busy'} onClick={() => markWrong(reply.coachNote!)}>{quality.wrong}</button>{feedback === 'failed' && <p role="alert">{quality.wrongFailed}</p>}</>}
+      </div>}
     </article>}
-    {reply && turnIndex < course.turns.length - 1 && <div className="scene-actions"><button type="button" onClick={nextTurn}>{copy.next}</button></div>}
+    {!ending && reply && turnIndex < course.turns.length - 1 && <div className="scene-actions"><button type="button" onClick={nextTurn}>{copy.next}</button></div>}
+    {ending && <section data-testid="practice-ending" className="scene-card practice-ending">
+      <h3>{ending === 'done' ? quality.doneTitle : quality.endedTitle}</h3>
+      <div data-testid="practice-review">
+        <h4>{quality.reviewTitle}</h4>
+        <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? quality.turnAnswered(i + 1, answered.current[i]) : quality.turnSilent(i + 1)}</li>)}</ul>
+        <ul><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{quality.unknownTransfer}</li></ul>
+        <p>{quality.reviewNote}</p>
+      </div>
+      <div className="scene-actions">
+        <button type="button" className="guide-primary" onClick={practiseAgain}>{quality.again}</button>
+        {ending === 'ended' && <button type="button" onClick={() => setEnding(null)}>{quality.keepGoing}</button>}
+        {onLeave && <button type="button" onClick={onLeave}>{quality.back}</button>}
+      </div>
+    </section>}
   </div>;
 }

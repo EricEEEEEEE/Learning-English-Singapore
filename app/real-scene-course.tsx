@@ -275,7 +275,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
       {course.turns.length > 1 && <div className="scene-actions"><button disabled={turnIndex === 0} onClick={() => changeTurn(turnIndex - 1)}>{notices.previous}</button><button data-testid="scene-next-turn" disabled={turnIndex === course.turns.length - 1} onClick={() => changeTurn(turnIndex + 1)}>{notices.next}</button></div>}
     </div>}
     {guided && saved && page === 'learn' && step === 5 && <ScenePractice key={`${saved.id}:${saved.revision}:${saved.materialsRevision ?? 0}`} course={{ ...saved, lines: course.lines, turns: course.turns }} language={language} startTurn={turnIndex} memory={practiceMemory.current} mediaBusy={segmentPlaying}
-      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); setPartnerHelp(false); changePage('learn', 4, turn); }} playPartner={(id, rate) => void playLine(lineById(id), rate)} />}
+      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); setPartnerHelp(false); changePage('learn', 4, turn); }} onLeave={() => changePage('watch')} playPartner={(id, rate) => void playLine(lineById(id), rate)} />}
     {guided && page === 'learn' && <div className="scene-actions">
       {step < 5 && <button type="button" className="guide-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : step === 3 ? guide.nextPrompt : practiceCopy.enter}</button>}
       {step < 5 && <button type="button" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>}

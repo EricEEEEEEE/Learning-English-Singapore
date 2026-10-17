@@ -675,3 +675,5 @@
 - [audit] phase → test-writing @ 2026-10-17T13:15:40+00:00
 - [audit] phase → test-writing @ 2026-10-17T13:19:19+00:00
 - C6 红：新增 tests/domain/c6-practice-quality.spec.mjs 26 题（回合合同的 focus/correction/done/coachNote、提示词规则、严格校验、少纠正与发音过滤、反馈存储与 HTTP、删全部连带删除、五语文案），24 红均因缺字段/缺 lib/practice-feedback.ts/缺路由/缺文案，2 题为守卫（未知字段、缺 understood）已绿；tests/e2e/c6-practice-quality.spec.mjs 10 题（夹具 c6-practice-browser.mjs），phone 10/10 红均为找不到新界面。为扩宽回应合同改了既有考题：t63b 适配器题的 schema 键由 2 个改为 4 个、返回值 toEqual 加 done/coachNote；t63a 替身回应补 done:false/coachNote:null（否则严格校验会让旧题因缺字段失败）。没有删断言。零模型调用。
+- [audit] phase → implementing @ 2026-10-17T13:35:41+00:00
+- C6 ✅ 34红→全绿 | T19A/T21A/T23A；domain 26/26、c6 e2e 30/30，完整 verify 1821/1821（verify-20261017-140158），没有删断言预警（红阶段对 t63a/t63b 是改写不是删除：schema 键 2→4、替身补 done/coachNote）。零费用、零模型调用。判断：默认重点/默认纠正不写进请求体，保持旧请求体不变；“少纠正”在服务端执行，页面也再挡一次；提到发音/口音的教练提示直接丢弃而不让整轮失败，因为回应本身有效；回顾只算本页事件，不存不发。新提示词在真实模型上的效果未验证。

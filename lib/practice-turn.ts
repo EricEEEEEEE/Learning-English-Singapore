@@ -7,18 +7,26 @@ import { sceneLanguages, type SceneCourse, type SceneLanguage } from './scene-co
 type Audio = { bytes: Uint8Array; mimeType: string };
 type PracticeCourse = { id: string; lines: Pick<SceneCourse['lines'][number], 'id' | 'role' | 'text'>[]; turns: SceneCourse['turns'] };
 type History = { learner: string; partner: string }[];
-export type PracticeContext = { partnerLine: string; expectedLearnerLine: string; sceneLines: { role: 'partner' | 'learner'; text: string }[]; transcript: string; history: History; language: SceneLanguage };
+export const practiceFocuses = ['normal', 'refusal', 'rephrase'] as const;
+export const practiceCorrections = ['normal', 'less'] as const;
+export type PracticeFocus = typeof practiceFocuses[number];
+export type PracticeCorrection = typeof practiceCorrections[number];
+export type PracticeContext = { partnerLine: string; expectedLearnerLine: string; sceneLines: { role: 'partner' | 'learner'; text: string }[]; transcript: string; history: History; language: SceneLanguage; focus: PracticeFocus; correction: PracticeCorrection };
+export type PracticeAnswer = { reply: string; understood: boolean; done: boolean; coachNote: string | null };
+export const MAX_COACH_NOTE = 120;
+// The coach never judges sound from a transcript: a note about pronunciation or accent is dropped, the reply kept.
+const SOUND_JUDGEMENT = /pronunc|accent|发音|發音|口音|発音|なまり|訛り|발음|억양|उच्चारण|लहजा|pelafalan|pengucapan|aksen|logat/i;
 type Options = {
   directory: string; sessionSecret: string; maxReservedMicros: number; turnMicros: number; maxTurnsPerCourse?: number;
   getCourse: (input: { cookie?: string | null; now?: number; id: string; revision: number; materialsRevision?: number }) => Promise<PracticeCourse>;
   transcribe: (input: Audio) => Promise<{ text: string }>;
-  respond: (input: PracticeContext) => Promise<{ reply: string; understood: boolean }>;
+  respond: (input: PracticeContext) => Promise<PracticeAnswer>;
   speak: (input: { text: string }) => Promise<{ bytes: Uint8Array; mimeType: string }>;
 };
-type TurnInput = { cookie?: string | null; now?: number; courseId: string; revision: number; materialsRevision?: number; turnIndex: number; language: string; history: History; audio: Audio };
-export type PracticeTurnResult = { kind: 'silence' } | { kind: 'reply'; transcript: string; understood: boolean; reply: { text: string; audioBase64: string; mimeType: string } };
+type TurnInput = { cookie?: string | null; now?: number; courseId: string; revision: number; materialsRevision?: number; turnIndex: number; language: string; history: History; audio: Audio; focus?: string; correction?: string };
+export type PracticeTurnResult = { kind: 'silence' } | { kind: 'reply'; transcript: string; understood: boolean; done: boolean; coachNote: string | null; reply: { text: string; audioBase64: string; mimeType: string } };
 
-const TURN_KEYS = ['cookie', 'now', 'courseId', 'revision', 'materialsRevision', 'turnIndex', 'language', 'history', 'audio'];
+const TURN_KEYS = ['cookie', 'now', 'courseId', 'revision', 'materialsRevision', 'turnIndex', 'language', 'history', 'audio', 'focus', 'correction'];
 const AUDIO_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav'];
 const MAX_AUDIO_BYTES = 1_000_000;
 const text = (v: unknown, max: number): v is string => typeof v === 'string' && v.length <= max;
@@ -52,6 +60,8 @@ export function createPracticeTurnService(options: Options) {
       const { audio, history } = input;
       if (!audio || !(audio.bytes instanceof Uint8Array) || !audio.bytes.length || audio.bytes.length > MAX_AUDIO_BYTES || !AUDIO_TYPES.includes(audio.mimeType)) throw new Error('Invalid practice audio');
       if (!sceneLanguages.includes(input.language as SceneLanguage)) throw new Error('Invalid practice language');
+      const focus = (input.focus ?? 'normal') as PracticeFocus, correction = (input.correction ?? 'normal') as PracticeCorrection;
+      if (!practiceFocuses.includes(focus) || !practiceCorrections.includes(correction)) throw new Error('Invalid practice turn');
       if (!Array.isArray(history) || history.length > 10 || history.some(item => !item || !text(item.learner, 500) || !text(item.partner, 500))) throw new Error('Invalid practice history');
       if (typeof input.courseId !== 'string' || !input.courseId || !Number.isSafeInteger(input.revision) || input.revision < 1 || !Number.isSafeInteger(input.turnIndex) || input.turnIndex < 0 || (input.materialsRevision !== undefined && (!Number.isSafeInteger(input.materialsRevision) || input.materialsRevision < 1))) throw new Error('Invalid practice turn');
       const owner = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
@@ -69,14 +79,18 @@ export function createPracticeTurnService(options: Options) {
         const answer = await options.respond({
           partnerLine: partner.text, expectedLearnerLine: learner.text,
           sceneLines: course.lines.map(line => ({ role: line.role, text: line.text })),
-          transcript: transcript.slice(0, 500), history: history.map(item => ({ ...item })), language: input.language as SceneLanguage,
+          transcript: transcript.slice(0, 500), history: history.map(item => ({ ...item })), language: input.language as SceneLanguage, focus, correction,
         });
         const reply = typeof answer?.reply === 'string' ? answer.reply.trim() : '';
-        if (!reply || reply.length > 300 || typeof answer.understood !== 'boolean') throw new Error('Invalid reply');
+        if (!reply || reply.length > 300 || typeof answer.understood !== 'boolean' || typeof answer.done !== 'boolean') throw new Error('Invalid reply');
+        if (answer.coachNote !== null && (typeof answer.coachNote !== 'string' || answer.coachNote.trim().length > MAX_COACH_NOTE)) throw new Error('Invalid reply');
+        let coachNote = typeof answer.coachNote === 'string' && answer.coachNote.trim() ? answer.coachNote.trim() : null;
+        // Less correction: a note only when the meaning was unclear, so the needed clarification stays.
+        if (coachNote && (SOUND_JUDGEMENT.test(coachNote) || (correction === 'less' && answer.understood))) coachNote = null;
         const spoken = await options.speak({ text: reply });
         if (!spoken || !(spoken.bytes instanceof Uint8Array) || !spoken.bytes.length || spoken.bytes.length > 4_000_000 || typeof spoken.mimeType !== 'string') throw new Error('Invalid speech');
         mark(seq, 'answered');
-        return { kind: 'reply', transcript, understood: answer.understood, reply: { text: reply, audioBase64: Buffer.from(spoken.bytes).toString('base64'), mimeType: spoken.mimeType } };
+        return { kind: 'reply', transcript, understood: answer.understood, done: answer.done, coachNote, reply: { text: reply, audioBase64: Buffer.from(spoken.bytes).toString('base64'), mimeType: spoken.mimeType } };
       } catch {
         mark(seq, 'unknown'); // the provider may have charged; keep the reservation and let the learner decide to try again
         throw new Error('Practice turn failed');
