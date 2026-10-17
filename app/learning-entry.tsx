@@ -14,6 +14,9 @@ import { useLearningLibrary } from './use-learning-library';
 import { learningLibraryCopy } from './learning-library-copy';
 import { dataTrustCopy } from './data-trust-copy';
 import { SignOutButton, SceneDelete, DeleteAllData, StoredData, GenerationRecords } from './data-trust';
+import { sceneSeedCategories, sceneSeeds, type SceneSeed, type SceneSeedCategory } from '../lib/scene-seeds';
+import { sceneSeedCopy } from './scene-seed-copy';
+import { sceneConfirmCopy } from './scene-confirm-copy';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -41,8 +44,18 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
   const requirementCopy = sceneRequirementCopy[language];
   const input = useRef<HTMLTextAreaElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
-  const nextFocus = useRef<'input' | 'heading' | null>(null);
+  const confirmHeading = useRef<HTMLHeadingElement>(null);
+  const nextFocus = useRef<'input' | 'heading' | 'confirm' | null>(null);
   const [invalid, setInvalid] = useState(false);
+  // C7 T30A: local example scenes, folded away until asked for. Picking one only fills the editable draft.
+  const seedCopy = sceneSeedCopy[language];
+  const [seedsOpen, setSeedsOpen] = useState(false);
+  const [category, setCategory] = useState<SceneSeedCategory>('school');
+  const [picked, setPicked] = useState(false);
+  // C7 T14A: "generate" first shows what will be generated; nothing is saved or sent until it is confirmed.
+  const [confirming, setConfirming] = useState(false);
+  const confirmCopy = sceneConfirmCopy[language];
+  const submitting = useRef(false);
 
   useLayoutEffect(() => {
     const saved = focusMemory.current;
@@ -63,10 +76,56 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
       input.current.focus();
       input.current.setSelectionRange(draft.text.length, draft.text.length);
     } else if (nextFocus.current === 'heading') heading.current?.focus();
+    else if (nextFocus.current === 'confirm') confirmHeading.current?.focus();
     nextFocus.current = null;
-  }, [draft.page, draft.text]);
+  }, [draft.page, draft.text, confirming]);
 
-  if (draft.page === 'background') return <form className="scene-form" onSubmit={event => { event.preventDefault(); void generation.generate(requirements.save); }}>
+  function pick(seed: SceneSeed) {
+    const text = seed.text[language];
+    setInvalid(false); setPicked(true);
+    if (draft.text === text.description && JSON.stringify(draft.keywords) === JSON.stringify(text.keywords)) {
+      input.current?.focus();
+      input.current?.setSelectionRange(text.description.length, text.description.length);
+      return;
+    }
+    nextFocus.current = 'input';
+    onChange({ ...draft, text: text.description, keywords: { ...text.keywords } });
+  }
+
+  if (draft.page === 'background' && confirming) {
+    const filled = sceneKeywordKeys.filter(key => draft.keywords[key].trim());
+    const role = (value: string) => value.trim() || confirmCopy.roleUnset;
+    return <section className="scene-confirm" aria-labelledby="scene-confirm-title">
+      <form className="scene-form" onSubmit={async event => {
+        event.preventDefault();
+        if (submitting.current) return;
+        submitting.current = true;
+        try { await generation.generate(requirements.save); }
+        finally {
+          submitting.current = false;
+          // Still here only when nothing was submitted (a failed or conflicting save): back to the inputs and the error.
+          setConfirming(false);
+        }
+      }}>
+        <h1 id="scene-confirm-title" ref={confirmHeading} tabIndex={-1}>{confirmCopy.title}</h1>
+        <h2>{confirmCopy.scene}</h2>
+        <p className="scene-description">{draft.text}</p>
+        <h2>{confirmCopy.keywords}</h2>
+        {filled.length ? <dl className="scene-confirm-keywords">{filled.map(key => <div key={key}>
+          <dt>{requirementCopy.fields[key].label}</dt><dd>{draft.keywords[key].trim()}</dd>
+        </div>)}</dl> : <p>{confirmCopy.none}</p>}
+        <p className="scene-confirm-role">{confirmCopy.you(role(draft.keywords.learnerRole))}</p>
+        <p className="scene-confirm-role">{confirmCopy.partner(role(draft.keywords.partnerRole))}</p>
+        <p className="scene-confirm-length">{confirmCopy.length}</p>
+        <p className="scene-note">{confirmCopy.wait}</p>
+        <p className="scene-note">{confirmCopy.cost}</p>
+        <button className="guide-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{confirmCopy.confirm}</button>
+        <button className="text-button" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'heading'; setConfirming(false); }}>{confirmCopy.edit}</button>
+      </form>
+    </section>;
+  }
+
+  if (draft.page === 'background') return <form className="scene-form" onSubmit={event => { event.preventDefault(); nextFocus.current = 'confirm'; setConfirming(true); }}>
     <h1 ref={heading} tabIndex={-1}>{copy.background}</h1>
     <p className="scene-description">{draft.text}</p>
     <p className="panel-copy" id="scene-keyword-hint">{requirementCopy.hint}</p>
@@ -95,11 +154,11 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
     <p className="panel-copy" id="scene-entry-hint">{hint}</p>
     <textarea ref={input} aria-labelledby="scene-entry-title" aria-describedby={`scene-entry-hint${invalid ? ' scene-entry-error' : ''}`}
       aria-invalid={invalid || undefined} maxLength={2000} value={draft.text}
-      onChange={event => { setInvalid(false); onChange({ ...draft, text: event.target.value }); }} />
+      onChange={event => { setInvalid(false); setPicked(false); onChange({ ...draft, text: event.target.value }); }} />
     {invalid ? <p className="scene-entry-error" id="scene-entry-error" role="alert">{copy.empty}</p> : null}
     <div className="scene-examples" role="group" aria-label={copy.examplesLabel}>
       {copy.examples.map(example => <button key={example.label} type="button" onClick={() => {
-        setInvalid(false);
+        setInvalid(false); setPicked(false);
         if (draft.text === example.text) {
           input.current?.focus();
           input.current?.setSelectionRange(example.text.length, example.text.length);
@@ -108,6 +167,19 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
         nextFocus.current = 'input';
         onChange({ ...draft, text: example.text });
       }}>{example.label}</button>)}
+    </div>
+    <div className="scene-seeds">
+      <button className="text-button" type="button" aria-expanded={seedsOpen} aria-controls="scene-seed-panel" onClick={() => setSeedsOpen(open => !open)}>{seedCopy.open}</button>
+      {seedsOpen ? <div id="scene-seed-panel">
+        <p className="scene-note">{seedCopy.note}</p>
+        <div className="scene-seed-categories" role="group" aria-label={seedCopy.categoriesLabel}>
+          {sceneSeedCategories.map(item => <button key={item.id} type="button" aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{seedCopy.categories[item.id]}</button>)}
+        </div>
+        <ul className="scene-seed-list" aria-label={seedCopy.listLabel}>
+          {sceneSeeds.filter(seed => seed.category === category).map(seed => <li key={seed.id}><button type="button" onClick={() => pick(seed)}>{seed.text[language].label}</button></li>)}
+        </ul>
+      </div> : null}
+      {picked ? <p className="scene-save-status" role="status">{seedCopy.picked}</p> : null}
     </div>
     <button className="guide-primary" type="submit">{copy.next}</button>
   </form>;
@@ -207,7 +279,7 @@ export default function LearningEntry() {
   return <div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
     <title>Learning English in Singapore</title>
     <header className="site-header">
-      <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan">帮你融入新加坡，相信自己可以做到。</p></div>
+      <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan" lang="zh-Hans">帮你融入新加坡，相信自己可以做到。</p></div>
       <label className="simple-language"><span>{copy.change}</span><select aria-label={copy.change} value={language} disabled={!ready || generation.preparing} onChange={event => changeLanguage(event.target.value)}>
         {languageChoices.map(choice => <option key={choice.code} value={choice.code}>{choice.name}</option>)}
       </select></label>

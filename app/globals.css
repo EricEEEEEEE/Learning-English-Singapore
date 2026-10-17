@@ -92,6 +92,21 @@ h1 span { display: block; }
 .scene-keywords input::placeholder { color: #61776c; opacity: 1; }
 .scene-keywords input:focus-visible { outline: 3px solid #be7232; outline-offset: 3px; }
 .scene-save-status { margin-top: 16px; color: var(--accent); }
+.scene-seeds { margin-top: 16px; }
+.scene-seed-categories { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.scene-seed-categories button { min-height: 44px; padding: 8px 14px; border: 1px solid #b2c4b8; border-radius: 999px; background: white; color: var(--accent); font-size: calc(14px * var(--text-scale)); }
+.scene-seed-categories button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: white; }
+.scene-seed-list { display: grid; gap: 8px; margin: 12px 0 0; padding: 0; list-style: none; }
+.scene-seed-list button { width: 100%; min-height: 44px; padding: 10px 14px; border: 1px solid #b2c4b8; border-radius: 8px; background: white; color: var(--ink); font-size: calc(14px * var(--text-scale)); line-height: 1.6; text-align: start; overflow-wrap: anywhere; }
+.scene-seed-list button:hover, .scene-seed-categories button:hover:not([aria-pressed="true"]) { background: var(--surface); }
+.scene-confirm h2 { margin-top: 20px; font-size: calc(15px * var(--text-scale)); color: var(--muted); }
+.scene-confirm-keywords { display: grid; gap: 8px; margin: 8px 0 0; }
+.scene-confirm-keywords div { display: grid; gap: 2px; }
+.scene-confirm-keywords dt { font-size: calc(13px * var(--text-scale)); color: var(--muted); }
+.scene-confirm-keywords dd { margin: 0; overflow-wrap: anywhere; }
+.scene-confirm-role { margin-top: 12px; font-weight: 600; }
+.scene-confirm-role + .scene-confirm-role { margin-top: 4px; }
+.scene-confirm-length { margin-top: 16px; }
 .simple-main .guide-primary:disabled { background: var(--surface); color: var(--muted); border-color: var(--line); }
 .simple-language { display: grid; gap: 4px; color: var(--muted); font-size: calc(12px * var(--text-scale)); }
 .simple-language select { max-width: 150px; min-height: 44px; padding: 6px; border: 1px solid var(--line); border-radius: 6px; color: var(--ink); background: white; font: inherit; }

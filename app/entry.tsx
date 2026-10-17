@@ -275,7 +275,7 @@ export default function Entry() {
     <div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
       <title>{`Learning English in Singapore · ${copy.title.join(' ')}`}</title>
       <header className="site-header">
-        <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan">帮你融入新加坡，相信自己可以做到。</p></div>
+        <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan" lang="zh-Hans">帮你融入新加坡，相信自己可以做到。</p></div>
         <span className="demo-label">{copy.demo}</span>
       </header>
 
