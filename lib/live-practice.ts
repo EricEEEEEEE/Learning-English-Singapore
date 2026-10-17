@@ -1,5 +1,5 @@
 import { createPracticeTurnService } from './practice-turn';
-import { transcribeSpeech, respondInScene, speakReply } from './practice-providers';
+import { transcribeSpeech, respondInScene, suggestInEnglish, speakReply } from './practice-providers';
 import { C3_BATCH_CEILING_MICROS } from './live-scene-runner';
 
 // One turn: a short transcription, one small text reply and one spoken reply stay well under USD0.03.
@@ -16,7 +16,7 @@ export function createLivePracticeService(env: Record<string, string | undefined
   try {
     return createPracticeTurnService({
       directory, sessionSecret: env.AUTH_SESSION_SECRET, maxReservedMicros: practice, turnMicros: PRACTICE_TURN_MICROS, getCourse: options.getCourse,
-      transcribe: audio => transcribeSpeech(audio, provider), respond: context => respondInScene(context, provider), speak: input => speakReply(input, provider),
+      transcribe: audio => transcribeSpeech(audio, provider), respond: context => respondInScene(context, provider), suggest: context => suggestInEnglish(context, provider), speak: input => speakReply(input, provider),
     });
   } catch { return null; }
 }

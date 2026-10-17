@@ -344,3 +344,12 @@ h1 span { display: block; }
 .scene-safety { margin-top: 8px; color: #6b3a12; }
 .practice-meanings { display: flex; flex-direction: column; gap: 8px; }
 .practice-meanings button { text-align: left; }
+
+/* C9-5: a sentence its owner marked as disabled stays readable but greyed, with the reason next to it. */
+.sentence-disabled { opacity: 0.55; }
+.sentence-disabled-note, .sentence-elsewhere { margin: -4px 0 8px; font-size: calc(13px * var(--text-scale)); color: var(--muted); overflow-wrap: anywhere; }
+/* C9-1/C9-2: the confirmed goal line and the "say it in my language" card. */
+.practice-goal { margin: 8px 0; padding: 8px 12px; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 6px; overflow-wrap: anywhere; }
+.practice-native .scene-note, .practice-compare { overflow-wrap: anywhere; }
+.practice-compare { margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); }
+.practice-compare p { margin: 4px 0; }

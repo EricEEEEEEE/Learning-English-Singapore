@@ -5,6 +5,8 @@ import type { EntryLanguage } from './entry-copy';
 import { dataTrustCopy, usd, day } from './data-trust-copy';
 import { requestLearningJson } from './learning-request';
 import type { GenerationRecord, DeletionEvent } from '../lib/my-data';
+import type { SentenceReportStatus, SameSentencePlace } from '../lib/sentence-reports';
+import { auditGapsCopy } from './audit-gaps-copy';
 
 const marker = 'le-sg-account-mode-v1';
 type Pointer = { id: string; revision: number; materialsRevision?: number };
@@ -83,7 +85,7 @@ export function StoredData({ language }: { language: EntryLanguage }) {
 }
 
 type Records = { tasks: GenerationRecord[]; deletions: DeletionEvent[] };
-const statuses = ['ready', 'failed', 'unknown', 'in_progress', 'simulation', 'deleted'];
+const statuses = ['ready', 'failed', 'unknown', 'in_progress', 'simulation', 'deleted', 'cancelled', 'stopped'];
 function parseRecords(value: unknown): Records {
   const data = value as Records;
   if (!data || !Array.isArray(data.tasks) || !Array.isArray(data.deletions)) throw new Error('Invalid records');
@@ -121,31 +123,44 @@ export function GenerationRecords({ language, onBack }: { language: EntryLanguag
 }
 
 // Learner reports about sentences of one exact course version; reporting never touches the course itself.
+// C9-5: each report carries how it is being handled, and where else the same English sentence appears.
+const reportStatuses: SentenceReportStatus[] = ['received', 'processing', 'disabled', 'corrected'];
+type ReportState = { key: string; lines: Map<string, SentenceReportStatus>; elsewhere: Record<string, SameSentencePlace[]> };
+function parsePlaces(value: unknown): Record<string, SameSentencePlace[]> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const places: Record<string, SameSentencePlace[]> = {};
+  for (const [lineId, list] of Object.entries(value)) if (Array.isArray(list)) places[lineId] = list.filter(item => item && typeof item.id === 'string' && Number.isSafeInteger(item.revision) && typeof item.description === 'string' && item.description.trim());
+  return places;
+}
 export function useSentenceReports(course: Pointer | null) {
   const key = course ? `${course.id}:${course.revision}:${course.materialsRevision ?? 0}` : null;
-  const [received, setReceived] = useState<{ key: string; lines: Set<string> } | null>(null);
+  const [state, setState] = useState<ReportState | null>(null);
   useEffect(() => {
     if (!key || !course) return;
     let active = true; const controller = new AbortController();
     const query = `id=${encodeURIComponent(course.id)}&revision=${course.revision}${course.materialsRevision === undefined ? '' : `&materialsRevision=${course.materialsRevision}`}`;
     requestLearningJson(`/api/sentence-reports?${query}`, controller).then(data => {
-      const lines = Array.isArray(data?.reports) ? data.reports.filter((item: { lineId?: unknown }) => typeof item?.lineId === 'string').map((item: { lineId: string }) => item.lineId) : [];
-      if (active) setReceived(previous => ({ key, lines: new Set([...(previous?.key === key ? previous.lines : []), ...lines]) }));
+      const listed: [string, SentenceReportStatus][] = Array.isArray(data?.reports) ? data.reports.filter((item: { lineId?: unknown }) => typeof item?.lineId === 'string')
+        .map((item: { lineId: string; status?: unknown }) => [item.lineId, reportStatuses.includes(item.status as SentenceReportStatus) ? item.status as SentenceReportStatus : 'received']) : [];
+      if (active) setState(previous => ({ key, lines: new Map([...(previous?.key === key ? previous.lines : []), ...listed]), elsewhere: parsePlaces(data?.elsewhere) }));
     }).catch(() => { /* Unknown report state shows nothing rather than a false status. */ });
     return () => { active = false; controller.abort(); };
   }, [key]);
+  const current = state?.key === key ? state : null;
   return {
-    has: (lineId: string) => received?.key === key && received.lines.has(lineId),
-    mark: (lineId: string) => { if (key) setReceived(previous => ({ key, lines: new Set([...(previous?.key === key ? previous.lines : []), lineId]) })); },
+    has: (lineId: string) => !!current?.lines.has(lineId),
+    statusOf: (lineId: string) => current?.lines.get(lineId) ?? null,
+    elsewhere: (lineId: string) => current?.elsewhere[lineId] ?? [],
+    mark: (lineId: string) => { if (key) setState(previous => ({ key, lines: new Map([...(previous?.key === key ? previous.lines : []), [lineId, previous?.key === key ? previous.lines.get(lineId) ?? 'received' : 'received']]), elsewhere: previous?.key === key ? previous.elsewhere : {} })); },
   };
 }
 
-export function SentenceReport({ language, course, lineId, text, received, onReceived }: { language: EntryLanguage; course: Pointer; lineId: string; text: string; received: boolean; onReceived: (lineId: string) => void }) {
-  const copy = dataTrustCopy[language].report;
+export function SentenceReport({ language, course, lineId, text, received, status = 'received', onReceived }: { language: EntryLanguage; course: Pointer; lineId: string; text: string; received: boolean; status?: SentenceReportStatus | null; onReceived: (lineId: string) => void }) {
+  const copy = dataTrustCopy[language].report, gaps = auditGapsCopy[language];
   const id = useId();
   const [open, setOpen] = useState(false), [reason, setReason] = useState(''), [note, setNote] = useState('');
   const [busy, setBusy] = useState(false), [failed, setFailed] = useState(false);
-  if (received) return <p className="report-status" data-testid="sentence-report-status" role="status">{copy.received}</p>;
+  if (received) return <p className="report-status" data-testid="sentence-report-status" role="status">{status === 'processing' ? gaps.reportProcessing : status === 'disabled' ? gaps.reportDisabled : status === 'corrected' ? gaps.reportCorrected : copy.received}</p>;
   if (!open) return <button className="text-button" type="button" aria-label={copy.open(text)} onClick={() => setOpen(true)}>{copy.short}</button>;
   return <form className="report-form" onSubmit={async event => {
     event.preventDefault(); if (!reason) return;

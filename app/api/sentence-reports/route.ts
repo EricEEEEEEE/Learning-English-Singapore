@@ -1,11 +1,12 @@
 import { join } from 'node:path';
 import { createLocalCourseStore } from '../../../lib/local-course-store';
 import { parseLearningCoursePointer } from '../../../lib/learning-library';
-import { createSentenceReportStore } from '../../../lib/sentence-reports';
+import { createSentenceReportStore, createSameSentenceFinder } from '../../../lib/sentence-reports';
 import { privateReply, sameOrigin, sessionCookie, readSmallBody, localSetup } from '../../../lib/private-request';
 
 export const runtime = 'nodejs';
 type Reports = Pick<ReturnType<typeof createSentenceReportStore>, 'list' | 'report'>;
+type SameSentence = Pick<ReturnType<typeof createSameSentenceFinder>, 'find'>;
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 
 function queryPointer(params: URLSearchParams) {
@@ -15,11 +16,17 @@ function queryPointer(params: URLSearchParams) {
 }
 
 // C5: a learner reports one sentence of one exact course version. Recording a report changes no course.
-export async function handleSentenceReports(request: Request, { reports, now }: { reports: Reports; now: number }) {
+export async function handleSentenceReports(request: Request, { reports, now, sameSentence }: { reports: Reports; now: number; sameSentence?: SameSentence }) {
   if (!['GET', 'POST'].includes(request.method)) return privateReply({ error: 'method' }, 405);
   const session = { cookie: sessionCookie(request), now };
   try {
-    if (request.method === 'GET') return privateReply({ reports: await reports.list({ ...session, ...queryPointer(new URL(request.url).searchParams) }) });
+    if (request.method === 'GET') {
+      const course = queryPointer(new URL(request.url).searchParams), listed = await reports.list({ ...session, ...course });
+      // C9-5: where else the reported sentences appear. A failed lookup never hides the reports themselves.
+      let elsewhere: Awaited<ReturnType<SameSentence['find']>> | null = null;
+      if (sameSentence && listed.length) try { elsewhere = await sameSentence.find({ ...session, course, lineIds: listed.map(item => item.lineId) }); } catch { elsewhere = null; }
+      return privateReply({ reports: listed, ...(elsewhere ? { elsewhere } : {}) });
+    }
     if (!sameOrigin(request)) return privateReply({ error: 'origin' }, 403);
     if (new URL(request.url).searchParams.size) return privateReply({ error: 'invalid' }, 400);
     const raw = await readSmallBody(request, 2048);
@@ -42,7 +49,8 @@ function configured(request: Request) {
   const secret = localSetup();
   if (!secret) return privateReply({ error: 'local_setup_required' }, 503);
   const directory = join(process.cwd(), 'tmp', 'generation-tasks'), courses = createLocalCourseStore(directory, secret);
-  return handleSentenceReports(request, { reports: createSentenceReportStore({ directory, sessionSecret: secret, getCourse: courses.getCourse }), now: Date.now() });
+  return handleSentenceReports(request, { reports: createSentenceReportStore({ directory, sessionSecret: secret, getCourse: courses.getCourse }), now: Date.now(),
+    sameSentence: createSameSentenceFinder({ list: courses.list, getCourse: courses.getCourse }) });
 }
 export const GET = configured;
 export const POST = configured;

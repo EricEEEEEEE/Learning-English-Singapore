@@ -30,3 +30,11 @@ export function sceneSafetyKind(content: { description: string; keywords: SceneK
   if (official.some(word => text.includes(word))) return 'official';
   return null;
 }
+
+// C9-4 (spec F12.4): the matching prompt rule, added to script generation and practice only when the rule above
+// marks the scene. The roles may practise asking and answering, but never hand out a real conclusion.
+const promptRules: Record<SceneSafetyKind, string> = {
+  medical: 'This scene touches a clinic or a medical matter and is communication practice only: no role may give a diagnosis, a treatment decision or medical advice as fact; when the learner asks for one, the partner says the real doctor or clinic staff will decide and points the learner to them.',
+  official: 'This scene touches an official procedure and is communication practice only: no role may give a legal or official conclusion (for example whether a pass, permit or application will be approved); when the learner asks for one, the partner says the real government office or officer decides and points the learner to them.',
+};
+export function safetyPromptRule(kind: SceneSafetyKind) { return promptRules[kind]; }

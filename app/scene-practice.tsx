@@ -7,17 +7,24 @@ import { practiceQualityCopy } from './practice-quality-copy';
 import { resumeSafetyCopy } from './resume-safety-copy';
 import { useOnline, isOffline } from './use-online';
 import { meaningOptions } from '../lib/practice-meanings';
+import { auditGapsCopy } from './audit-gaps-copy';
+import { classifyPracticeTurn, countOutcomes, practiceOutcomes, type PracticeOutcome, type PracticeReview } from '../lib/practice-review-outcomes';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
 type History = { learner: string; partner: string }[];
 type Reply = { transcript: string; text: string; src: string; understood?: boolean; coachNote?: string | null };
-type Focus = 'normal' | 'refusal' | 'rephrase';
+type Focus = 'normal' | 'refusal' | 'rephrase' | 'unclear';
+type Goal = { revision: number; summary: string };
+type GoalChange = { summary: string; confirm: string };
+type Native = { transcript: string; understood: boolean; text: string | null; src: string | null };
 type Correction = 'normal' | 'less';
 // What this visit observed, for the review after practice. Nothing here is sent anywhere.
-type Stats = { hints: number; autoHelp: number; translations: number };
+type Stats = { hints: number; autoHelp: number; translations: number; native?: number };
 // Kept by the course page so a detour to the hint page does not lose the conversation so far.
-export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null; focus?: Focus; ending?: 'done' | 'ended' | null; stats?: Stats; answered?: Record<number, string>; chosen?: Record<number, string> };
+export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null; focus?: Focus; ending?: 'done' | 'ended' | null; stats?: Stats; answered?: Record<number, string>; chosen?: Record<number, string>;
+  // C9: the confirmed goal (its revision counts changes in this session), per-turn help and understanding, and the review session id.
+  goal?: Goal | null; goalRevision?: number; helped?: Record<number, boolean>; understood?: Record<number, boolean>; session?: string };
 type Copy = { start: string; done: string; hint: string; next: string; listening: string; sending: string; heard: string; silence: string; unavailable: string; budget: string; failed: string; login: string; mic: string; tooLong: string; intro: string; replay: string };
 
 export const scenePracticeCopy: Record<EntryLanguage, Copy & { title: string; enter: string; promptHint: string }> = {
@@ -53,6 +60,15 @@ function readAutoHelp() { try { return window.localStorage.getItem(AUTO_HELP_KEY
 const CORRECTION_KEY = 'les.practice.correction';
 function readCorrection(): Correction { try { return window.localStorage.getItem(CORRECTION_KEY) === 'less' ? 'less' : 'normal'; } catch { return 'normal'; } }
 const MAX_COACH_NOTE = 120;
+const AUDIO_MIME = /^audio\/[a-z0-9.+-]+$/;
+const goalChangeOf = (value: unknown): GoalChange | null => {
+  const v = value as GoalChange | null | undefined;
+  return v && typeof v === 'object' && typeof v.summary === 'string' && typeof v.confirm === 'string' && v.summary.trim() && v.summary.length <= 120 && v.confirm.length <= 200 ? { summary: v.summary.trim(), confirm: v.confirm.trim() } : null;
+};
+function newSession() {
+  try { return crypto.randomUUID(); } catch { return `s${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`; }
+}
+const outcomeOrder: PracticeOutcome[] = [...practiceOutcomes];
 
 async function toBase64(blob: Blob) {
   const bytes = new Uint8Array(await blob.arrayBuffer());
@@ -68,6 +84,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const tools = listenToolsCopy[language];
   const quality = practiceQualityCopy[language];
   const extra = resumeSafetyCopy[language];
+  const gaps = auditGapsCopy[language];
   const online = useOnline();
   const choiceId = useId();
   const [focus, setFocus] = useState<Focus>(memory?.focus ?? 'normal');
@@ -78,9 +95,25 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const answered = useRef<Record<number, string>>(memory?.answered ?? {});
   // C8-5: meanings picked without speaking, per turn (line id). The review shows them as "picked, not spoken".
   const chosen = useRef<Record<number, string>>(memory?.chosen ?? {});
+  // C9-6: per-turn help and whether the partner understood the last attempt, for the review's classification.
+  const helped = useRef<Record<number, boolean>>(memory?.helped ?? {});
+  const understoodBy = useRef<Record<number, boolean>>(memory?.understood ?? {});
+  const session = useRef<string>(memory?.session ?? '');
+  if (!session.current) session.current = newSession();
+  const [reviewSave, setReviewSave] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
+  const [previousReview, setPreviousReview] = useState<PracticeReview | null>(null);
+  // C9-1: the confirmed goal and its revision; a reply sent under an older revision is ignored when it arrives.
+  const [goal, setGoal] = useState<Goal | null>(memory?.goal ?? null);
+  const goalRef = useRef<Goal | null>(memory?.goal ?? null);
+  const goalRevision = useRef<number>(memory?.goalRevision ?? memory?.goal?.revision ?? 0);
+  const [pendingGoal, setPendingGoal] = useState<GoalChange | null>(null);
+  // C9-2: "say it in my language": the suggestion card, and which kind of recording is running.
+  const [native, setNative] = useState<Native | null>(null);
+  const mode = useRef<'english' | 'native'>('english');
+  const nativeAudio = useRef<HTMLAudioElement>(null);
   const [turnIndex, setTurnIndex] = useState(startTurn);
   const [stage, setStage] = useState<'idle' | 'opening' | 'recording' | 'sending'>('idle');
-  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' | 'offline' } | null>(null);
+  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' | 'offline' | 'staleGoal' } | null>(null);
   const [thinking, setThinking] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const [chosenLine, setChosenLine] = useState<string | null>(memory && memory.turnIndex === startTurn ? memory.chosen?.[startTurn] ?? null : null);
@@ -100,7 +133,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const turn = course.turns[turnIndex];
   const partner = course.lines.find(line => line.id === turn.partnerLineId)!;
   const learner = course.lines.find(line => line.id === turn.learnerLineId)!;
-  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; memory.chosen = chosen.current; }
+  if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; memory.chosen = chosen.current;
+    memory.goal = goal; memory.goalRevision = goalRevision.current; memory.helped = helped.current; memory.understood = understoodBy.current; memory.session = session.current; }
 
   function release() {
     if (timer.current) clearTimeout(timer.current);
@@ -116,10 +150,33 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   // Silence after the partner has finished earns help: first how to begin, then the whole answer with a model.
   // Nothing is offered while the partner is still talking, while the learner is speaking, or once they answered.
   useEffect(() => {
-    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy || thinking || chosenLine || choosing || resumeChoice) return;
-    const id = setTimeout(() => { if (document.visibilityState !== 'hidden') { stats.current.autoHelp++; setHelpLevel(level => level + 1); } }, HELP_DELAY_MS);
+    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy || thinking || chosenLine || choosing || resumeChoice || native) return;
+    const id = setTimeout(() => { if (document.visibilityState !== 'hidden') { stats.current.autoHelp++; helped.current[turnIndex] = true; setHelpLevel(level => level + 1); } }, HELP_DELAY_MS);
     return () => clearTimeout(id);
-  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex, thinking, chosenLine, choosing, resumeChoice]);
+  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex, thinking, chosenLine, choosing, resumeChoice, native]);
+  // C9-6: each ending saves this visit's review once (the same session id updates it) and brings back the last one.
+  useEffect(() => {
+    if (!ending) return;
+    let active = true;
+    const outcomes = course.turns.map((_, i) => outcomeOf(i));
+    const body = { course: { id: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}) }, session: session.current,
+      turns: outcomes.map((outcome, turnIndex) => ({ turnIndex, outcome })), help: { hints: stats.current.hints, autoHelp: stats.current.autoHelp, translations: stats.current.translations, native: stats.current.native ?? 0 } };
+    if (isOffline()) { setReviewSave('failed'); return; }
+    setReviewSave('saving'); setPreviousReview(null);
+    const controller = new AbortController(), deadline = window.setTimeout(() => controller.abort(), 5000);
+    fetch('/api/practice-reviews', { method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: controller.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      .then(async response => {
+        const data = response.status === 201 ? await response.json() : null;
+        if (!active) return;
+        if (!data) { setReviewSave('failed'); return; }
+        const previous = data.previous as PracticeReview | null;
+        setPreviousReview(previous && Array.isArray(previous.turns) && previous.turns.every(turn => outcomeOrder.includes(turn?.outcome)) ? previous : null);
+        setReviewSave('saved');
+      })
+      .catch(() => { if (active) setReviewSave('failed'); })
+      .finally(() => window.clearTimeout(deadline));
+    return () => { active = false; };
+  }, [ending]);
   // Going to the background ends the recording without sending it and gives the microphone back.
   useEffect(() => {
     const hidden = () => {
@@ -137,8 +194,14 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     try { window.localStorage.setItem(CORRECTION_KEY, next); } catch { /* the choice still holds for this visit */ }
   }
 
-  async function start() {
+  function outcomeOf(i: number): PracticeOutcome {
+    return classifyPracticeTurn({ spoken: answered.current[i] !== undefined, understood: understoodBy.current[i] ?? null, helped: !!helped.current[i], chose: chosen.current[i] !== undefined });
+  }
+
+  async function start(kind: 'english' | 'native' = 'english') {
     if (isOffline()) { setNotice({ kind: 'alert', key: 'offline' }); return; }
+    mode.current = kind;
+    if (kind === 'native') setNative(null);
     setResumeChoice(false); setChoosing(false);
     setNotice(null); setReply(null); setFeedback('idle'); setHelpLevel(0); discard.current = false; setStage('opening');
     try {
@@ -172,22 +235,38 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     // C8-1: a recording finished offline is not sent and not retried; the learner can say it again once back online.
     if (isOffline()) { setStage('idle'); setNotice({ kind: 'alert', key: 'offline' }); return; }
     setStage('sending');
+    const sentRevision = goalRevision.current, sentGoal = goalRef.current, sentMode = mode.current;
     try {
       const response = await fetch('/api/practice-turn', {
         method: 'POST', headers: { 'content-type': 'application/json' }, cache: 'no-store',
-        body: JSON.stringify({ courseId: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}), turnIndex, language, history, ...(focus !== 'normal' ? { focus } : {}), ...(correction === 'less' ? { correction } : {}), mimeType, audioBase64: await toBase64(blob) }),
+        body: JSON.stringify({ courseId: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}), turnIndex, language, history, ...(focus !== 'normal' ? { focus } : {}), ...(correction === 'less' ? { correction } : {}),
+          ...(sentMode === 'native' ? { mode: 'native' } : {}), ...(sentGoal ? { goal: { revision: sentGoal.revision, summary: sentGoal.summary } } : {}), mimeType, audioBase64: await toBase64(blob) }),
       });
       const data = await response.json().catch(() => null);
       if (!mounted.current) return;
       if (!response.ok) { setNotice({ kind: 'alert', key: errorKey[response.status] ?? 'failed' }); return; }
       if (data?.kind === 'silence') { setNotice({ kind: 'status', key: 'silence' }); return; }
+      // C9-1: the goal changed while this reply was on its way: it belongs to the old goal and must not overwrite the new one.
+      if (goalRevision.current !== sentRevision || (data?.goalRevision !== undefined && data.goalRevision !== sentRevision)) { setNotice({ kind: 'status', key: 'staleGoal' }); return; }
+      if (sentMode === 'native') {
+        const suggestion = data?.suggestion;
+        const valid = data?.kind === 'native' && typeof data.transcript === 'string' && typeof data.understood === 'boolean'
+          && (data.understood ? !!suggestion && typeof suggestion.text === 'string' && !!suggestion.text.trim() && suggestion.text.length <= 160 && typeof suggestion.audioBase64 === 'string' && AUDIO_MIME.test(suggestion.mimeType) : suggestion === null);
+        if (!valid) { setNotice({ kind: 'alert', key: 'failed' }); return; }
+        stats.current.native = (stats.current.native ?? 0) + 1; helped.current[turnIndex] = true;
+        setNative({ transcript: data.transcript, understood: data.understood, text: data.understood ? suggestion.text.trim() : null, src: data.understood ? `data:${suggestion.mimeType};base64,${suggestion.audioBase64}` : null });
+        return;
+      }
       const r = data?.reply;
       const note = data?.coachNote;
-      if (data?.kind !== 'reply' || typeof data.transcript !== 'string' || typeof r?.text !== 'string' || typeof r.audioBase64 !== 'string' || !/^audio\/[a-z0-9.+-]+$/.test(r.mimeType)
+      if (data?.kind !== 'reply' || typeof data.transcript !== 'string' || typeof r?.text !== 'string' || typeof r.audioBase64 !== 'string' || !AUDIO_MIME.test(r.mimeType)
         || (data.done !== undefined && typeof data.done !== 'boolean') || (data.understood !== undefined && typeof data.understood !== 'boolean')
         || !(note === undefined || note === null || typeof note === 'string' && note.length <= MAX_COACH_NOTE)) { setNotice({ kind: 'alert', key: 'failed' }); return; }
       freshReply.current = true;
       answered.current[turnIndex] = data.transcript;
+      understoodBy.current[turnIndex] = data.understood !== false;
+      setNative(null);
+      setPendingGoal(goalChangeOf(data.goalChange));
       setReply({ transcript: data.transcript, text: r.text, src: `data:${r.mimeType};base64,${r.audioBase64}`, understood: data.understood !== false, coachNote: typeof note === 'string' && note.trim() ? note.trim() : null });
       if (data.done === true) setEnding('done');
       setHistory(previous => [...previous, { learner: data.transcript.slice(0, 500), partner: r.text.slice(0, 500) }].slice(-10));
@@ -198,7 +277,13 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     }
   }
 
-  function resetTurn() { setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); }
+  function resetTurn() { setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); setNative(null); setPendingGoal(null); }
+  function confirmGoal() {
+    if (!pendingGoal) return;
+    goalRevision.current += 1;
+    const next = { revision: goalRevision.current, summary: pendingGoal.summary };
+    goalRef.current = next; setGoal(next); setPendingGoal(null);
+  }
   function nextTurn() {
     const next = turnIndex + 1;
     setTurnIndex(next); resetTurn(); onTurn?.(next);
@@ -209,11 +294,14 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     Object.assign(stats.current, { hints: 0, autoHelp: 0, translations: 0 });
     for (const key of Object.keys(answered.current)) delete answered.current[Number(key)];
     for (const key of Object.keys(chosen.current)) delete chosen.current[Number(key)];
+    for (const record of [helped.current, understoodBy.current]) for (const key of Object.keys(record)) delete record[Number(key)];
+    stats.current.native = 0; session.current = newSession(); setReviewSave('idle'); setPreviousReview(null);
+    goalRef.current = null; setGoal(null);
     playPartner(course.turns[0].partnerLineId);
   }
   // C8-5: picking a meaning shows and plays the course's own English line for it; nothing is sent or scored.
   function pickMeaning(lineId: string) {
-    chosen.current[turnIndex] = lineId;
+    chosen.current[turnIndex] = lineId; helped.current[turnIndex] = true;
     setChosenLine(lineId); setChoosing(false); setHelpLevel(0); setResumeChoice(false);
     playPartner(lineId);
   }
@@ -232,6 +320,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   }
 
   const busy = stage !== 'idle';
+  const outcomeLabel: Record<PracticeOutcome, string> = { independent: gaps.outcomeIndependent, after_hint: gaps.outcomeAfterHint, needs_help: gaps.outcomeNeedsHelp, chose_meaning: gaps.outcomeChose, unobserved: gaps.outcomeUnobserved };
+  const compareLine = (label: string, outcomes: PracticeOutcome[]) => { const counts = countOutcomes(outcomes); return `${label}：${outcomeOrder.map(outcome => `${outcomeLabel[outcome]} ${counts[outcome]}`).join(' · ')}`; };
   const showCoach = reply?.coachNote && !(correction === 'less' && reply.understood);
   const radio = <T extends string>(group: string, value: T, current: T, label: string, change: (v: T) => void) =>
     <label key={value}><input type="radio" name={`${choiceId}-${group}`} value={value} checked={current === value} disabled={busy} onChange={() => change(value)} /> {label}</label>;
@@ -239,7 +329,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     <p>{copy.intro}</p>
     <div className="practice-choices">
       <fieldset className="practice-choice"><legend>{quality.focusLegend}</legend>
-        {radio('focus', 'normal', focus, quality.focusNormal, setFocus)}{radio('focus', 'refusal', focus, quality.focusRefusal, setFocus)}{radio('focus', 'rephrase', focus, quality.focusRephrase, setFocus)}
+        {radio('focus', 'normal', focus, quality.focusNormal, setFocus)}{radio('focus', 'refusal', focus, quality.focusRefusal, setFocus)}{radio('focus', 'rephrase', focus, quality.focusRephrase, setFocus)}{radio('focus', 'unclear', focus, gaps.focusUnclear, setFocus)}
       </fieldset>
       <fieldset className="practice-choice"><legend>{quality.correctionLegend}</legend>
         {radio('correction', 'normal', correction, quality.correctionNormal, changeCorrection)}{radio('correction', 'less', correction, quality.correctionLess, changeCorrection)}
@@ -252,23 +342,35 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         <button type="button" onClick={() => setResumeChoice(false)}>{extra.resumeContinue}</button>
       </div>
     </div>}
+    {goal && !ending && <p data-testid="practice-goal" className="practice-goal" lang={language}>{gaps.goalLine(goal.revision, goal.summary)}</p>}
     <article className="scene-card"><p data-testid="practice-partner" lang="en">{partner.text}</p>
       {partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations?.[language]}</p>}
-      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => { if (!partnerHelp) stats.current.translations++; setPartnerHelp(open => !open); }}>{partnerHelp ? tools.helpClose : tools.help}</button><button type="button" onClick={pause}>{extra.pause}</button></div>
+      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => { if (!partnerHelp) { stats.current.translations++; helped.current[turnIndex] = true; } setPartnerHelp(open => !open); }}>{partnerHelp ? tools.helpClose : tools.help}</button><button type="button" onClick={pause}>{extra.pause}</button></div>
     </article>
     {!ending && <div className="scene-actions">
       {stage === 'recording'
         ? <button type="button" className="guide-primary" onClick={() => recorder.current?.stop()}>{copy.done}</button>
-        : <button type="button" className="guide-primary" disabled={busy || !online} aria-describedby={!online ? `${choiceId}-offline` : undefined} onClick={start}>{copy.start}</button>}
+        : <><button type="button" className="guide-primary" disabled={busy || !online} aria-describedby={!online ? `${choiceId}-offline` : undefined} onClick={() => start('english')}>{copy.start}</button>
+          <button type="button" disabled={busy || !online} onClick={() => start('native')}>{gaps.nativeStart}</button></>}
       <button type="button" disabled={busy || thinking} onClick={() => { setThinking(true); setHelpLevel(0); setResumeChoice(false); }}>{extra.think}</button>
       <button type="button" disabled={busy} aria-expanded={choosing} onClick={() => { setChoosing(open => !open); setResumeChoice(false); }}>{extra.choose}</button>
-      <button type="button" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; onHint(turnIndex); }}>{copy.hint}</button>
+      <button type="button" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; helped.current[turnIndex] = true; onHint(turnIndex); }}>{copy.hint}</button>
       <button type="button" disabled={busy} onClick={() => setEnding('ended')}>{quality.end}</button>
     </div>}
     {stage === 'recording' && <p role="status">{copy.listening}</p>}
     {stage === 'sending' && <p role="status">{copy.sending}</p>}
     {!online && !ending && <p id={`${choiceId}-offline`} data-testid="practice-offline" role="status">{extra.practiceOffline}</p>}
-    {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : copy[notice.key]}</p>}
+    {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : notice.key === 'staleGoal' ? gaps.goalStale : copy[notice.key]}</p>}
+    {native && !ending && <article data-testid="practice-native" className="scene-card practice-native">
+      <p lang={language}>{gaps.nativeHeard} {native.transcript}</p>
+      {native.understood && native.text && native.src ? <>
+        <p>{gaps.nativeSay}<span lang="en">{native.text}</span></p>
+        <audio data-testid="practice-native-audio" ref={nativeAudio} src={native.src} preload="auto" />
+        <div className="scene-actions"><button type="button" onClick={() => { nativeAudio.current?.play().catch(() => {}); }}>{gaps.nativePlay}</button>
+          <button type="button" className="guide-primary" disabled={busy || !online} onClick={() => start('english')}>{gaps.nativeRetry}</button></div>
+        <p className="scene-note">{gaps.nativeNote}</p>
+      </> : <p role="status">{gaps.nativeUnclear}</p>}
+    </article>}
     {thinking && !ending && !reply && stage === 'idle' && <p data-testid="practice-thinking" role="status">{extra.thinking}</p>}
     {choosing && !ending && <fieldset className="practice-choice practice-meanings"><legend>{extra.chooseLegend}</legend>
       {meaningOptions(course, turnIndex, language).map(option => <button key={option.lineId} type="button" lang={language} onClick={() => pickMeaning(option.lineId)}>{option.meaning}</button>)}
@@ -299,14 +401,25 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
           : <><button type="button" className="text-button" disabled={feedback === 'busy'} onClick={() => markWrong(reply.coachNote!)}>{quality.wrong}</button>{feedback === 'failed' && <p role="alert">{quality.wrongFailed}</p>}{feedback === 'offline' && <p role="alert">{extra.unsavedOffline}</p>}</>}
       </div>}
     </article>}
+    {pendingGoal && !ending && <div data-testid="practice-goal-confirm" className="scene-card" role="group" aria-label={gaps.goalAsk(pendingGoal.summary)}>
+      <p lang={language}>{gaps.goalAsk(pendingGoal.summary)}</p>
+      <div className="scene-actions"><button type="button" className="guide-primary" onClick={confirmGoal}>{gaps.goalConfirm}</button><button type="button" onClick={() => setPendingGoal(null)}>{gaps.goalKeep}</button></div>
+    </div>}
     {!ending && (reply || chosenLine) && turnIndex < course.turns.length - 1 && <div className="scene-actions"><button type="button" onClick={nextTurn}>{copy.next}</button></div>}
     {ending && <section data-testid="practice-ending" className="scene-card practice-ending">
       <h3>{ending === 'done' ? quality.doneTitle : quality.endedTitle}</h3>
       <div data-testid="practice-review">
         <h4>{quality.reviewTitle}</h4>
-        <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? quality.turnAnswered(i + 1, answered.current[i]) : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
-        <ul><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{quality.unknownTransfer}</li></ul>
+        <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? `${quality.turnAnswered(i + 1, answered.current[i])} · ${outcomeLabel[outcomeOf(i)]}` : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
+        <ul><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{gaps.nativeCount(stats.current.native ?? 0)}</li><li>{quality.unknownTransfer}</li></ul>
         <p>{quality.reviewNote}</p>
+        {reviewSave === 'failed' && <p data-testid="practice-review-unsaved" role="status">{gaps.reviewUnsaved}</p>}
+        {reviewSave === 'saved' && !previousReview && <p data-testid="practice-compare-first">{gaps.compareFirst}</p>}
+        {reviewSave === 'saved' && previousReview && <div className="practice-compare">
+          <p data-testid="practice-compare-previous">{compareLine(gaps.previousReview, previousReview.turns.map(turn => turn.outcome))}</p>
+          <p data-testid="practice-compare-current">{compareLine(gaps.thisReview, course.turns.map((_, i) => outcomeOf(i)))}</p>
+          <p className="scene-note">{gaps.compareNote}</p>
+        </div>}
       </div>
       <div className="scene-actions">
         <button type="button" className="guide-primary" onClick={practiseAgain}>{quality.again}</button>

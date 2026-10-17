@@ -13,6 +13,7 @@ import { requestLearningJson } from './learning-request';
 import { learningLibraryCopy } from './learning-library-copy';
 import { SentenceReport, useSentenceReports } from './data-trust';
 import { resumeSafetyCopy } from './resume-safety-copy';
+import { auditGapsCopy } from './audit-gaps-copy';
 import { sceneSafetyKind } from '../lib/scene-safety';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
@@ -75,7 +76,10 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const extra = resumeSafetyCopy[language];
   // C8-6: a simple, visible rule (lib/scene-safety.ts) on the learner's own description and keywords.
   const safety = guided && requirement ? (() => { try { return sceneSafetyKind(requirement.content); } catch { return null; } })() : null;
-  const reports = useSentenceReports(saved && course && (!guided || page === 'learn') && step === 3 ? saved : null);
+  // C9-5: report statuses are read on the sentences page and the prompt page (a disabled line is not shown as the model answer).
+  const reports = useSentenceReports(saved && course && (!guided || page === 'learn') && (step === 3 || step === 4) ? saved : null);
+  const gaps = auditGapsCopy[language];
+  const listSeparator = language === 'zh-Hans' || language === 'ja' ? '、' : ', ';
   const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : step === 5 ? practiceCopy.title : copy.steps[step - 1] : copy.title;
   useLayoutEffect(() => {
     if (guided && focusNext.current) { heading.current?.focus(); focusNext.current = false; }
@@ -267,9 +271,14 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
       <div className="scene-actions"><button type="button" className="guide-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button><button type="button" onClick={() => changePage('watch')}>{guide.watchAgain}</button></div>
     </div>}
     {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
-    {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => <div key={line.id} className="sentence-row"><article data-testid="scene-sentence" className="scene-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>
+    {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => {
+        const status = reports.statusOf(line.id), places = reports.elsewhere(line.id);
+        return <div key={line.id} className="sentence-row" data-status={status ?? undefined}><article data-testid="scene-sentence" className={`scene-card${status === 'disabled' ? ' sentence-disabled' : ''}`}><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>
+        {status === 'disabled' && <p data-testid="sentence-disabled-note" className="sentence-disabled-note" lang={language}>{gaps.sentenceDisabled}</p>}
         <button type="button" className="text-button" aria-pressed={loopKey === line.id} aria-label={`${tools.loopLine}：${line.text}`} onClick={() => toggleLoop(line.id, line.start, line.end)}>{tools.loopLine}</button>
-        {saved ? <SentenceReport language={language} course={saved} lineId={line.id} text={line.text} received={reports.has(line.id)} onReceived={reports.mark} /> : null}</div>)}
+        {saved ? <SentenceReport language={language} course={saved} lineId={line.id} text={line.text} received={reports.has(line.id)} status={status} onReceived={reports.mark} /> : null}
+        {places.length > 0 && <p data-testid="sentence-elsewhere" className="sentence-elsewhere" lang={language}>{gaps.elsewhere(places.map(place => place.description).join(listSeparator))}</p>}</div>;
+      })}
       {(() => {
         const a = ab?.a ?? course.lines[0].id, b = ab?.b ?? course.lines[course.lines.length - 1].id;
         const ai = course.lines.findIndex(line => line.id === a), bi = course.lines.findIndex(line => line.id === b);
@@ -280,7 +289,9 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
         </div>;
       })()}</div>}
     {learning && step === 4 && <div data-testid="scene-panel-4">{!guided && <h2>{copy.steps[3]}</h2>}<article className="scene-card"><p data-testid="scene-partner" lang="en">{partner.text}</p>{partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations[language]}</p>}<button data-testid="scene-turn-play" onClick={() => playLine(partner)}>{copy.listen}</button></article>
-      <div className="scene-actions"><button type="button" onClick={() => setPartnerHelp(open => !open)}>{partnerHelp ? tools.helpClose : tools.help}</button></div><article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article><p>{guided ? practiceCopy.promptHint : copy.hint}</p>
+      <div className="scene-actions"><button type="button" onClick={() => setPartnerHelp(open => !open)}>{partnerHelp ? tools.helpClose : tools.help}</button></div>{reports.statusOf(learner.id) === 'disabled'
+        ? <article className="scene-card sentence-disabled-answer"><p data-testid="scene-answer-disabled" lang={language}>{gaps.answerDisabled}</p></article>
+        : <article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article>}<p>{guided ? practiceCopy.promptHint : copy.hint}</p>
       {course.turns.length > 1 && <div className="scene-actions"><button disabled={turnIndex === 0} onClick={() => changeTurn(turnIndex - 1)}>{notices.previous}</button><button data-testid="scene-next-turn" disabled={turnIndex === course.turns.length - 1} onClick={() => changeTurn(turnIndex + 1)}>{notices.next}</button></div>}
     </div>}
     {guided && saved && page === 'learn' && step === 5 && <ScenePractice key={`${saved.id}:${saved.revision}:${saved.materialsRevision ?? 0}`} course={{ ...saved, lines: course.lines, turns: course.turns }} language={language} startTurn={turnIndex} memory={practiceMemory.current} mediaBusy={segmentPlaying} resumed={resumedPractice} stopPartner={stop}

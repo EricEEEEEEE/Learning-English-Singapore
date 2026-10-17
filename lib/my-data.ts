@@ -2,22 +2,25 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { ownerIdFromSessionCookie } from './private-owner';
-import { createGenerationTaskStore, type GenerationTask } from './generation-tasks';
+import { createGenerationTaskStore, type GenerationTask, type StopState } from './generation-tasks';
 import { createPrivateMediaStore } from './private-media-store';
 import { createLocalCourseLibrary } from './local-course-library';
 import { createSceneProgressStore } from './scene-progress';
 import { createSceneRequirementStore } from './scene-requirements';
 import { createSentenceReportStore } from './sentence-reports';
 import { createPracticeFeedbackStore } from './practice-feedback';
+import { createPracticeReviewStore } from './practice-reviews';
 
 type Session = { cookie?: string | null; now?: number };
-export type GenerationRecordStatus = 'ready' | 'failed' | 'unknown' | 'in_progress' | 'simulation' | 'deleted';
+export type GenerationRecordStatus = 'ready' | 'failed' | 'unknown' | 'in_progress' | 'simulation' | 'deleted' | 'cancelled' | 'stopped';
 export type GenerationRecord = { id: string; revision: number; description: string | null; status: GenerationRecordStatus; reservedMicros: number; providerCalls: number; deletedAt?: number };
 export type DeletionEvent = { kind: 'scene' | 'all'; at: number };
 const identifier = (value: unknown): value is string => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,120}$/.test(value);
 
-function recordStatus(task: GenerationTask): GenerationRecordStatus {
+function recordStatus(task: GenerationTask, stop: StopState | null): GenerationRecordStatus {
   if (task.status === 'deleted') return 'deleted';
+  // C8-4 / C9: a learner's cancel (before any provider call) or stop (after the current step) is shown as such.
+  if (stop && task.status !== 'video_assembled') return stop.kind === 'cancelled' ? 'cancelled' : 'stopped';
   if (task.simulation) return 'simulation';
   if (task.videoJobs?.some(job => job.status === 'failed')) return 'failed';
   if (task.status === 'submission_unknown') return 'unknown';
@@ -25,7 +28,7 @@ function recordStatus(task: GenerationTask): GenerationRecordStatus {
 }
 
 // The learner's own local data: delete one scene, delete everything, and read a cost-honest history.
-// Deletion removes content (course, media, positions, requirement text, reports, practice feedback marks) but keeps each task's reserved
+// Deletion removes content (course, media, positions, requirement text, reports, practice feedback marks, practice reviews) but keeps each task's reserved
 // cost, because the spending ledger that enforces the budget ceiling must never shrink.
 export function createMyDataStore({ directory, requirementsDirectory, sessionSecret }: { directory: string; requirementsDirectory: string; sessionSecret: string }) {
   if (!directory || !requirementsDirectory || !sessionSecret) throw new Error('Data store configuration required');
@@ -36,6 +39,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
   const requirements = createSceneRequirementStore({ directory: requirementsDirectory, sessionSecret });
   const reports = createSentenceReportStore({ directory, sessionSecret });
   const feedback = createPracticeFeedbackStore({ directory, sessionSecret });
+  const reviews = createPracticeReviewStore({ directory, sessionSecret });
   async function owner(input: Session) {
     const id = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
     if (!id) throw new Error('Authenticated session required');
@@ -64,6 +68,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
         await progress.removeCourse({ ...session, id: courseId });
         await reports.removeCourse({ ...session, id: courseId });
         await feedback.removeCourse({ ...session, id: courseId });
+        await reviews.removeCourse({ ...session, id: courseId });
         await media.removeCourse({ ...session, courseId });
         await copies.remove({ ...session, now: at, id: courseId });
       } else {
@@ -72,6 +77,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
         await progress.removeCourse({ ...session, id: courseId });
         await reports.removeCourse({ ...session, id: courseId });
         await feedback.removeCourse({ ...session, id: courseId });
+        await reviews.removeCourse({ ...session, id: courseId });
         if (task.requirement) await requirements.remove({ ...session, revision: task.requirement.revision, content: task.requirement.content });
         await media.removeCourse({ ...session, courseId });
         await tasks.tombstone({ ...session, now: at, id: courseId });
@@ -84,6 +90,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
       await progress.removeAll(session);
       await reports.removeAll(session);
       await feedback.removeAll(session);
+      await reviews.removeAll(session);
       await requirements.removeAll(session);
       await media.removeAll(session);
       await copies.removeAll({ ...session, now: at });
@@ -93,11 +100,11 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
     },
     async records(input: Session): Promise<{ tasks: GenerationRecord[]; deletions: DeletionEvent[] }> {
       const session = { cookie: input.cookie, now: input.now }, id = await owner(session);
-      const rows = (await tasks.list(session)).map(task => {
-        const status = recordStatus(task);
+      const rows = await Promise.all((await tasks.list(session)).map(async task => {
+        const status = recordStatus(task, task.status === 'deleted' ? null : await tasks.stopState({ ...session, id: task.id }));
         return { id: task.id, revision: task.revision, description: status === 'deleted' ? null : task.goal, status, reservedMicros: task.reservedMicros, providerCalls: task.providerCalls,
           ...(status === 'deleted' && task.deletedAt !== undefined ? { deletedAt: task.deletedAt } : {}) };
-      });
+      }));
       const deletions = events(db => db.prepare('SELECT kind,at FROM deletion_events WHERE owner=? ORDER BY rowid').all(id).map(row => ({ kind: String(row.kind) as DeletionEvent['kind'], at: Number(row.at) })));
       return { tasks: rows, deletions };
     },
