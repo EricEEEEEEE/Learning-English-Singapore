@@ -8,8 +8,8 @@ import { createHash } from 'node:crypto';
 
 // C14 (2026-10-18, zero cost): video quality gate before learners see a course, the partner keyframe as the
 // first segment's first frame, and the LTX request parameters with a model whitelist. Every video here is a
-// synthetic ffmpeg lavfi clip or a stand-in provider; nothing calls OpenAI, LTX or an image model. The user has
-// not approved a face-detection library yet, so the two face checks must stay "not_checked" and never pass.
+// synthetic ffmpeg lavfi clip or a stand-in provider; nothing calls OpenAI, LTX or an image model. A gate built
+// without the C14-4 face script (tests/domain/c14-4-face-checks.spec.mjs) keeps the two face checks "not_checked".
 const ffmpeg = '/usr/bin/ffmpeg', ffprobe = '/usr/bin/ffprobe';
 const secret = 'offline-c14-session-secret-at-least-32-characters';
 const now = Date.UTC(2026, 9, 18);
@@ -52,7 +52,7 @@ test('C14-1 gate: a continuous synthetic shot passes every ffmpeg check, but the
   for (const id of ['cuts', 'black_freeze', 'seam_ssim']) expect(byId(report, id).status).toBe('passed');
   expect(byId(report, 'cuts').value).toBe(0);
   for (const id of ['single_face', 'learner_mouth']) expect(byId(report, id)).toMatchObject({ status: 'not_checked', reason: FACE_CHECK_PENDING });
-  expect(FACE_CHECK_PENDING).toBe('需要人脸检测库，待用户批准');
+  expect(FACE_CHECK_PENDING).toBe('没有接人脸检测');
   expect(qualityVerdict(report)).toBe('needs_review');
 });
 
@@ -354,7 +354,7 @@ test('C14-2 frame check: a sharp frame is usable, a black or blurred one is not;
   const check = createReferenceFrameCheck({ ffmpeg });
   const sharp = await check({ bytes: frame('sharp') });
   expect(sharp.usable).toBe(true);
-  expect(sharp.checks.find(item => item.id === 'face')).toMatchObject({ status: 'not_checked', reason: '需要人脸检测库，待用户批准' });
+  expect(sharp.checks.find(item => item.id === 'face')).toMatchObject({ status: 'not_checked', reason: '没有接人脸检测' });
   expect((await check({ bytes: frame('blurred', 'gblur=sigma=25') })).usable).toBe(false);
   expect((await check({ bytes: frame('black', 'lutyuv=y=16:u=128:v=128') })).usable).toBe(false);
 });
