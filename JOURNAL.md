@@ -704,3 +704,8 @@
 - [audit] phase → implementing @ 2026-10-18T04:56:03+00:00
 - [audit] phase → test-writing @ 2026-10-18T05:45:55+00:00
 - C10 前端简化（一）绿：2150 项全绿；共享外壳（顶部栏/更多 dialog/底部操作栏）、令牌与五级按钮、对练页单麦克风与求助弹层、首回合设置与恢复弹层；截图 /mnt/project-files/les-plan/c10-*.png
+- [audit] phase → implementing @ 2026-10-18T06:04:33+00:00
+- [audit] phase → test-writing @ 2026-10-18T06:24:19+00:00
+- [audit] phase → implementing @ 2026-10-18T06:24:20+00:00
+- [audit] phase → test-writing @ 2026-10-18T06:54:25+00:00
+- C11 前端简化（二）绿：观看工具行、步骤条、气泡接话、首页弹层、关键词折叠、两列确认、居中生成状态、一行场景、紧凑记录、计数回顾；verify 2258 passed；考题纠错 d9aaa0f；未做：我的场景行显示学习位置（列表无进度数据，暂显示身份和时长）
