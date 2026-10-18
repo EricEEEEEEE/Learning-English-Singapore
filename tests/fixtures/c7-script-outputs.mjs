@@ -57,6 +57,31 @@ function kopi() {
 const change = (base, edit) => { const value = base(); edit(value); return value; };
 const index = (value, id) => value.lines.findIndex(item => item.id === id);
 
+// C13-3 (report 5 P0-2, report 1 P1-3): the same drink stall with the optional local-register fields. Colloquial
+// words appear only in the stall owner's line, with a plain alternative; every learner turn has 2-3 "you could also
+// say" answers with five help-language meanings. The local usage here is unreviewed synthetic content.
+function kopiLocal() {
+  const value = kopi();
+  value.lines[index(value, 'p2')].text = 'Okay, one kopi siew dai, less sugar. Do you want it hot, or do you want it iced today?';
+  for (const item of value.lines) Object.assign(item, { register: 'standard', useAdvice: 'say' });
+  Object.assign(value.lines[index(value, 'p2')], { register: 'sg-colloquial', useAdvice: 'hear-only', plainAlternative: 'Okay, one coffee with less sugar. Do you want it hot or iced?' });
+  Object.assign(value.lines[index(value, 'p3')], { register: 'sg-standard', useAdvice: 'say' });
+  value.phrases = [
+    { id: 'ph1', text: 'kopi siew dai', lineId: 'p2', translations: tr('kopi siew dai'), register: 'sg-colloquial', useAdvice: 'hear-only', plainAlternative: 'coffee with less sugar' },
+    { id: 'ph2', text: 'Takeaway, please', lineId: 'l3', translations: tr('Takeaway, please'), register: 'sg-standard', useAdvice: 'say' },
+    { id: 'ph3', text: 'less sugar', lineId: 'p2', translations: tr('less sugar'), register: 'standard', useAdvice: 'say' },
+  ];
+  const alternatives = [
+    ['One coffee with less sugar, please.', 'Can I have a kopi, not too sweet?'],
+    ['Hot, please.', 'I would like it hot, thank you.', 'A hot one, please.'],
+    ['I will take it away, please.', 'To go, please.'],
+    ['No, thanks. Only one is fine.', 'Just the kopi, thank you.'],
+    ['Thanks a lot. Have a nice day.', 'Thank you. Bye.'],
+  ];
+  value.turns = value.turns.map((turn, i) => ({ ...turn, alternatives: alternatives[i].map(text => ({ text, translations: tr(text) })) }));
+  return value;
+}
+
 export const scriptOutputs = [
   { name: 'valid clinic reschedule with scene', expect: 'accept', script: clinic() },
   { name: 'valid drink order keeps local words in English script', expect: 'accept', script: kopi() },
@@ -94,6 +119,15 @@ export const scriptOutputs = [
     value.lines[index(value, 'p5')].text = 'Okay, here is your hot kopi, less sugar, takeaway. Please pay at the counter on the left side, ありがとう.';
   }) },
   { name: 'phrase that is not in its line', expect: 'reject', issue: 'phrase-source', script: change(clinic, value => { value.phrases[0].text = 'cancel my booking'; }) },
+  // C13-3: the optional local-register fields and "you could also say".
+  { name: 'valid drink order with local register and "you could also say"', expect: 'accept', script: kopiLocal() },
+  { name: 'learner model line with a Singlish particle', expect: 'reject', issue: 'learner-colloquial', script: change(kopiLocal, value => {
+    value.lines[index(value, 'l4')].text = 'No need lah, thank you. Just one kopi is enough.';
+  }) },
+  { name: 'colloquial phrase without a plain alternative', expect: 'reject', issue: 'plain-alternative', script: change(kopiLocal, value => { delete value.phrases[0].plainAlternative; }) },
+  { name: '"you could also say" option that is not English', expect: 'reject', issue: 'alternative', script: change(kopiLocal, value => {
+    value.turns[2].alternatives[0].text = '打包，谢谢。';
+  }) },
 ];
 
 // What a structural validator cannot see. The learner line below states what only the receptionist can know (the
