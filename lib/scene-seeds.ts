@@ -1,10 +1,24 @@
 import type { EntryLanguage } from '../app/entry-copy';
 import type { SceneKeywords } from './scene-requirement-content';
+import seedCards from '../content/scene-seed-cards.json' with { type: 'json' };
 
 // C7 T30A: 36 local example scenes to start from, following spec 7.2 (S01-S36) and the six samples A-F.
 // All text is synthetic product design: no real people, organisations or brands, not reviewed by local or
 // native-speaker reviewers yet. Picking a seed only fills the learner's own editable description and keywords.
-export const sceneSeedsReviewed = false;
+// C13-4: each seed also has a scene card (content/scene-seed-cards.json) with its own review record; the old
+// global flag is true only once every seed card has been reviewed by a local reviewer.
+export type SceneRegister = 'standard' | 'sg-standard' | 'sg-colloquial';
+export type ContentReviewStatus = 'unreviewed' | 'ai-checked' | 'local-reviewed';
+export type ContentReview = { status: ContentReviewStatus; reviewer: string | null; date: string | null; notes: string };
+export type SceneSeedCard = { flow: string[]; register: SceneRegister; chunks: string[]; twist: string };
+type StoredCard = SceneSeedCard & { review: ContentReview };
+const cards = (seedCards as unknown as { cards: Record<string, StoredCard> }).cards;
+const unreviewed: ContentReview = { status: 'unreviewed', reviewer: null, date: null, notes: '' };
+export function sceneSeedReview(id: string): ContentReview {
+  const review = Object.hasOwn(cards, id) ? cards[id].review : null;
+  if (!review || review.status === 'local-reviewed' && (!review.reviewer || !/^\d{4}-\d{2}-\d{2}$/.test(review.date ?? ''))) return { ...unreviewed };
+  return { ...review };
+}
 
 export const sceneSeedCategories = [
   { id: 'school', sample: 'A' }, { id: 'work', sample: 'C' }, { id: 'clinic', sample: 'B' },
@@ -12,12 +26,16 @@ export const sceneSeedCategories = [
 ] as const;
 export type SceneSeedCategory = typeof sceneSeedCategories[number]['id'];
 export type SceneSeedText = { label: string; description: string; keywords: SceneKeywords };
-export type SceneSeed = { id: string; category: SceneSeedCategory; text: Record<EntryLanguage, SceneSeedText> };
+export type SceneSeed = { id: string; category: SceneSeedCategory; text: Record<EntryLanguage, SceneSeedText>; card: SceneSeedCard };
 
 // label, description, then the six keywords: location, learner role, partner role, topic, goal, special situation.
 type Row = readonly [string, string, string, string, string, string, string, string];
+const card = (id: string): SceneSeedCard => {
+  const { flow, register, chunks, twist } = cards[id];
+  return { flow: [...flow], register, chunks: [...chunks], twist };
+};
 const seed = (id: string, category: SceneSeedCategory, rows: Record<EntryLanguage, Row>): SceneSeed => ({
-  id, category,
+  id, category, card: card(id),
   text: Object.fromEntries(Object.entries(rows).map(([language, [label, description, location, learnerRole, partnerRole, topic, goal, special]]) =>
     [language, { label, description, keywords: { location, learnerRole, partnerRole, topic, goal, special } }])) as Record<EntryLanguage, SceneSeedText>,
 });
@@ -282,3 +300,5 @@ export const sceneSeeds: readonly SceneSeed[] = [
     hi: ['दुकानदार का शब्द समझ नहीं आया', 'दुकानदार ने एक स्थानीय शब्द कहा जो मैंने पहले नहीं सुना। मैं उसका मतलब पूछकर अपना ऑर्डर पक्का करना चाहता/चाहती हूँ।', 'फ़ूड सेंटर की पेय दुकान', 'ग्राहक', 'पेय दुकान के कर्मचारी', 'अनजाना स्थानीय शब्द', 'मतलब पूछना और ऑर्डर पक्का करना', 'उस शब्द का मतलब नहीं पता'],
   }),
 ];
+
+export const sceneSeedsReviewed = sceneSeeds.every(item => sceneSeedReview(item.id).status === 'local-reviewed');

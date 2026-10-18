@@ -1,0 +1,798 @@
+{
+ "note": "C13-4 seed scene cards (report 1 P1-2): expected flow, register, key chunks and one small surprise for each of the 36 seeds. Written by an AI assistant as synthetic product design; not yet reviewed by a local reviewer.",
+ "cards": {
+  "S01": {
+   "flow": [
+    "The teacher greets the parent and introduces themself as the form teacher",
+    "The parent introduces themself and their child",
+    "The parent says they are still learning English and asks the teacher to speak slowly",
+    "The teacher agrees and checks the best way to talk"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "form teacher",
+    "Nice to meet you",
+    "I am still learning English",
+    "Can you speak slowly, please?"
+   ],
+   "twist": "The teacher has only five minutes before the next class.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S02": {
+   "flow": [
+    "The parent asks how the child is doing in class",
+    "The teacher shares one observation about understanding",
+    "The parent asks what to watch out for",
+    "The teacher gives one simple tip"
+   ],
+   "register": "standard",
+   "chunks": [
+    "in class",
+    "Does he understand?",
+    "pay attention",
+    "a little quiet"
+   ],
+   "twist": "The school bell rings and the teacher has to leave soon.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S03": {
+   "flow": [
+    "The parent asks how to help at home",
+    "The teacher suggests one simple activity",
+    "The parent repeats it to check",
+    "The teacher confirms and says how often"
+   ],
+   "register": "standard",
+   "chunks": [
+    "at home",
+    "read together",
+    "ten minutes a day",
+    "Is that enough?"
+   ],
+   "twist": "The parent cannot read the English worksheets well.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S04": {
+   "flow": [
+    "The parent asks how to keep in touch",
+    "The teacher offers a message or a call",
+    "The parent explains they work during the day",
+    "They agree on a way and a time"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "keep in touch",
+    "send me a message",
+    "after six",
+    "once a week"
+   ],
+   "twist": "The phone number in the school letter is out of date.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S05": {
+   "flow": [
+    "The parent asks how the child is settling in",
+    "The teacher describes the first weeks",
+    "The parent asks one question about friends or lessons",
+    "The teacher suggests checking again in a few weeks"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "settling in",
+    "new school",
+    "recess",
+    "give it some time"
+   ],
+   "twist": "The child will have a different form teacher from next week.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S06": {
+   "flow": [
+    "The parent asks about the school day",
+    "The teacher explains the arrival and recess times",
+    "The parent asks about lunch and dismissal",
+    "The teacher confirms the pick-up point"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "reach school by",
+    "recess",
+    "dismissal",
+    "pick-up point",
+    "CCA"
+   ],
+   "twist": "On Wednesdays the child stays back for CCA.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S07": {
+   "flow": [
+    "The parent says the child feels alone at school",
+    "The teacher shares what they have seen",
+    "They talk about one way to help",
+    "The teacher offers to check in with the child"
+   ],
+   "register": "standard",
+   "chunks": [
+    "no friends",
+    "feels alone",
+    "group work",
+    "keep an eye on him"
+   ],
+   "twist": "The teacher has noticed the child sits with one classmate at recess.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S08": {
+   "flow": [
+    "The teacher asks about the child",
+    "The parent shares what the child likes and is good at",
+    "The parent mentions one area that needs support",
+    "The teacher thanks them and notes it down"
+   ],
+   "register": "standard",
+   "chunks": [
+    "good at",
+    "likes drawing",
+    "needs more support",
+    "I will note that down"
+   ],
+   "twist": "The teacher asks for an example the parent did not prepare.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S09": {
+   "flow": [
+    "The parent says the child had a problem with a classmate",
+    "The parent shares what the child said",
+    "The teacher says what they saw",
+    "They agree on a next step"
+   ],
+   "register": "standard",
+   "chunks": [
+    "had a problem with",
+    "what he told me",
+    "I will look into it",
+    "let you know"
+   ],
+   "twist": "The teacher did not see what happened and needs to ask others.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S10": {
+   "flow": [
+    "The parent mentions the last talk",
+    "The teacher gives a short update",
+    "They agree how to follow up",
+    "They set the next date to talk"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "follow up",
+    "any update",
+    "next week",
+    "revert to you"
+   ],
+   "twist": "The teacher will be away, so another teacher will reply.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S11": {
+   "flow": [
+    "The parent raises screen time at home",
+    "The teacher asks how long the child uses devices",
+    "The teacher shares a school suggestion",
+    "The parent says what they will try"
+   ],
+   "register": "standard",
+   "chunks": [
+    "screen time",
+    "how many hours",
+    "before bed",
+    "set a limit"
+   ],
+   "twist": "The child also needs the tablet for homework.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S12": {
+   "flow": [
+    "The parent says the child got upsetting messages online",
+    "The teacher listens and asks when it happened",
+    "The teacher explains the support the school can give",
+    "They agree on who to contact next"
+   ],
+   "register": "standard",
+   "chunks": [
+    "upsetting messages",
+    "When did it happen?",
+    "school counsellor",
+    "keep the screenshots"
+   ],
+   "twist": "The messages came from a group chat outside school.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S13": {
+   "flow": [
+    "The supervisor gives quick instructions",
+    "The worker asks them to slow down",
+    "The supervisor repeats more slowly",
+    "The worker repeats the key point"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "slow down a bit",
+    "say that again",
+    "first",
+    "after that"
+   ],
+   "twist": "The supervisor is called away halfway through.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S14": {
+   "flow": [
+    "The supervisor lists a few tasks",
+    "The worker asks which one comes first",
+    "The supervisor gives the order",
+    "The worker repeats the order to check"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "which one first",
+    "then",
+    "by lunchtime",
+    "Can or not?"
+   ],
+   "twist": "One task becomes urgent while they are talking.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S15": {
+   "flow": [
+    "A colleague explains what to watch on the next shift",
+    "The worker repeats the points back",
+    "The colleague corrects one detail",
+    "The worker confirms"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "handover",
+    "take note",
+    "let me repeat",
+    "Is that correct?"
+   ],
+   "twist": "One machine needs checking every hour, not every two hours.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S16": {
+   "flow": [
+    "The supervisor explains a safety rule",
+    "The worker says they did not understand",
+    "The worker asks to pause and hear it again",
+    "The supervisor shows or explains it simply"
+   ],
+   "register": "standard",
+   "chunks": [
+    "safety rule",
+    "wait, please",
+    "I do not understand",
+    "Can you show me?"
+   ],
+   "twist": "The rule uses a word the worker has never heard.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S17": {
+   "flow": [
+    "The worker asks about one item on the payslip",
+    "A colleague explains what it is",
+    "The worker asks one follow-up question",
+    "The colleague says who to ask if unsure"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "payslip",
+    "this amount",
+    "deduction",
+    "allowance"
+   ],
+   "twist": "The colleague is not sure and suggests asking the HR office.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S18": {
+   "flow": [
+    "The worker says they worked overtime last week",
+    "The supervisor checks the record",
+    "The worker confirms the dates and hours",
+    "The supervisor says when it will be updated"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "OT",
+    "last Tuesday",
+    "two hours",
+    "in the system"
+   ],
+   "twist": "One day is missing from the record.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S19": {
+   "flow": [
+    "The worker explains the problem",
+    "A colleague suggests the right person",
+    "The worker asks how to contact them",
+    "The colleague gives a simple way"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "Who should I ask?",
+    "in charge of",
+    "drop an email",
+    "extension number"
+   ],
+   "twist": "The person in charge is on leave today.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S20": {
+   "flow": [
+    "The worker says the document is hard to follow",
+    "The worker asks for simpler English",
+    "The person in charge explains the main point",
+    "The worker asks if there is a version in another language"
+   ],
+   "register": "standard",
+   "chunks": [
+    "simpler English",
+    "the main point",
+    "step by step",
+    "in another language"
+   ],
+   "twist": "There is no translated version, but there is a picture guide.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S21": {
+   "flow": [
+    "The receptionist answers the phone",
+    "The caller asks for an appointment",
+    "The receptionist offers some times",
+    "The caller chooses one and gives a name"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "make an appointment",
+    "earliest slot",
+    "morning or afternoon",
+    "under what name"
+   ],
+   "twist": "Only walk-in queue numbers are left for today.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S22": {
+   "flow": [
+    "The caller says the booked time is not convenient",
+    "The receptionist asks for the name and date",
+    "The receptionist offers other afternoons",
+    "The caller confirms the new time"
+   ],
+   "register": "standard",
+   "chunks": [
+    "change my appointment",
+    "not convenient",
+    "another day",
+    "in the afternoon"
+   ],
+   "twist": "The doctor is only in on Thursday afternoons.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S23": {
+   "flow": [
+    "The patient asks where the clinic is",
+    "The receptionist gives the level and room",
+    "The patient asks what to bring",
+    "The receptionist lists the items and when to arrive"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "which level",
+    "room number",
+    "bring your IC",
+    "ten minutes early"
+   ],
+   "twist": "The lift to that level is under repair.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S24": {
+   "flow": [
+    "The patient says the booking does not show online",
+    "The receptionist checks the system",
+    "The receptionist explains what happened",
+    "They fix it or book again"
+   ],
+   "register": "standard",
+   "chunks": [
+    "cannot see my booking",
+    "let me check",
+    "under your name",
+    "book again"
+   ],
+   "twist": "The booking was made under a family member's name.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S25": {
+   "flow": [
+    "The commuter tells the staff the gate did not open",
+    "The staff asks to see the card",
+    "The staff explains the problem",
+    "The staff says what to do next"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "tap the card",
+    "the gate did not open",
+    "not enough value",
+    "top up"
+   ],
+   "twist": "The card works, but it was tapped twice.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S26": {
+   "flow": [
+    "The staff says to go to the service point",
+    "The commuter asks where it is",
+    "The staff gives simple directions",
+    "The commuter repeats them"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "service centre",
+    "go straight",
+    "near exit A",
+    "on your left"
+   ],
+   "twist": "The service centre closes in ten minutes.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S27": {
+   "flow": [
+    "The commuter says one fare was higher than usual",
+    "The staff asks about the trip",
+    "The staff explains how to check the record",
+    "The commuter asks one more question"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "fare",
+    "more than usual",
+    "card record",
+    "transfer"
+   ],
+   "twist": "The commuter forgot to tap out at the end of the trip.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S28": {
+   "flow": [
+    "The staff explains something quickly",
+    "The commuter says they did not catch it",
+    "The staff says it again more simply",
+    "The commuter checks they understood"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "Sorry, can you say that again slowly?",
+    "What does that mean?",
+    "You mean",
+    "I see"
+   ],
+   "twist": "The staff uses a station name the commuter has not heard.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S29": {
+   "flow": [
+    "The neighbour greets the resident in the corridor",
+    "The resident introduces themself",
+    "They share a little about their families",
+    "They say goodbye kindly"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "just moved in",
+    "next door",
+    "HDB flat",
+    "Nice to meet you"
+   ],
+   "twist": "The neighbour asks whether the resident has a pet.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S30": {
+   "flow": [
+    "The resident says water is dripping from the ceiling",
+    "The neighbour upstairs listens",
+    "The resident asks to check it together",
+    "They agree on a time"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "water leaking",
+    "bathroom ceiling",
+    "from upstairs",
+    "come and see"
+   ],
+   "twist": "The neighbour upstairs is renting and must ask the owner first.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S31": {
+   "flow": [
+    "The contractor calls about the visit",
+    "The resident asks what time",
+    "The contractor explains the work",
+    "The resident explains nobody is home during the day"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "contractor",
+    "what time",
+    "check the pipe",
+    "after six"
+   ],
+   "twist": "The contractor can only come on a weekday morning.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S32": {
+   "flow": [
+    "The resident greets the neighbour",
+    "The resident gently mentions the noise at night",
+    "The neighbour responds",
+    "They agree on one idea together"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "Paiseh",
+    "at night",
+    "my child cannot sleep",
+    "maybe after ten"
+   ],
+   "twist": "The neighbour did not know the noise could be heard downstairs.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S33": {
+   "flow": [
+    "The stall assistant asks what to drink",
+    "The customer orders a kopi",
+    "The assistant asks about sugar or ice",
+    "The customer answers and pays"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "kopi",
+    "kopi-O",
+    "less sweet",
+    "hot or cold"
+   ],
+   "twist": "The assistant asks quickly whether it is kopi-O or kopi-C.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S34": {
+   "flow": [
+    "The customer orders a tea",
+    "The assistant asks about sweetness",
+    "The customer asks for less sugar and ice",
+    "The assistant repeats the order"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "teh",
+    "siew dai",
+    "peng",
+    "less sugar"
+   ],
+   "twist": "The iced drink costs a little more than the hot one.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S35": {
+   "flow": [
+    "The stall owner asks what the customer wants",
+    "The customer orders",
+    "The owner asks whether to eat here or take away",
+    "The customer answers and pays"
+   ],
+   "register": "sg-standard",
+   "chunks": [
+    "Having here or take away?",
+    "tapau",
+    "eat here",
+    "How much?"
+   ],
+   "twist": "The owner asks the customer to wait for a new tray of food.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  "S36": {
+   "flow": [
+    "The assistant uses a local word",
+    "The customer asks what it means",
+    "The assistant explains it simply",
+    "The customer confirms the order"
+   ],
+   "register": "sg-colloquial",
+   "chunks": [
+    "What does that mean?",
+    "kosong",
+    "no sugar",
+    "So that is"
+   ],
+   "twist": "The word sounds like the name of another drink.",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  }
+ }
+}

@@ -1,0 +1,1567 @@
+{
+ "note": "C13-4 candidate local expressions from research report 5 section 4.1. Meanings were written by an AI assistant from memory of Singapore usage and have not been checked by a local or native-speaker reviewer. Only a record whose review status is local-reviewed (with reviewer and date) may be shown as reviewed locally.",
+ "expressions": [
+  {
+   "id": "hawker-centre",
+   "category": "food",
+   "text": "hawker centre",
+   "meaning": {
+    "zh-Hans": "小贩中心（熟食中心）",
+    "id": "pusat jajanan",
+    "ja": "ホーカーセンター（屋台街）",
+    "ko": "호커 센터(푸드코트)",
+    "hi": "हॉकर सेंटर (खाने का बाज़ार)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Everyday place name for a food centre",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "having-here-or-take-away",
+   "category": "food",
+   "text": "Having here or take away?",
+   "meaning": {
+    "zh-Hans": "在这里吃还是带走？",
+    "id": "Makan di sini atau dibungkus?",
+    "ja": "ここで食べますか、持ち帰りですか？",
+    "ko": "여기서 드세요, 포장하세요?",
+    "hi": "यहीं खाएँगे या ले जाएँगे?"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Stall staff asking a customer",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "less-sweet",
+   "category": "food",
+   "text": "less sweet",
+   "meaning": {
+    "zh-Hans": "少甜",
+    "id": "kurang manis",
+    "ja": "甘さひかえめ",
+    "ko": "덜 달게",
+    "hi": "कम मीठा"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Ordering a drink",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "no-ice",
+   "category": "food",
+   "text": "no ice",
+   "meaning": {
+    "zh-Hans": "不加冰",
+    "id": "tanpa es",
+    "ja": "氷なし",
+    "ko": "얼음 빼고",
+    "hi": "बिना बर्फ़"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Ordering a drink",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "kopi",
+   "category": "food",
+   "text": "kopi",
+   "meaning": {
+    "zh-Hans": "本地咖啡（加炼奶和糖）",
+    "id": "kopi lokal (dengan susu kental manis dan gula)",
+    "ja": "地元のコーヒー（練乳と砂糖入り）",
+    "ko": "현지 커피(연유와 설탕을 넣은 것)",
+    "hi": "स्थानीय कॉफ़ी (गाढ़े दूध और चीनी के साथ)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Drink stall, any customer",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "teh",
+   "category": "food",
+   "text": "teh",
+   "meaning": {
+    "zh-Hans": "本地奶茶",
+    "id": "teh susu lokal",
+    "ja": "地元のミルクティー",
+    "ko": "현지 밀크티",
+    "hi": "स्थानीय दूध वाली चाय"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Drink stall, any customer",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "kopi-o",
+   "category": "food",
+   "text": "kopi-O",
+   "meaning": {
+    "zh-Hans": "黑咖啡加糖（不加奶）",
+    "id": "kopi hitam dengan gula",
+    "ja": "砂糖入りのブラックコーヒー",
+    "ko": "설탕을 넣은 블랙커피",
+    "hi": "चीनी वाली काली कॉफ़ी"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "black coffee with sugar",
+   "situation": "Drink stall order",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "kopi-c",
+   "category": "food",
+   "text": "kopi-C",
+   "meaning": {
+    "zh-Hans": "咖啡加淡奶和糖",
+    "id": "kopi dengan susu evaporasi dan gula",
+    "ja": "エバミルクと砂糖入りのコーヒー",
+    "ko": "무가당 연유와 설탕을 넣은 커피",
+    "hi": "इवैपोरेटेड दूध और चीनी वाली कॉफ़ी"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "coffee with evaporated milk and sugar",
+   "situation": "Drink stall order",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "siew-dai",
+   "category": "food",
+   "text": "siew dai",
+   "meaning": {
+    "zh-Hans": "少糖",
+    "id": "kurang gula",
+    "ja": "砂糖少なめ",
+    "ko": "설탕 적게",
+    "hi": "कम चीनी"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "less sugar",
+   "situation": "Drink stall staff repeating an order",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "kosong",
+   "category": "food",
+   "text": "kosong",
+   "meaning": {
+    "zh-Hans": "无糖",
+    "id": "tanpa gula",
+    "ja": "砂糖なし",
+    "ko": "설탕 없이",
+    "hi": "बिना चीनी"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "no sugar",
+   "situation": "Drink stall order",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "peng",
+   "category": "food",
+   "text": "peng",
+   "meaning": {
+    "zh-Hans": "加冰的",
+    "id": "pakai es",
+    "ja": "氷入り",
+    "ko": "얼음을 넣은",
+    "hi": "बर्फ़ वाला"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "iced",
+   "situation": "Drink stall order",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "tapau",
+   "category": "food",
+   "text": "tapau",
+   "meaning": {
+    "zh-Hans": "打包带走",
+    "id": "dibungkus untuk dibawa pulang",
+    "ja": "持ち帰り用に包む",
+    "ko": "포장해 가기",
+    "hi": "पैक करके ले जाना"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "take away",
+   "situation": "Food stall, packing food to go",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "chope",
+   "category": "food",
+   "text": "chope",
+   "meaning": {
+    "zh-Hans": "占座",
+    "id": "menandai tempat duduk",
+    "ja": "席を取っておく",
+    "ko": "자리 맡기",
+    "hi": "सीट रोककर रखना"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "reserve a seat",
+   "situation": "Hawker centre tables, often with a tissue packet",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "uncle-auntie",
+   "category": "food",
+   "text": "uncle / auntie",
+   "meaning": {
+    "zh-Hans": "对年长摊主的亲切称呼",
+    "id": "sapaan akrab untuk penjual yang lebih tua",
+    "ja": "年上の店主への親しみをこめた呼び方",
+    "ko": "나이 많은 가게 주인을 부르는 친근한 말",
+    "hi": "बड़ी उम्र के दुकानदार को अपनेपन से बुलाना"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "Excuse me (to an older stall owner)",
+   "situation": "Friendly way to address older stall owners",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "tap-the-card",
+   "category": "transport",
+   "text": "tap the card",
+   "meaning": {
+    "zh-Hans": "刷卡",
+    "id": "menempelkan kartu",
+    "ja": "カードをタッチする",
+    "ko": "카드를 찍다",
+    "hi": "कार्ड टैप करना"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Train and bus gates",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "top-up",
+   "category": "transport",
+   "text": "top up",
+   "meaning": {
+    "zh-Hans": "充值",
+    "id": "isi ulang saldo",
+    "ja": "チャージする",
+    "ko": "충전하다",
+    "hi": "रिचार्ज करना"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Adding value to a travel card",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "mrt",
+   "category": "transport",
+   "text": "MRT",
+   "meaning": {
+    "zh-Hans": "地铁",
+    "id": "kereta MRT",
+    "ja": "電車（MRT）",
+    "ko": "지하철(MRT)",
+    "hi": "मेट्रो (MRT)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "The train system",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "interchange",
+   "category": "transport",
+   "text": "interchange",
+   "meaning": {
+    "zh-Hans": "换乘站",
+    "id": "stasiun atau terminal transit",
+    "ja": "乗り換え駅",
+    "ko": "환승역",
+    "hi": "इंटरचेंज (बदलने का स्टेशन)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "A station or bus stop where lines meet",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "alight-at",
+   "category": "transport",
+   "text": "Alight at the next stop.",
+   "meaning": {
+    "zh-Hans": "在下一站下车。",
+    "id": "Turun di halte berikutnya.",
+    "ja": "次の停留所で降りてください。",
+    "ko": "다음 정류장에서 내리세요.",
+    "hi": "अगले स्टॉप पर उतरें।"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Bus and train announcements",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "next-bus",
+   "category": "transport",
+   "text": "the next bus",
+   "meaning": {
+    "zh-Hans": "下一班公交车",
+    "id": "bus berikutnya",
+    "ja": "次のバス",
+    "ko": "다음 버스",
+    "hi": "अगली बस"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Bus stop",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "card-cannot",
+   "category": "transport",
+   "text": "Card cannot.",
+   "meaning": {
+    "zh-Hans": "卡不能用。",
+    "id": "Kartunya tidak bisa dipakai.",
+    "ja": "カードが使えません。",
+    "ko": "카드가 안 돼요.",
+    "hi": "कार्ड काम नहीं कर रहा।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "The card is not working.",
+   "situation": "Station staff, quick reply",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "top-up-can-already",
+   "category": "transport",
+   "text": "Go there top up can already.",
+   "meaning": {
+    "zh-Hans": "去那边充值就可以了。",
+    "id": "Isi ulang di sana saja, sudah bisa.",
+    "ja": "あそこでチャージすれば大丈夫です。",
+    "ko": "저기서 충전하면 돼요.",
+    "hi": "वहाँ जाकर रिचार्ज कर लें, हो जाएगा।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "You can top up your card over there.",
+   "situation": "Station staff giving directions",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "hdb-flat",
+   "category": "home",
+   "text": "HDB flat",
+   "meaning": {
+    "zh-Hans": "组屋",
+    "id": "flat HDB (rumah susun umum)",
+    "ja": "HDBの団地（公営住宅）",
+    "ko": "HDB 아파트(공공주택)",
+    "hi": "HDB फ़्लैट (सरकारी आवास)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Public housing",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "void-deck",
+   "category": "home",
+   "text": "void deck",
+   "meaning": {
+    "zh-Hans": "组屋楼下的空地",
+    "id": "lantai dasar terbuka di blok",
+    "ja": "団地の1階の吹き抜けスペース",
+    "ko": "아파트 1층의 빈 공간",
+    "hi": "ब्लॉक का खुला निचला तल"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Open ground floor of a housing block",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "town-council",
+   "category": "home",
+   "text": "town council",
+   "meaning": {
+    "zh-Hans": "市镇理事会",
+    "id": "dewan kota (pengelola kawasan)",
+    "ja": "タウンカウンシル（団地の管理組織）",
+    "ko": "타운 카운슬(관리 기관)",
+    "hi": "टाउन काउंसिल (रखरखाव कार्यालय)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Office that looks after the estate",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "corridor",
+   "category": "home",
+   "text": "corridor",
+   "meaning": {
+    "zh-Hans": "走廊",
+    "id": "koridor",
+    "ja": "廊下",
+    "ko": "복도",
+    "hi": "गलियारा"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Common walkway outside flats",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "aircon",
+   "category": "home",
+   "text": "aircon",
+   "meaning": {
+    "zh-Hans": "空调",
+    "id": "AC / pendingin ruangan",
+    "ja": "エアコン",
+    "ko": "에어컨",
+    "hi": "एसी"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Air conditioner",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "contractor",
+   "category": "home",
+   "text": "contractor",
+   "meaning": {
+    "zh-Hans": "装修或维修师傅",
+    "id": "tukang / kontraktor",
+    "ja": "工事業者",
+    "ko": "시공·수리 기사",
+    "hi": "ठेकेदार / मिस्त्री"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Repair or renovation worker",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "got-water-leaking",
+   "category": "home",
+   "text": "Got water leaking from upstairs.",
+   "meaning": {
+    "zh-Hans": "楼上漏水了。",
+    "id": "Ada air bocor dari atas.",
+    "ja": "上の階から水が漏れています。",
+    "ko": "위층에서 물이 새요.",
+    "hi": "ऊपर से पानी टपक रहा है।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "There is water leaking from upstairs.",
+   "situation": "Neighbours talking",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "paiseh",
+   "category": "home",
+   "text": "Paiseh ah.",
+   "meaning": {
+    "zh-Hans": "不好意思。",
+    "id": "Maaf merepotkan.",
+    "ja": "すみません。",
+    "ko": "죄송해요.",
+    "hi": "माफ़ कीजिए, परेशान किया।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "Sorry to bother you.",
+   "situation": "Neighbours, a friendly apology",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "can-come-see-or-not",
+   "category": "home",
+   "text": "Can come and see or not?",
+   "meaning": {
+    "zh-Hans": "能过来看看吗？",
+    "id": "Bisa datang melihat?",
+    "ja": "見に来てもらえますか？",
+    "ko": "와서 봐 줄 수 있어요?",
+    "hi": "क्या आप आकर देख सकते हैं?"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Can you come and have a look?",
+   "situation": "Neighbour or contractor",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "mc",
+   "category": "work",
+   "text": "MC",
+   "meaning": {
+    "zh-Hans": "病假单",
+    "id": "surat keterangan sakit",
+    "ja": "診断書（病欠の証明）",
+    "ko": "진단서(병가 증명)",
+    "hi": "मेडिकल सर्टिफ़िकेट (बीमारी की छुट्टी)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Medical certificate for sick leave",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "on-leave",
+   "category": "work",
+   "text": "on leave",
+   "meaning": {
+    "zh-Hans": "在休假",
+    "id": "sedang cuti",
+    "ja": "休暇中",
+    "ko": "휴가 중",
+    "hi": "छुट्टी पर"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Not at work",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "ot",
+   "category": "work",
+   "text": "OT",
+   "meaning": {
+    "zh-Hans": "加班",
+    "id": "lembur",
+    "ja": "残業",
+    "ko": "초과 근무",
+    "hi": "ओवरटाइम"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Overtime",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "off-day",
+   "category": "work",
+   "text": "off day",
+   "meaning": {
+    "zh-Hans": "休息日",
+    "id": "hari libur",
+    "ja": "休みの日",
+    "ko": "쉬는 날",
+    "hi": "छुट्टी का दिन"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "A day off from work",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "revert-to-you",
+   "category": "work",
+   "text": "I will revert to you.",
+   "meaning": {
+    "zh-Hans": "我会回复你。",
+    "id": "Saya akan mengabari Anda.",
+    "ja": "折り返しご連絡します。",
+    "ko": "다시 연락드릴게요.",
+    "hi": "मैं आपको जवाब दूँगा/दूँगी।"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Work email or talk",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "soft-copy-hard-copy",
+   "category": "work",
+   "text": "soft copy / hard copy",
+   "meaning": {
+    "zh-Hans": "电子版／纸质版",
+    "id": "salinan digital / salinan cetak",
+    "ja": "電子版／紙の書類",
+    "ko": "파일 / 인쇄본",
+    "hi": "डिजिटल कॉपी / छपी कॉपी"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Digital file or printed paper",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "follow-up",
+   "category": "work",
+   "text": "follow up",
+   "meaning": {
+    "zh-Hans": "跟进",
+    "id": "menindaklanjuti",
+    "ja": "フォローする",
+    "ko": "후속 조치하다",
+    "hi": "आगे की कार्रवाई करना"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Checking on progress",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "can-or-not",
+   "category": "work",
+   "text": "Can or not?",
+   "meaning": {
+    "zh-Hans": "行不行？",
+    "id": "Bisa atau tidak?",
+    "ja": "できますか？",
+    "ko": "돼요, 안 돼요?",
+    "hi": "हो सकता है या नहीं?"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Is that possible?",
+   "situation": "Colleagues, a quick question",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "ok-can",
+   "category": "work",
+   "text": "OK, can.",
+   "meaning": {
+    "zh-Hans": "好，可以。",
+    "id": "Oke, bisa.",
+    "ja": "はい、大丈夫です。",
+    "ko": "네, 돼요.",
+    "hi": "ठीक है, हो जाएगा।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "Yes, that is fine.",
+   "situation": "Colleagues, a quick reply",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "settle-already",
+   "category": "work",
+   "text": "Settle already.",
+   "meaning": {
+    "zh-Hans": "搞定了。",
+    "id": "Sudah beres.",
+    "ja": "もう済みました。",
+    "ko": "다 처리됐어요.",
+    "hi": "हो गया।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "It is done.",
+   "situation": "Colleagues",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "dont-have",
+   "category": "work",
+   "text": "Don't have.",
+   "meaning": {
+    "zh-Hans": "没有。",
+    "id": "Tidak ada.",
+    "ja": "ありません。",
+    "ko": "없어요.",
+    "hi": "नहीं है।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "We do not have it.",
+   "situation": "Shops and offices, a short reply",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "is-it",
+   "category": "work",
+   "text": "Is it?",
+   "meaning": {
+    "zh-Hans": "是吗？",
+    "id": "Oh, ya?",
+    "ja": "そうなんですか？",
+    "ko": "그래요?",
+    "hi": "अच्छा?"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "Really?",
+   "situation": "A friendly reaction",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "polyclinic",
+   "category": "clinic",
+   "text": "polyclinic",
+   "meaning": {
+    "zh-Hans": "综合诊疗所",
+    "id": "poliklinik",
+    "ja": "ポリクリニック（公立の診療所）",
+    "ko": "폴리클리닉(공공 진료소)",
+    "hi": "पॉलीक्लिनिक (सरकारी क्लिनिक)"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Public clinic",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "gp",
+   "category": "clinic",
+   "text": "GP",
+   "meaning": {
+    "zh-Hans": "普通科医生",
+    "id": "dokter umum",
+    "ja": "一般医（かかりつけ医）",
+    "ko": "일반의",
+    "hi": "सामान्य डॉक्टर"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Family doctor",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "queue-number",
+   "category": "clinic",
+   "text": "queue number",
+   "meaning": {
+    "zh-Hans": "排队号码",
+    "id": "nomor antrean",
+    "ja": "順番の番号",
+    "ko": "대기 번호",
+    "hi": "कतार नंबर"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Waiting system at a counter",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "appointment",
+   "category": "clinic",
+   "text": "appointment",
+   "meaning": {
+    "zh-Hans": "预约",
+    "id": "janji temu",
+    "ja": "予約",
+    "ko": "예약",
+    "hi": "अपॉइंटमेंट"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "A booked visit",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "allergic-to-medicine",
+   "category": "clinic",
+   "text": "Are you allergic to any medicine?",
+   "meaning": {
+    "zh-Hans": "你对什么药物过敏吗？",
+    "id": "Apakah Anda alergi obat tertentu?",
+    "ja": "薬のアレルギーはありますか？",
+    "ko": "약 알레르기 있으세요?",
+    "hi": "क्या आपको किसी दवा से एलर्जी है?"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Nurse or doctor asking",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "number-not-yet",
+   "category": "clinic",
+   "text": "Wait ah, your number not yet.",
+   "meaning": {
+    "zh-Hans": "等一下，还没轮到你的号。",
+    "id": "Tunggu ya, nomor Anda belum dipanggil.",
+    "ja": "少し待ってください、まだあなたの番ではありません。",
+    "ko": "잠깐만요, 아직 차례가 아니에요.",
+    "hi": "रुकिए, अभी आपका नंबर नहीं आया।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Please wait, it is not your turn yet.",
+   "situation": "Clinic counter",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "see-your-ic",
+   "category": "clinic",
+   "text": "Can I see your IC?",
+   "meaning": {
+    "zh-Hans": "可以看一下你的身份证吗？",
+    "id": "Boleh lihat kartu identitas Anda?",
+    "ja": "身分証を見せてもらえますか？",
+    "ko": "신분증 좀 볼 수 있을까요?",
+    "hi": "क्या मैं आपका पहचान पत्र देख सकता/सकती हूँ?"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Counter staff checking identity",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "form-teacher",
+   "category": "school",
+   "text": "form teacher",
+   "meaning": {
+    "zh-Hans": "班主任",
+    "id": "wali kelas",
+    "ja": "担任の先生",
+    "ko": "담임 선생님",
+    "hi": "कक्षा शिक्षक"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "The class teacher",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "ptm",
+   "category": "school",
+   "text": "Parent-Teacher Meeting",
+   "meaning": {
+    "zh-Hans": "家长会",
+    "id": "pertemuan orang tua dan guru",
+    "ja": "保護者面談",
+    "ko": "학부모 상담",
+    "hi": "अभिभावक-शिक्षक बैठक"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "School meeting with parents, often called PTM",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "recess",
+   "category": "school",
+   "text": "recess",
+   "meaning": {
+    "zh-Hans": "课间休息",
+    "id": "jam istirahat",
+    "ja": "休み時間",
+    "ko": "쉬는 시간",
+    "hi": "आधी छुट्टी"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "School break time",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "cca",
+   "category": "school",
+   "text": "CCA",
+   "meaning": {
+    "zh-Hans": "课外活动",
+    "id": "kegiatan ekstrakurikuler",
+    "ja": "課外活動",
+    "ko": "방과 후 활동",
+    "hi": "पाठ्येतर गतिविधि"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "After-school activity",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "pe",
+   "category": "school",
+   "text": "PE",
+   "meaning": {
+    "zh-Hans": "体育课",
+    "id": "pelajaran olahraga",
+    "ja": "体育",
+    "ko": "체육",
+    "hi": "शारीरिक शिक्षा"
+   },
+   "register": "sg-standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Physical education lesson",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "school-bus-uncle",
+   "category": "school",
+   "text": "school bus uncle",
+   "meaning": {
+    "zh-Hans": "校车司机",
+    "id": "sopir bus sekolah",
+    "ja": "スクールバスの運転手さん",
+    "ko": "스쿨버스 기사님",
+    "hi": "स्कूल बस के ड्राइवर"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "the school bus driver",
+   "situation": "Parents talking",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "quite-quiet-one",
+   "category": "school",
+   "text": "Your boy quite quiet one.",
+   "meaning": {
+    "zh-Hans": "你儿子挺安静的。",
+    "id": "Anak laki-laki Anda cukup pendiam.",
+    "ja": "息子さんはわりと静かですね。",
+    "ko": "아드님이 꽤 조용하네요.",
+    "hi": "आपका बेटा काफ़ी शांत है।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Your son is quite quiet.",
+   "situation": "Teacher to parent, casual",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "slowly-catch-up",
+   "category": "school",
+   "text": "Don't worry, slowly will catch up.",
+   "meaning": {
+    "zh-Hans": "别担心，慢慢会跟上的。",
+    "id": "Jangan khawatir, pelan-pelan akan menyusul.",
+    "ja": "心配いりません、だんだん追いつきますよ。",
+    "ko": "걱정 마세요, 천천히 따라잡을 거예요.",
+    "hi": "चिंता न करें, धीरे-धीरे बराबरी कर लेगा।"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Don't worry, he will catch up over time.",
+   "situation": "Teacher reassuring a parent",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "lah",
+   "category": "general",
+   "text": "lah",
+   "meaning": {
+    "zh-Hans": "句尾语气词，加强或缓和语气",
+    "id": "partikel di akhir kalimat untuk menegaskan atau melembutkan",
+    "ja": "文末につけて強めたりやわらげたりする言葉",
+    "ko": "문장 끝에 붙여 강조하거나 부드럽게 하는 말",
+    "hi": "वाक्य के अंत में ज़ोर देने या नरम करने वाला शब्द"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Say the same sentence without lah.",
+   "situation": "Particle at the end of a sentence",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "leh",
+   "category": "general",
+   "text": "leh",
+   "meaning": {
+    "zh-Hans": "句尾语气词，委婉或带点不确定",
+    "id": "partikel untuk melunakkan permintaan atau menunjukkan ragu",
+    "ja": "頼みをやわらげたり迷いを表したりする言葉",
+    "ko": "부탁을 부드럽게 하거나 망설임을 나타내는 말",
+    "hi": "अनुरोध को नरम करने या संदेह जताने वाला शब्द"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Say the same sentence without leh.",
+   "situation": "Particle that softens a request or shows doubt",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "lor",
+   "category": "general",
+   "text": "lor",
+   "meaning": {
+    "zh-Hans": "句尾语气词，表示“就这样吧”",
+    "id": "partikel yang berarti \"ya sudah, begitu saja\"",
+    "ja": "「それなら仕方ない」という気持ちを表す言葉",
+    "ko": "\"그렇게 하지 뭐\"라는 느낌의 말",
+    "hi": "\"चलो, ऐसा ही सही\" वाला भाव"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Say the same sentence without lor.",
+   "situation": "Particle that shows acceptance",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "meh",
+   "category": "general",
+   "text": "meh",
+   "meaning": {
+    "zh-Hans": "句尾语气词，表示怀疑：“是吗？”",
+    "id": "partikel untuk bertanya heran: \"masa?\"",
+    "ja": "疑いを表す言葉：「そうなの？」",
+    "ko": "의심을 나타내는 말: \"그래?\"",
+    "hi": "संदेह वाला शब्द: \"सच में?\""
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Really?",
+   "situation": "Particle in surprised questions",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "finish-already",
+   "category": "general",
+   "text": "Finish already.",
+   "meaning": {
+    "zh-Hans": "做完了。（already 表示已经完成）",
+    "id": "Sudah selesai. (already berarti sudah)",
+    "ja": "もう終わりました。（already は完了を表す）",
+    "ko": "다 끝났어요. (already는 완료를 뜻해요)",
+    "hi": "खत्म हो गया। (already का मतलब पूरा हो गया)"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "It is finished.",
+   "situation": "\"Already\" marks that something is done",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "got-or-not",
+   "category": "general",
+   "text": "Got or not?",
+   "meaning": {
+    "zh-Hans": "有没有？",
+    "id": "Ada atau tidak?",
+    "ja": "ありますか？",
+    "ko": "있어요, 없어요?",
+    "hi": "है या नहीं?"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Do you have it?",
+   "situation": "Shops and friends",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "where-got",
+   "category": "general",
+   "text": "Where got?",
+   "meaning": {
+    "zh-Hans": "哪有？（没有这回事）",
+    "id": "Mana ada? (tidak begitu)",
+    "ja": "そんなことないよ。",
+    "ko": "무슨 소리예요? (그렇지 않아요)",
+    "hi": "ऐसा कहाँ? (ऐसा नहीं है)"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "That is not true.",
+   "situation": "Friendly disagreement",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "alamak",
+   "category": "general",
+   "text": "Alamak!",
+   "meaning": {
+    "zh-Hans": "哎呀！",
+    "id": "Aduh!",
+    "ja": "あらら！",
+    "ko": "아이고!",
+    "hi": "अरे!"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "hear-only",
+   "plainAlternative": "Oh no!",
+   "situation": "Surprise or a small trouble",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "shiok",
+   "category": "general",
+   "text": "Shiok!",
+   "meaning": {
+    "zh-Hans": "太爽了！真舒服！",
+    "id": "Enak sekali! / Puas!",
+    "ja": "最高！",
+    "ko": "너무 좋다!",
+    "hi": "मज़ा आ गया!"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "This is great!",
+   "situation": "Enjoying food or comfort",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "sorry-ah-say-again",
+   "category": "general",
+   "text": "Sorry ah, can say again?",
+   "meaning": {
+    "zh-Hans": "不好意思，可以再说一遍吗？",
+    "id": "Maaf, bisa diulang?",
+    "ja": "すみません、もう一度言ってもらえますか？",
+    "ko": "죄송한데 다시 말해 줄래요?",
+    "hi": "माफ़ कीजिए, फिर से कहेंगे?"
+   },
+   "register": "sg-colloquial",
+   "useAdvice": "casual-ok",
+   "plainAlternative": "Sorry, can you say that again?",
+   "situation": "Asking someone to repeat, casual",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "say-again-slowly",
+   "category": "general",
+   "text": "Sorry, can you say that again slowly?",
+   "meaning": {
+    "zh-Hans": "不好意思，可以慢一点再说一遍吗？",
+    "id": "Maaf, bisa diulang pelan-pelan?",
+    "ja": "すみません、もう一度ゆっくり言ってもらえますか？",
+    "ko": "죄송한데 천천히 다시 말해 줄 수 있어요?",
+    "hi": "माफ़ कीजिए, क्या आप फिर से धीरे बोल सकते हैं?"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Asking for repetition in any situation",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "what-does-mean",
+   "category": "general",
+   "text": "What does ___ mean?",
+   "meaning": {
+    "zh-Hans": "___ 是什么意思？",
+    "id": "___ artinya apa?",
+    "ja": "___ はどういう意味ですか？",
+    "ko": "___ 이 무슨 뜻이에요?",
+    "hi": "___ का क्या मतलब है?"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Asking about a word",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  },
+  {
+   "id": "can-you-show-me",
+   "category": "general",
+   "text": "Can you show me?",
+   "meaning": {
+    "zh-Hans": "可以指给我看吗？",
+    "id": "Bisa tunjukkan kepada saya?",
+    "ja": "見せてもらえますか？",
+    "ko": "보여 주실 수 있어요?",
+    "hi": "क्या आप मुझे दिखा सकते हैं?"
+   },
+   "register": "standard",
+   "useAdvice": "say",
+   "plainAlternative": null,
+   "situation": "Asking for help",
+   "review": {
+    "status": "unreviewed",
+    "reviewer": null,
+    "date": null,
+    "notes": ""
+   }
+  }
+ ]
+}

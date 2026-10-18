@@ -1,13 +1,16 @@
 export const sceneLanguages = ['zh-Hans', 'id', 'ja', 'ko', 'hi'] as const;
 export type SceneLanguage = typeof sceneLanguages[number];
 type Translations = Record<SceneLanguage, string>;
-export type SceneLine = { id: string; role: 'partner' | 'learner'; text: string; start: number; end: number; version: string; translations: Translations };
+// C13-3: optional local-usage fields from the script contract; older courses simply do not have them.
+export type SceneLocal = { register?: string; useAdvice?: string; plainAlternative?: string | null };
+export type SceneAlternative = { text: string; translations: Partial<Translations> };
+export type SceneLine = { id: string; role: 'partner' | 'learner'; text: string; start: number; end: number; version: string; translations: Translations } & SceneLocal;
 export type SceneCourse = {
   id: string; version: string; source: 'ai-sample' | 'test-fixture';
   media: { src: string; duration: number; version: string };
   lines: SceneLine[];
-  phrases: { id: string; text: string; lineId: string; translations: Translations }[];
-  turns: { partnerLineId: string; learnerLineId: string }[];
+  phrases: ({ id: string; text: string; lineId: string; translations: Translations } & SceneLocal)[];
+  turns: { partnerLineId: string; learnerLineId: string; alternatives?: SceneAlternative[] }[];
 };
 type Validation = { ok: true; value: SceneCourse } | { ok: false; issues: string[] };
 const object = (v: unknown): v is Record<string, unknown> => !!v && typeof v === 'object' && !Array.isArray(v);

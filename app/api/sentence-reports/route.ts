@@ -2,11 +2,14 @@ import { join } from 'node:path';
 import { createLocalCourseStore } from '../../../lib/local-course-store';
 import { parseLearningCoursePointer } from '../../../lib/learning-library';
 import { createSentenceReportStore, createSameSentenceFinder } from '../../../lib/sentence-reports';
+import { createLocalReviewQueue } from '../../../lib/local-review-queue';
+import type { createReviewQueueStore } from '../../../lib/review-queue';
 import { privateReply, sameOrigin, sessionCookie, readSmallBody, localSetup } from '../../../lib/private-request';
 
 export const runtime = 'nodejs';
 type Reports = Pick<ReturnType<typeof createSentenceReportStore>, 'list' | 'report'>;
 type SameSentence = Pick<ReturnType<typeof createSameSentenceFinder>, 'find'>;
+type Queue = Pick<ReturnType<typeof createReviewQueueStore>, 'add'>;
 const object = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 
 function queryPointer(params: URLSearchParams) {
@@ -16,7 +19,7 @@ function queryPointer(params: URLSearchParams) {
 }
 
 // C5: a learner reports one sentence of one exact course version. Recording a report changes no course.
-export async function handleSentenceReports(request: Request, { reports, now, sameSentence }: { reports: Reports; now: number; sameSentence?: SameSentence }) {
+export async function handleSentenceReports(request: Request, { reports, now, sameSentence, queue }: { reports: Reports; now: number; sameSentence?: SameSentence; queue?: Queue }) {
   if (!['GET', 'POST'].includes(request.method)) return privateReply({ error: 'method' }, 405);
   const session = { cookie: sessionCookie(request), now };
   try {
@@ -34,7 +37,10 @@ export async function handleSentenceReports(request: Request, { reports, now, sa
     let body: unknown; try { body = JSON.parse(raw); } catch { return privateReply({ error: 'invalid' }, 400); }
     if (!object(body) || Object.keys(body).some(key => !['course', 'lineId', 'reason', 'note'].includes(key)) || !['course', 'lineId', 'reason'].every(key => Object.hasOwn(body, key))
       || typeof body.lineId !== 'string' || typeof body.reason !== 'string' || body.note !== undefined && typeof body.note !== 'string') return privateReply({ error: 'invalid' }, 400);
-    const report = await reports.report({ ...session, course: parseLearningCoursePointer(body.course), lineId: body.lineId, reason: body.reason, ...(body.note === undefined ? {} : { note: body.note as string }) });
+    const course = parseLearningCoursePointer(body.course);
+    const report = await reports.report({ ...session, course, lineId: body.lineId, reason: body.reason, ...(body.note === undefined ? {} : { note: body.note as string }) });
+    // C13-1: a sentence reported as hard to hear comes back in "listen again"; the report stands either way.
+    if (queue && report.reason === 'unclear') await queue.add({ ...session, course, lineIds: [report.lineId], source: 'report' }).catch(() => null);
     return privateReply({ report }, 201);
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
@@ -50,7 +56,7 @@ function configured(request: Request) {
   if (!secret) return privateReply({ error: 'local_setup_required' }, 503);
   const directory = join(process.cwd(), 'tmp', 'generation-tasks'), courses = createLocalCourseStore(directory, secret);
   return handleSentenceReports(request, { reports: createSentenceReportStore({ directory, sessionSecret: secret, getCourse: courses.getCourse }), now: Date.now(),
-    sameSentence: createSameSentenceFinder({ list: courses.list, getCourse: courses.getCourse }) });
+    sameSentence: createSameSentenceFinder({ list: courses.list, getCourse: courses.getCourse }), queue: createLocalReviewQueue(directory, secret) });
 }
 export const GET = configured;
 export const POST = configured;

@@ -44,7 +44,9 @@ export function buildRevisedLearningCourse(task: GenerationTask, revision: unkno
     translations.set(entry.lineId, entry.translations);
   }
   const checked = validateGeneratedScript({
-    lines: course.lines.map(line => ({ id: line.id, role: line.role, text: line.text, translations: translations.get(line.id) })),
+    // C13-3: a line's local-register fields belong to its English text, so a translation revision keeps them.
+    lines: course.lines.map(line => ({ id: line.id, role: line.role, text: line.text, translations: translations.get(line.id),
+      ...Object.fromEntries((['register', 'useAdvice', 'plainAlternative'] as const).filter(key => Object.hasOwn(line, key)).map(key => [key, line[key]])) })),
     phrases: revision.phrases,
     turns: course.turns,
   });

@@ -13,9 +13,14 @@ import { ActionBar, Icon, Sheet, useShell } from './shell';
 import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
 import { c12Copy } from './c12-copy';
+import { c13Copy } from './c13-copy';
 
-type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
-type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
+type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>>; register?: string; plainAlternative?: string | null };
+type Alternative = { text: string; translations?: Partial<Record<EntryLanguage, string>> };
+type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string; alternatives?: Alternative[] }[] };
+// C13-3: the course's own "you could also say" answers for a turn; older courses have none.
+const alternativesOf = (turn: { alternatives?: unknown }) => Array.isArray(turn.alternatives)
+  ? (turn.alternatives as Alternative[]).filter(item => item && typeof item.text === 'string' && item.text.trim()).slice(0, 3) : [];
 type History = { learner: string; partner: string }[];
 type Reply = { transcript: string; text: string; src: string; understood?: boolean; coachNote?: string | null };
 type Focus = 'normal' | 'refusal' | 'rephrase' | 'unclear';
@@ -164,6 +169,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const [autoHelp, setAutoHelp] = useState(readAutoHelp);
   const [helpLevel, setHelpLevel] = useState(0);
   const [partnerHelp, setPartnerHelp] = useState(false);
+  const [alternativesShown, setAlternativesShown] = useState(false);
   // C10-3/C10-4: "more help" sheet, the once-only first-turn settings sheet, and where focus lands after them.
   const [helpOpen, setHelpOpen] = useState(false);
   const [setupOpen, setSetupOpen] = useState(() => !resumed && !memory?.setupAsked && !(memory?.history?.length) && startTurn === 0 && !memory?.ending);
@@ -179,6 +185,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const turn = course.turns[turnIndex];
   const partner = course.lines.find(line => line.id === turn.partnerLineId)!;
   const learner = course.lines.find(line => line.id === turn.learnerLineId)!;
+  const alternatives = alternativesOf(turn);
+  const c13 = c13Copy[language];
   if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; memory.chosen = chosen.current;
     memory.goal = goal; memory.goalRevision = goalRevision.current; memory.helped = helped.current; memory.understood = understoodBy.current; memory.session = session.current; memory.setupAsked = setupAsked.current || !setupOpen; }
 
@@ -415,7 +423,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     }
   }
 
-  function resetTurn() { releaseSelf(); setBlocked(false); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); setNative(null); setPendingGoal(null); }
+  function resetTurn() { setAlternativesShown(false); releaseSelf(); setBlocked(false); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); setNative(null); setPendingGoal(null); }
   function confirmGoal() {
     if (!pendingGoal) return;
     goalRevision.current += 1;
@@ -488,6 +496,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
       <div className="bubble bubble--partner">
         <p data-testid="practice-partner" lang="en" className="bubble-text">{partner.text}</p>
         {partnerHelp && <p data-testid="partner-help" className="bubble-sub" lang={language}>{partner.translations?.[language]}</p>}
+        {partnerHelp && partner.register === 'sg-colloquial' && typeof partner.plainAlternative === 'string' && partner.plainAlternative.trim()
+          && <p data-testid="partner-plain" className="plain-alt" lang={language}>{c13.plain}<span lang="en">{partner.plainAlternative}</span></p>}
         <div className="bubble-tools">
           {mediaBusy
             ? <button type="button" className="icon-btn icon-btn--soft" aria-label={extra.pause} onClick={pause}><Icon name="pause" /></button>
@@ -518,6 +528,12 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
           <div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={() => playPartner(line.id)}><Icon name="play" size={18} />{tools.demo}</button></div>
         </div> : null;
       })()}
+      {alternativesShown && !ending && <div data-testid="practice-alternatives" className="bubble bubble--help practice-alternatives" role="status">
+        <p className="bubble-label">{c13.alsoSay}</p>
+        <ul className="alt-list">{[{ text: learner.text, translations: learner.translations }, ...alternatives].map(item => <li key={item.text}>
+          <span lang="en" className="alt-text">{item.text}</span>{item.translations?.[language] ? <span lang={language} className="bubble-sub">{item.translations[language]}</span> : null}</li>)}</ul>
+        <div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={() => { setAlternativesShown(false); onHint(turnIndex); }}>{c13.seeModel}</button></div>
+      </div>}
       {helpLevel > 0 && !reply && !ending && stage === 'idle' && <div data-testid="practice-auto-help" className="bubble bubble--help practice-help" role="status">
         {helpLevel === 1
           ? <p>{tools.helpStart}<span lang="en">{learner.text.split(/\s+/).slice(0, 3).join(' ')}…</span></p>
@@ -606,7 +622,11 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
       </div>
       {canNext && stage !== 'recording' && <button type="button" className="btn btn-primary practice-next" onClick={nextTurn}>{copy.next}</button>}
       <div className="practice-controls">
-        <button type="button" className="side-btn" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; helped.current[turnIndex] = true; onHint(turnIndex); }}><span className="side-icon"><Icon name="bulb" /></span><span className="side-label">{copy.hint}</span></button>
+        <button type="button" className="side-btn" disabled={stage === 'recording' || stage === 'sending'} onClick={() => {
+          stats.current.hints++; helped.current[turnIndex] = true;
+          // C13-3: first the course's own "you could also say" answers, without any model call; the model answer stays one tap away.
+          if (alternatives.length && !alternativesShown) setAlternativesShown(true); else onHint(turnIndex);
+        }}><span className="side-icon"><Icon name="bulb" /></span><span className="side-label">{copy.hint}</span></button>
         {stage === 'recording'
           ? <button ref={micButton} type="button" className="mic-btn is-recording" onClick={() => recorder.current?.stop()}><span className="mic-circle"><span className="mic-ring" aria-hidden="true" /><Icon name="stop" size={30} /></span><span className="mic-label">{copy.done}</span></button>
           : canNext

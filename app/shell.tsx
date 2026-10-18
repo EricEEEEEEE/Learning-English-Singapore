@@ -6,7 +6,7 @@ import type { EntryLanguage } from './entry-copy';
 // C10 shared shell: a thin top bar with "more", a bottom-sheet built on the native <dialog>, and a fixed bottom
 // action bar. No UI library: showModal() gives the focus trap, Esc and the inert page behind it.
 
-export type CommonOptions = { meta?: string; trial?: boolean };
+export type CommonOptions = { meta?: string; trial?: boolean; settings?: ReactNode };
 export type ShellValue = { language: EntryLanguage; common: (options: CommonOptions) => ReactNode };
 export const ShellContext = createContext<ShellValue | null>(null);
 export function useShell() { return useContext(ShellContext); }

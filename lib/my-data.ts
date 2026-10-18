@@ -10,6 +10,7 @@ import { createSceneRequirementStore } from './scene-requirements';
 import { createSentenceReportStore } from './sentence-reports';
 import { createPracticeFeedbackStore } from './practice-feedback';
 import { createPracticeReviewStore } from './practice-reviews';
+import { createReviewQueueStore } from './review-queue';
 
 type Session = { cookie?: string | null; now?: number };
 export type GenerationRecordStatus = 'ready' | 'failed' | 'unknown' | 'in_progress' | 'simulation' | 'deleted' | 'cancelled' | 'stopped';
@@ -28,7 +29,7 @@ function recordStatus(task: GenerationTask, stop: StopState | null): GenerationR
 }
 
 // The learner's own local data: delete one scene, delete everything, and read a cost-honest history.
-// Deletion removes content (course, media, positions, requirement text, reports, practice feedback marks, practice reviews) but keeps each task's reserved
+// Deletion removes content (course, media, positions, requirement text, reports, practice feedback marks, practice reviews, the review queue) but keeps each task's reserved
 // cost, because the spending ledger that enforces the budget ceiling must never shrink.
 export function createMyDataStore({ directory, requirementsDirectory, sessionSecret }: { directory: string; requirementsDirectory: string; sessionSecret: string }) {
   if (!directory || !requirementsDirectory || !sessionSecret) throw new Error('Data store configuration required');
@@ -40,6 +41,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
   const reports = createSentenceReportStore({ directory, sessionSecret });
   const feedback = createPracticeFeedbackStore({ directory, sessionSecret });
   const reviews = createPracticeReviewStore({ directory, sessionSecret });
+  const queue = createReviewQueueStore({ directory, sessionSecret });
   async function owner(input: Session) {
     const id = await ownerIdFromSessionCookie(input.cookie, sessionSecret, input.now);
     if (!id) throw new Error('Authenticated session required');
@@ -69,6 +71,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
         await reports.removeCourse({ ...session, id: courseId });
         await feedback.removeCourse({ ...session, id: courseId });
         await reviews.removeCourse({ ...session, id: courseId });
+        await queue.removeCourse({ ...session, id: courseId });
         await media.removeCourse({ ...session, courseId });
         await copies.remove({ ...session, now: at, id: courseId });
       } else {
@@ -78,6 +81,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
         await reports.removeCourse({ ...session, id: courseId });
         await feedback.removeCourse({ ...session, id: courseId });
         await reviews.removeCourse({ ...session, id: courseId });
+        await queue.removeCourse({ ...session, id: courseId });
         if (task.requirement) await requirements.remove({ ...session, revision: task.requirement.revision, content: task.requirement.content });
         await media.removeCourse({ ...session, courseId });
         await tasks.tombstone({ ...session, now: at, id: courseId });
@@ -91,6 +95,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
       await reports.removeAll(session);
       await feedback.removeAll(session);
       await reviews.removeAll(session);
+      await queue.removeAll({ ...session, now: at });
       await requirements.removeAll(session);
       await media.removeAll(session);
       await copies.removeAll({ ...session, now: at });

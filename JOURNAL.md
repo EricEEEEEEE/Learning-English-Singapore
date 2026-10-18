@@ -714,3 +714,8 @@
 - [audit] phase → implementing @ 2026-10-18T07:07:02+00:00
 - [audit] phase → test-writing @ 2026-10-18T07:36:00+00:00
 - C12 对练更可靠 绿：红f0d46eb 纠错2e87f11 绿262a648；verify 2322/2322 exit0；C12-1..5 勾选；截图 /mnt/project-files/les-plan/c12-*.png；真机与真实模型未验证
+- [audit] phase → implementing @ 2026-10-18T07:50:37+00:00
+- [audit] phase → test-writing @ 2026-10-18T07:54:34+00:00
+- [audit] phase → implementing @ 2026-10-18T07:54:58+00:00
+- [audit] phase → test-writing @ 2026-10-18T08:03:07+00:00
+- [audit] phase → implementing @ 2026-10-18T08:03:07+00:00

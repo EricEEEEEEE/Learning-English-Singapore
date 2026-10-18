@@ -88,6 +88,15 @@ export function createSceneProgressStore({ directory, sessionSecret }: { directo
         return row ? stored(row).course : null;
       });
     },
+    // C13-2: the owner's most recently saved position across every course, for "continue where you stopped".
+    // A pointer only: the caller still reads the course through the private reader before showing anything.
+    async mostRecent(input: Session): Promise<SceneProgressRecord | null> {
+      const id = await owner({ ...input });
+      return transact(db => {
+        const row = db.prepare('SELECT id,revision,materials,media_hash,version,position,updated_at FROM scene_progress WHERE owner=? ORDER BY updated_at DESC,rowid DESC LIMIT 1').get(id) as Row | undefined;
+        return row ? stored(row) : null;
+      });
+    },
     async save(input: Session & { course: Course; expectedVersion: number; position: unknown }): Promise<SceneProgressRecord> {
       const request = { cookie: input.cookie, now: input.now ?? Date.now(), course: structuredClone(input.course), expectedVersion: input.expectedVersion, position: structuredClone(input.position) };
       const id = await owner(request), pointer = coursePointer(request.course), position = positionValue(request.position, request.course);

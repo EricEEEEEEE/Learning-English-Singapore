@@ -22,6 +22,8 @@ import { useOnline } from './use-online';
 import { ActionBar, AppBar, Icon, Sheet, ShellContext, type CommonOptions } from './shell';
 import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
+import { c13Copy } from './c13-copy';
+import ReviewListen, { useReviewQueue, type ReviewToday } from './review-listen';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -253,6 +255,10 @@ export default function LearningEntry() {
   const [dataNotice, setDataNotice] = useState<{ text: 'sceneDeleted' | 'sceneDeleteFailed' | 'allDeleted' | 'allDeleteFailed'; error: boolean } | null>(null);
   useEffect(() => { setRecordsOpen(false); setDataNotice(null); setRowMenu(null); }, [requirementsOwner, library.open]);
   useEffect(() => { setSignOutFailed(false); setMoreOpen(false); }, [requirementsOwner]);
+  // C13-1/C13-2: today's sentences to listen to again, "continue" and "heard N", read while my scenes are shown.
+  const c13 = c13Copy[language];
+  const [reviewing, setReviewing] = useState(false);
+  useEffect(() => { setReviewing(false); }, [requirementsOwner, library.open]);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -315,6 +321,12 @@ export default function LearningEntry() {
     : null;
   const selectedScene = library.selected;
   const viewing = selectedScene?.course ?? generation.watching;
+  const queue = useReviewQueue(requirementsOwner, verified && library.open && !viewing && !reviewing);
+  const placeText = (last: NonNullable<ReviewToday['last']>) => {
+    const n = last.index ?? 1, place = c13.place;
+    return last.page === 'sentences' ? place.sentences(n) : last.page === 'prompt' ? place.prompt(n) : last.page === 'practice' ? place.practice(n)
+      : last.page === 'terms' ? place.terms : last.page === 'role' ? place.role : place.watch;
+  };
   const player = viewing && requirementsOwner ? <div hidden={!verified}>
     <RealSceneCourse key={`${requirementsOwner}:${viewing.id}:${viewing.revision}:${viewing.materialsRevision ?? 0}`} language={language}
       saved={viewing} guided rememberProgress active={verified} requirement={selectedScene?.requirement ?? generation.watchRequirement}
@@ -332,12 +344,13 @@ export default function LearningEntry() {
     {languageChoices.map(choice => <option key={choice.code} value={choice.code}>{choice.name}</option>)}
   </select>;
   // What every "more" sheet ends with: interface language, display, and the notes that used to fill each page.
-  const common = ({ meta, trial = false }: CommonOptions) => <>
+  const common = ({ meta, trial = false, settings }: CommonOptions) => <>
     <label className="sheet-section sheet-field"><span className="sheet-label"><Icon name="globe" size={18} />{shell.language}</span>{languageSelect}</label>
     <fieldset className="sheet-section switch-group"><legend className="sheet-label">{extra.display}</legend>
       <label className="switch-row"><span>{extra.largeText}</span><input className="switch" type="checkbox" checked={preferences.largeText} disabled={!ready} onChange={event => changeDisplay({ largeText: event.target.checked })} /></label>
       <label className="switch-row"><span>{extra.reducedMotion}</span><input className="switch" type="checkbox" checked={preferences.reducedMotion} disabled={!ready} onChange={event => changeDisplay({ reducedMotion: event.target.checked })} /></label>
     </fieldset>
+    {settings}
     <section className="sheet-section sheet-about"><h3 className="sheet-label">{meta ? shell.about : shell.aboutApp}</h3>
       {meta ? <p>{meta}</p> : null}
       <p><strong>{copy.respectTitle}</strong> {copy.respect}</p>
@@ -349,6 +362,7 @@ export default function LearningEntry() {
   return <ShellContext.Provider value={{ language, common }}><div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
     <title>Learning English in Singapore</title>
     {showPlayer ? null : <AppBar moreLabel={shell.more} moreOpen={moreOpen} onMore={openMore} moreRef={moreButton}
+      start={reviewing ? <button className="icon-btn" type="button" aria-label={c13.back} onClick={() => setReviewing(false)}><Icon name="back" /></button> : undefined}
       center={home ? <div className="brand-lockup"><p className="wordmark" lang="en">Learning English in Singapore</p><p className="brand-slogan" lang="zh-Hans">帮你融入新加坡，相信自己可以做到。</p></div>
         : <p className="wordmark wordmark--short" lang="en">Learning English</p>} />}
     <main className="simple-main">
@@ -356,13 +370,33 @@ export default function LearningEntry() {
       {player}
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="btn btn-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
         : account.authenticated && account.accountKey ? viewing ? null
-        : library.open ? recordsOpen ? <GenerationRecords language={language} onBack={() => setRecordsOpen(false)} /> : <section className="library">
+        : library.open ? recordsOpen ? <GenerationRecords language={language} onBack={() => setRecordsOpen(false)} />
+        : reviewing && queue.today ? <ReviewListen language={language} items={queue.today.items} onDone={() => setReviewing(false)} />
+        : <section className="library">
           <h1>{libraryCopy.title}</h1><p className="panel-copy">{libraryCopy.local}</p>
           {dataNotice ? <p className={dataNotice.error ? 'scene-entry-error' : 'scene-save-status'} role={dataNotice.error ? 'alert' : 'status'}>{trustCopy[dataNotice.text]}</p> : null}
           {signOutFailed ? <p className="scene-entry-error" role="alert">{trustCopy.signOutFailed}</p> : null}
           {!library.result || library.result.status === 'loading' ? <p role="status">{libraryCopy.loading}</p> : library.result.status === 'failed'
             ? <><p role="alert">{libraryCopy.error}</p><button className="text-button" type="button" onClick={library.retry}>{libraryCopy.retry}</button></>
             : <>{library.result.unavailable > 0 && <p role="status">{libraryCopy.unavailable(library.result.unavailable)}</p>}
+              {(() => {
+                const today = queue.today, last = today?.last;
+                const scene = last ? library.result.scenes.find(item => item.course.id === last.course.id && item.course.revision === last.course.revision && (item.course.materialsRevision ?? 0) === (last.course.materialsRevision ?? 0)) : undefined;
+                return <>
+                  {last && scene ? <button className="continue-card" type="button" data-testid="continue-last" onClick={() => library.choose(scene)}>
+                    <span className="continue-icon" aria-hidden="true"><Icon name="play" size={22} /></span>
+                    <span className="scene-row-text"><span className="continue-label">{c13.continueLast}</span>
+                      <span className="continue-description">{scene.description}</span>
+                      <span className="scene-row-meta">{placeText(last)}</span></span>
+                    <span className="scene-row-go" aria-hidden="true"><Icon name="chevron" size={20} /></span>
+                  </button> : null}
+                  {today && today.items.length > 0 ? <button className="review-entry" type="button" onClick={() => { setDataNotice(null); setReviewing(true); }}>
+                    <span className="review-entry-icon" aria-hidden="true"><Icon name="speaker" size={20} /></span>
+                    <span className="review-entry-text">{c13.reviewEntry(today.items.length)}</span>
+                    <span className="scene-row-go" aria-hidden="true"><Icon name="chevron" size={18} /></span>
+                  </button> : null}
+                </>;
+              })()}
               {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map(scene => {
                 const key = `${scene.course.id}:${scene.course.revision}:${scene.course.materialsRevision ?? 0}`;
                 const words = scene.requirement.content.keywords;
@@ -378,13 +412,15 @@ export default function LearningEntry() {
                   </button>
                   <button className="icon-btn scene-row-more" type="button" aria-label={c11.rowMore(scene.description)} aria-haspopup="dialog" aria-expanded={rowMenu === key} onClick={() => setRowMenu(key)}><Icon name="more" /></button>
                 </li>;
-              })}</ul> : library.result.unavailable === 0 ? <p className="library-empty">{libraryCopy.empty}</p> : null}</>}
+              })}</ul> : library.result.unavailable === 0 ? <p className="library-empty">{libraryCopy.empty}</p> : null}
+              {queue.today ? <div className="heard-line"><p data-testid="heard-count" className="heard-count">{c13.heard(queue.today.heard)}</p>
+                {queue.today.heard === 0 && queue.today.resetAt !== null ? <p className="heard-reset">{c13.heardReset}</p> : null}</div> : null}</>}
           {(() => {
             const scenes = library.result?.status === 'ready' ? library.result.scenes : [];
             const scene = scenes.find(item => `${item.course.id}:${item.course.revision}:${item.course.materialsRevision ?? 0}` === rowMenu);
             return <Sheet open={!!scene} onClose={() => setRowMenu(null)} title={scene?.description ?? ''} testId="scene-row-sheet" closeLabel={shell.close}>
               {scene ? <SceneDelete language={language} description={scene.description} course={scene.course} onCancel={() => setRowMenu(null)}
-                onDeleted={() => { setRowMenu(null); library.drop(scene.course); setDataNotice({ text: 'sceneDeleted', error: false }); }}
+                onDeleted={() => { setRowMenu(null); library.drop(scene.course); queue.refresh(); setDataNotice({ text: 'sceneDeleted', error: false }); }}
                 onFailed={() => { setRowMenu(null); setDataNotice({ text: 'sceneDeleteFailed', error: true }); }} /> : null}
             </Sheet>;
           })()}
@@ -461,10 +497,12 @@ export default function LearningEntry() {
           </div>
           <StoredData language={language} />
           <DeleteAllData language={language}
-            onDeleted={() => { setMoreOpen(false); library.drop(null); requirements.retry(); setDataNotice({ text: 'allDeleted', error: false }); }}
+            onDeleted={() => { setMoreOpen(false); library.drop(null); queue.refresh(); requirements.retry(); setDataNotice({ text: 'allDeleted', error: false }); }}
             onFailed={() => { setMoreOpen(false); setDataNotice({ text: 'allDeleteFailed', error: true }); }} />
         </section> : null}
-        {common({ trial: false })}
+        {common({ trial: false, settings: signedIn && library.open && queue.today ? <label className="sheet-section sheet-field"><span className="sheet-label"><Icon name="speaker" size={18} />{c13.limitLabel}</span>
+          <select aria-label={c13.limitLabel} value={String(queue.today.limit)} onChange={event => void queue.setLimit(Number(event.target.value))}>
+            {Array.from({ length: 10 }, (_, i) => i + 1).map(n => <option key={n} value={n}>{n}</option>)}</select></label> : null })}
         {signedIn && !viewing && (library.open || (generation.target === null && !requirements.readFailed && !requirements.loading && requirements.draft)) ? <div className="sheet-rows">
           <SignOutButton language={language} row onStart={() => { setSignOutFailed(false); setMoreOpen(false); }} onFailed={() => setSignOutFailed(true)} />
         </div> : null}

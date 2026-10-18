@@ -18,6 +18,8 @@ import { sceneSafetyKind } from '../lib/scene-safety';
 import { ActionBar, AppBar, Icon, Sheet, useShell } from './shell';
 import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
+import { c13Copy, localTag } from './c13-copy';
+import { postReview } from './review-listen';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
 export const realSceneCopy: Record<EntryLanguage, Copy> = {
@@ -58,6 +60,14 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const [segmentPlaying, setSegmentPlaying] = useState(false);
   // C8-3: true when the saved position reopened the practice page; it offers "listen first" or "continue" once.
   const [resumedPractice, setResumedPractice] = useState(false);
+  // C13-5: before the first play, a guess in the help language about what the other person asks first. Never saved.
+  const [guess, setGuess] = useState<'open' | 'skipped' | number>('open');
+  // C13-3: which phrase rows have "help me understand" open (the plainer way to say a local phrase).
+  const [plainOpen, setPlainOpen] = useState<Record<string, boolean>>({});
+  // C13-1/C13-2: sentences heard in this visit, reported once each ("learned" when played on the phrase or sentence page).
+  const listened = useRef({ heard: new Set<string>(), learned: new Set<string>(), sentHeard: new Set<string>(), sentLearned: new Set<string>(), timer: 0 });
+  const segmentLine = useRef<string | null>(null);
+  const fullStart = useRef(0);
   const slowRef = useRef(false);
   const loopRange = useRef<{ start: number; end: number } | null>(null);
   const loopFrame = useRef(0);
@@ -101,7 +111,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     const controller = new AbortController(); let loading = true;
     stop(); setCourse(null); setProgressContext(null); setLoadFailed(false); setRoles(null); setPage('watch'); setStep(1); setTurnIndex(0); setWatchComplete(false); setWatchedOnce(false); setAnswerShown(false); setTime(0); setError(false);
     position.current = { page: 'watch', time: 0, turnIndex: 0 }; restoreTime.current = null; mediaReady.current = false;
-    practiceMemory.current = { turnIndex: 0, history: [], reply: null }; setAb(null); setPartnerHelp(false);
+    practiceMemory.current = { turnIndex: 0, history: [], reply: null }; setAb(null); setPartnerHelp(false); setGuess('open'); setPlainOpen({});
     if (guided) {
       try {
         const snapshot = parseSceneRequirement(requirement);
@@ -143,6 +153,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     setPage(restored.page === 'watch' || restored.page === 'role' ? restored.page : 'learn');
     setStep(restored.page === 'terms' ? 2 : restored.page === 'sentences' ? 3 : restored.page === 'prompt' ? 4 : restored.page === 'practice' ? 5 : 1);
     setResumedPractice(restored.page === 'practice'); setWatchedOnce(restored.page !== 'watch'); setAnswerShown(false);
+    if (restored.page !== 'watch' || restored.time > 0) setGuess('skipped');
     setTurnIndex(restored.turnIndex); setTime(restored.time); setWatchComplete(false);
     if (video.current && video.current.readyState >= 1) { video.current.currentTime = restored.time; restoreTime.current = null; }
   }, [progress.restore]);
@@ -151,7 +162,37 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     return () => { wantsPlayback.current = false; fullPlayback.current = false; request.current++; media?.pause(); };
   }, [course]);
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const listenTarget = guided && rememberProgress && saved ? { id: saved.id, revision: saved.revision, ...(saved.materialsRevision === undefined ? {} : { materialsRevision: saved.materialsRevision }) } : null;
+  const listenKey = listenTarget ? JSON.stringify(listenTarget) : null;
+  function flushListen() {
+    const record = listened.current;
+    window.clearTimeout(record.timer);
+    if (!listenKey || !record.heard.size && !record.learned.size) return;
+    const learned = [...record.learned], heard = [...new Set([...record.heard, ...learned])].filter(id => !record.sentHeard.has(id));
+    record.heard.clear(); record.learned.clear();
+    for (const id of heard) record.sentHeard.add(id);
+    for (const id of learned) record.sentLearned.add(id);
+    void postReview({ action: 'listen', course: JSON.parse(listenKey), heard, learned }).catch(() => {
+      for (const id of heard) { record.sentHeard.delete(id); record.heard.add(id); }
+      for (const id of learned) { record.sentLearned.delete(id); record.learned.add(id); }
+    });
+  }
+  const flushRef = useRef(flushListen);
+  flushRef.current = flushListen;
+  useEffect(() => () => flushRef.current(), [listenKey]);
+  function noteHeard(ids: string[], learned: boolean) {
+    if (!listenKey || !ids.length) return;
+    const record = listened.current; let fresh = false;
+    for (const id of ids) {
+      if (!record.sentHeard.has(id) && !record.heard.has(id)) { record.heard.add(id); fresh = true; }
+      if (learned && !record.sentLearned.has(id) && !record.learned.has(id)) { record.learned.add(id); fresh = true; }
+    }
+    if (!fresh) return;
+    window.clearTimeout(record.timer);
+    record.timer = window.setTimeout(() => flushRef.current(), 800);
+  }
   function stop() {
+    segmentLine.current = null;
     wantsPlayback.current = false; fullPlayback.current = false; end.current = Number.POSITIVE_INFINITY; request.current++; video.current?.pause();
     loopRange.current = null; cancelAnimationFrame(loopFrame.current); setLoopKey(null); setSegmentPlaying(false);
   }
@@ -169,10 +210,12 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     position.current = { ...position.current, time: Math.min(course?.media.duration ?? currentTime, Math.max(0, currentTime)) };
     progress.change(position.current, flush);
   }
-  async function play(start: number, finish: number, full = false, options: { rate?: number; loop?: string } = {}) {
+  async function play(start: number, finish: number, full = false, options: { rate?: number; loop?: string; line?: string } = {}) {
     const media = video.current;
     if (!media) return;
     stop();
+    setGuess(current => current === 'open' ? 'skipped' : current);
+    segmentLine.current = options.loop ? null : options.line ?? null; fullStart.current = start;
     media.playbackRate = options.rate ?? (slowRef.current ? 0.75 : 1); media.preservesPitch = true;
     wantsPlayback.current = true; setSegmentPlaying(true);
     fullPlayback.current = full;
@@ -208,7 +251,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   }
   function move(next: number) { stop(); setStep(next); }
   const lineById = (id: string) => course!.lines.find(line => line.id === id)!;
-  const playLine = (line: SceneLine, rate?: number) => play(line.start, line.end, false, { rate });
+  const playLine = (line: SceneLine, rate?: number) => play(line.start, line.end, false, { rate, line: line.id });
   function changePage(next: 'watch' | 'role' | 'learn', nextStep = 1, turn = turnIndex, reveal = false) {
     position.current = { ...position.current, page: next === 'learn' ? nextStep === 2 ? 'terms' : nextStep === 3 ? 'sentences' : nextStep === 5 ? 'practice' : 'prompt' : next };
     stop(); focusNext.current = true; setPage(next); setStep(nextStep); setResumedPractice(false); setAnswerShown(reveal); setMoreOpen(false);
@@ -295,9 +338,19 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const playing = segmentPlaying && fullPlayback.current;
   // C11-1: before the scene has been watched, the play circle is the page's one primary action.
   const playPrimary = guided && !watchedOnce ? ' btn-primary' : '';
+  const c13 = c13Copy[language];
+  const guessing = guided && page === 'watch' && !watchedOnce && guess === 'open';
+  const guessChecking = guided && page === 'watch' && watchComplete && typeof guess === 'number';
+  const plainLine = (text: string | null | undefined, testId: string) => typeof text === 'string' && text.trim()
+    ? <p data-testid={testId} className="plain-alt" lang={language}>{c13.plain}<span lang="en">{text}</span></p> : null;
+  const tagOf = (item: { register?: string; useAdvice?: string }) => localTag(language, item);
+  const tag = (item: { register?: string; useAdvice?: string }) => {
+    const label = tagOf(item);
+    return label ? <span data-testid="local-tag" className={`local-tag${item.register === 'sg-colloquial' ? ' local-tag--colloquial' : ''}`} lang={language}>{label}</span> : null;
+  };
   const tool = (icon: ReactNode, label: string, props: ButtonHTMLAttributes<HTMLButtonElement> & { 'data-testid'?: string }) =>
     <button type="button" className="tool-btn" {...props}><span className="tool-icon" aria-hidden="true">{icon}</span><span className="tool-label" aria-hidden="true">{label}</span></button>;
-  return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`} data-step={guided ? page === 'learn' ? step : page : undefined}>
+  return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`} data-step={guided ? page === 'learn' ? step : page : undefined} data-guessing={guessing || guessChecking || undefined}>
     {appBar}
     <h1 ref={heading} tabIndex={-1}>{title}</h1>{guided ? null : <p className="trial-note">{copy.notice}</p>}
     {!guided && progressLine}
@@ -307,6 +360,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     <video ref={video} src={course.media.src} hidden={guided && page === 'role'} preload="auto" playsInline aria-label={title} onError={() => { mediaReady.current = false; stop(); setWatchComplete(false); setError(true); }} onEnded={() => {
       const range = loopRange.current, media = video.current;
       if (range && media && wantsPlayback.current) { media.currentTime = range.start; void media.play().catch(() => setError(true)); return; }
+      if (fullPlayback.current && wantsPlayback.current && media) noteHeard(course.lines.filter(line => line.start >= fullStart.current - 0.05 && line.end <= media.currentTime + 0.05).map(line => line.id), false);
       if (guided && page === 'watch' && fullPlayback.current && wantsPlayback.current && !error && (video.current?.currentTime ?? 0) >= course.media.duration - 0.1) { setWatchComplete(true); setWatchedOnce(true); }
       wantsPlayback.current = false; fullPlayback.current = false; setSegmentPlaying(false); savePosition(true);
     }} onLoadedMetadata={() => {
@@ -321,7 +375,9 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     }} onTimeUpdate={() => {
       const media = video.current;
       if (!media) return;
+      if (wantsPlayback.current && fullPlayback.current) noteHeard(course.lines.filter(line => line.start >= fullStart.current - 0.05 && line.end <= media.currentTime + 0.05).map(line => line.id), false);
       if (wantsPlayback.current && !fullPlayback.current && !loopRange.current && media.currentTime >= end.current) {
+        if (segmentLine.current) noteHeard([segmentLine.current], page === 'learn' && (step === 2 || step === 3));
         media.pause(); if (media.currentTime > end.current) media.currentTime = end.current; wantsPlayback.current = false; setSegmentPlaying(false);
       }
       setTime(media.currentTime);
@@ -339,6 +395,16 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
         {tool(<Icon name="cc" />, c11.tools.caption, { 'aria-label': captionsHidden ? tools.showCaption : tools.hideCaption, onClick: () => setCaptionsHidden(hidden => !hidden), 'data-off': captionsHidden || undefined } as ButtonHTMLAttributes<HTMLButtonElement>)}
         {tool(<span className="speed-text">0.75×</span>, c11.tools.slow, { 'aria-label': tools.slow, 'aria-pressed': slow, onClick: toggleSlow })}
       </div>
+      {guessing && <div className="watch-guess" data-testid="watch-guess" role="group" aria-labelledby={`${abId}-guess`}>
+        <p className="watch-guess-ask" id={`${abId}-guess`} lang={language}>{c13.guessAsk}</p>
+        <div className="watch-guess-options">{c13.guessOptions.map((option, i) => <button key={option} type="button" className="guess-option" lang={language}
+          onClick={() => { setGuess(i); void play(0, course.media.duration, true); }}><Icon name={(['help', 'person', 'bulb'] as const)[i]} size={20} />{option}</button>)}</div>
+        <button type="button" className="text-button guess-skip" onClick={() => { setGuess('skipped'); void play(0, course.media.duration, true); }}>{c13.guessSkip}</button>
+      </div>}
+      {guessChecking && typeof guess === 'number' && <div className="guess-check" data-testid="guess-check">
+        <p lang={language}>{c13.guessYou(c13.guessOptions[guess] ?? '')}</p>
+        <p lang={language}>{c13.guessFirst}<span lang="en" className="guess-first">{course.lines[0].text}</span></p>
+      </div>}
       {guided && <>{watchComplete && <p className="watch-done" role="status">{guide.complete}</p>}<ActionBar><button className={`btn ${watchedOnce ? 'btn-primary' : 'btn-tonal'}`} type="button" onClick={() => changePage('role')}>{guide.enter}</button></ActionBar></>}
     </div>}
     {guided && page === 'role' && <div className="role-cards"><p className="scene-note">{contextSource === 'legacy-neutral' ? libraryCopy.neutral : guide.roleSource}</p>
@@ -346,26 +412,33 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
       <div className="role-card" data-testid="scene-partner-role"><span className="role-avatar" aria-hidden="true"><Icon name="person" /></span><p>{guide.partner}：{roles?.partner || guide.partnerFallback}</p></div>
       <ActionBar><button type="button" className="btn btn-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button></ActionBar>
     </div>}
-    {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}<div className="term-list">{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="term-row">
-      <div className="term-text"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p></div>
-      <button type="button" className="icon-btn icon-btn--soft" aria-label={copy.listen} onClick={() => playLine(lineById(phrase.lineId))}><Icon name="speaker" /></button>
-    </article>)}</div></div>}
+    {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}<div className="term-list">{course.phrases.map(phrase => {
+      const plain = phrase.register === 'sg-colloquial' && typeof phrase.plainAlternative === 'string' && phrase.plainAlternative.trim() ? phrase.plainAlternative : null;
+      return <article key={phrase.id} data-testid="scene-term" className="term-row">
+        <div className="term-text"><strong lang="en">{phrase.text}</strong>{tag(phrase)}<p lang={language}>{phrase.translations[language]}</p>
+          {plain && <button type="button" className="chip-btn chip-btn--small" aria-pressed={!!plainOpen[phrase.id]} onClick={() => setPlainOpen(open => ({ ...open, [phrase.id]: !open[phrase.id] }))}><Icon name="translate" size={16} />{plainOpen[phrase.id] ? tools.helpClose : tools.help}</button>}
+          {plain && plainOpen[phrase.id] && plainLine(plain, 'term-plain')}</div>
+        <button type="button" className="icon-btn icon-btn--soft" aria-label={copy.listen} onClick={() => playLine(lineById(phrase.lineId))}><Icon name="speaker" /></button>
+      </article>;
+    })}</div>{course.phrases.some(phrase => tagOf(phrase)) && <p className="scene-note local-note">{c13.localNote}</p>}</div>}
     {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => {
         const status = reports.statusOf(line.id), places = reports.elsewhere(line.id);
         return <div key={line.id} className={`sentence-row${status === 'disabled' ? ' sentence-disabled' : ''}`} data-status={status ?? undefined}>
-          <article data-testid="scene-sentence" className="sentence-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p>
+          <article data-testid="scene-sentence" className="sentence-card"><strong lang="en">{line.text}</strong>{tag(line)}<p lang={language}>{line.translations[language]}</p>
             <button type="button" className="icon-btn icon-btn--soft sentence-play" aria-label={copy.listen} onClick={() => playLine(line)}><Icon name="play" /></button></article>
           <button type="button" className="icon-btn icon-btn--soft sentence-loop" aria-pressed={loopKey === line.id} aria-label={`${tools.loopLine}：${line.text}`} onClick={() => toggleLoop(line.id, line.start, line.end)}><Icon name="loop" /></button>
           {status === 'disabled' && <p data-testid="sentence-disabled-note" className="sentence-disabled-note" lang={language}>{gaps.sentenceDisabled}</p>}
           {saved ? <SentenceReport language={language} course={saved} lineId={line.id} text={line.text} received={reports.has(line.id)} status={status} onReceived={reports.mark} /> : null}
           {places.length > 0 && <p data-testid="sentence-elsewhere" className="sentence-elsewhere" lang={language}>{gaps.elsewhere(places.map(place => place.description).join(listSeparator))}</p>}</div>;
       })}
+      {course.lines.some(line => tagOf(line)) && <p className="scene-note local-note">{c13.localNote}</p>}
       {guided ? null : <div className="scene-card ab-loop-inline">{abLoop}</div>}</div>}
     {learning && step === 4 && <div data-testid="scene-panel-4" className="prompt-panel">{!guided && <h2>{copy.steps[3]}</h2>}
       <div className="chat">
         <div className="bubble bubble--partner">
           <p data-testid="scene-partner" lang="en" className="bubble-text">{partner.text}</p>
           {partnerHelp && <p data-testid="partner-help" className="bubble-sub" lang={language}>{partner.translations[language]}</p>}
+          {partnerHelp && partner.register === 'sg-colloquial' && plainLine(partner.plainAlternative, 'partner-plain')}
           <div className="bubble-tools"><button data-testid="scene-turn-play" type="button" className="icon-btn icon-btn--soft" aria-label={copy.listen} onClick={() => playLine(partner)}><Icon name="play" /></button>
             <button type="button" className="chip-btn" aria-pressed={partnerHelp} onClick={() => setPartnerHelp(open => !open)}><Icon name="translate" size={18} />{partnerHelp ? tools.helpClose : tools.help}</button></div>
         </div>
