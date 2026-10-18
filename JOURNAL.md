@@ -709,3 +709,8 @@
 - [audit] phase → implementing @ 2026-10-18T06:24:20+00:00
 - [audit] phase → test-writing @ 2026-10-18T06:54:25+00:00
 - C11 前端简化（二）绿：观看工具行、步骤条、气泡接话、首页弹层、关键词折叠、两列确认、居中生成状态、一行场景、紧凑记录、计数回顾；verify 2258 passed；考题纠错 d9aaa0f；未做：我的场景行显示学习位置（列表无进度数据，暂显示身份和时长）
+- [audit] phase → implementing @ 2026-10-18T07:05:01+00:00
+- [audit] phase → test-writing @ 2026-10-18T07:06:42+00:00
+- [audit] phase → implementing @ 2026-10-18T07:07:02+00:00
+- [audit] phase → test-writing @ 2026-10-18T07:36:00+00:00
+- C12 对练更可靠 绿：红f0d46eb 纠错2e87f11 绿262a648；verify 2322/2322 exit0；C12-1..5 勾选；截图 /mnt/project-files/les-plan/c12-*.png；真机与真实模型未验证
