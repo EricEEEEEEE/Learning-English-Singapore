@@ -57,6 +57,47 @@ const LATIN_HELP: readonly SceneLanguage[] = ['id'];
 export function inHelpLanguage(note: string, language: SceneLanguage): boolean {
   return LATIN_HELP.includes(language) || NON_LATIN.test(note);
 }
+// C15-2c: zero-cost fallbacks for the three rules the real model kept only now and then (docs/evidence/c15-prompt-spotcheck.md).
+// The provider joins suggested English wording to a coach note with this mark (see practice-providers.ts).
+export const WORDING_JOIN = ' \u2192 ';
+// When a goal change is proposed, the partner only ever asks; a confirm that is not one English question gets this check.
+export const GOAL_CHECK = 'Just to check, you want to change the plan, right?';
+const sentencesOf = (text: string) => text.trim().split(/(?<=[.!?\u2026])\s+/).filter(Boolean);
+const ENGLISH_LINE = /^[A-Za-z0-9\s.,!?'"\u2018\u2019\u201c\u201d\-\u2013\u2014:;()&$%/\u2026]+$/;
+const isOneQuestion = (text: string) => sentencesOf(text).length === 1 && /\?["'\u2019\u201d)]*$/.test(text.trim());
+export const isEnglishQuestion = (text: string) => ENGLISH_LINE.test(text) && /[A-Za-z]/.test(text) && isOneQuestion(text);
+// Words that say nothing about the scene, so a clarifying question built only from them does not count as on the scene.
+const FUNCTION_WORDS = new Set(('the and but you your yours are was were for with that this these those what where when which who whom why how can could would will '
+  + 'should shall may might must have has had does did not don\'t please sorry okay yes yeah say said again mean tell want like just about there here then now '
+  + 'one some any our his her him she they them their its from into out get got let right sure understand repeat something else more other talk know think '
+  + 'very really good nice also too much many all well than been being going come came').split(' '));
+const stem = (word: string) => word.length > 3 && word.endsWith('s') && !word.endsWith('ss') ? word.slice(0, -1) : word;
+const sceneWords = (text: string) => englishWords(text).filter(word => word.length >= 3 && !FUNCTION_WORDS.has(word)).map(stem);
+// Not understood: the reply is one question that uses at least one word of the scene itself, or it is replaced.
+export function isSceneClarification(reply: string, sceneLines: { text: string }[]): boolean {
+  if (!isOneQuestion(reply)) return false;
+  const scene = new Set(sceneLines.flatMap(line => sceneWords(line.text)));
+  return sceneWords(reply).some(word => scene.has(word));
+}
+// A short restatement of the partner's current line from the stored course: its last question, or its last sentence as one.
+export function restatePartnerLine(line: string): string {
+  const parts = sentencesOf(line);
+  const question = [...parts].reverse().find(part => /\?["'\u2019\u201d)]*$/.test(part));
+  if (question) return question;
+  const last = parts.at(-1) ?? line.trim();
+  return `${last.replace(/[.!\u2026\s]+$/, '')}, okay?`;
+}
+// Understood: a coach note stays only when it quotes the learner (English words already checked by C12-2, other text found
+// as is in the transcript) or carries suggested wording; anything else is praise, an explanation or an instruction.
+export function pointsAtLearner(note: string, transcript: string): boolean {
+  if (note.includes(WORDING_JOIN.trim())) return true;
+  for (const match of note.matchAll(QUOTED)) {
+    const quoted = (match.slice(1).find(part => part !== undefined) ?? '').trim();
+    if (!quoted) continue;
+    if (englishWords(quoted).length ? quotesOnlyLearnerWords(`"${quoted}"`, transcript) : transcript.includes(quoted)) return true;
+  }
+  return false;
+}
 // C12-4: what the server may log about a turn: stage timings in ms and byte counts, never what was said.
 export type PracticeTurnLog = { event: 'practice_turn'; kind: 'reply' | 'native' | 'silence' | 'failed'; stt_ms?: number; llm_ms?: number; tts_ms?: number; total_ms: number; audio_bytes: number; reply_bytes?: number };
 const REPLY_AUDIO_TYPES = ['audio/mpeg', 'audio/wav'];
@@ -183,8 +224,8 @@ export function createPracticeTurnService(options: Options) {
           transcript: transcript.slice(0, 500), history: history.map(item => ({ ...item })), language, focus, correction, goal, safety,
         });
         times.llm_ms = since(stage);
-        const reply = typeof answer?.reply === 'string' ? answer.reply.trim() : '';
-        if (!reply || reply.length > 300 || typeof answer.understood !== 'boolean' || typeof answer.done !== 'boolean') throw new Error('Invalid reply');
+        const modelReply = typeof answer?.reply === 'string' ? answer.reply.trim() : '';
+        if (!modelReply || modelReply.length > 300 || typeof answer.understood !== 'boolean' || typeof answer.done !== 'boolean') throw new Error('Invalid reply');
         if (answer.coachNote !== null && (typeof answer.coachNote !== 'string' || answer.coachNote.trim().length > MAX_COACH_NOTE)) throw new Error('Invalid reply');
         // C9-1: a goal change is optional; when present it is strictly shaped and never comes with a finished scene.
         const proposed = answer.goalChange ?? null;
@@ -193,6 +234,12 @@ export function createPracticeTurnService(options: Options) {
         let coachNote = typeof answer.coachNote === 'string' && answer.coachNote.trim() ? answer.coachNote.trim() : null;
         // Less correction: a note only when the meaning was unclear, so the needed clarification stays.
         if (coachNote && (SOUND_JUDGEMENT.test(coachNote) || (correction === 'less' && answer.understood) || !quotesOnlyLearnerWords(coachNote, transcript) || !inHelpLanguage(coachNote, language))) coachNote = null;
+        // C15-2c: on an understood answer a note that neither quotes the learner nor suggests wording is dropped.
+        if (coachNote && answer.understood && !pointsAtLearner(coachNote, transcript)) coachNote = null;
+        // C15-2c: a goal change is only confirmed, never accepted, in the reply; a not-understood reply is one question about
+        // the scene, otherwise the partner's current line from the stored course is restated (no new model call).
+        const reply = goalChange ? (isEnglishQuestion(goalChange.confirm) ? goalChange.confirm : GOAL_CHECK)
+          : !answer.understood && !isSceneClarification(modelReply, sceneLines) ? restatePartnerLine(partner.text) : modelReply;
         stage = performance.now();
         const spoken = await options.speak({ text: reply });
         times.tts_ms = since(stage);

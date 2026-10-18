@@ -1,5 +1,5 @@
 import { looksLikeMp3, requestSpeech } from './generated-audio';
-import { MAX_COACH_NOTE, MAX_GOAL_SUMMARY, isGoalChange, isNativeAnswer, type NativeAnswer, type NativeContext, type PracticeAnswer, type PracticeContext } from './practice-turn';
+import { MAX_COACH_NOTE, MAX_GOAL_SUMMARY, WORDING_JOIN, isGoalChange, isNativeAnswer, type NativeAnswer, type NativeContext, type PracticeAnswer, type PracticeContext } from './practice-turn';
 import { safetyPromptRule } from './scene-safety';
 import type { SceneLanguage } from './scene-course';
 
@@ -111,7 +111,7 @@ const QUOTE_MARKS = /["\u201c\u201d\u2018\u2019\u300c\u300d\u300e\u300f\u00ab\u0
 function withWording(note: string | null, wording: string | null | undefined): string | null {
   if (note === null || !note.trim()) return note;
   const plain = typeof wording === 'string' ? wording.replace(QUOTE_MARKS, '').replace(/(^|\s)'|'(?=\s|$)/g, '$1').replace(/\s+/g, ' ').trim() : '';
-  const joined = plain ? `${note.trim()} → ${plain}` : note;
+  const joined = plain ? `${note.trim()}${WORDING_JOIN}${plain}` : note;
   return joined.length <= MAX_COACH_NOTE ? joined : note;
 }
 
