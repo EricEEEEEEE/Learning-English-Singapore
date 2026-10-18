@@ -737,3 +737,6 @@
 - [audit] phase → test-writing @ 2026-10-18T13:36:20+00:00
 - 2026-10-18 C15-2b：C15-2a 修复后真实复查 12 轮 + C15-2b 修复（红 b4d9202 绿 54c36ad，verify 2476/2476）后复查 10 轮，gpt-4.1-mini，实付 USD0.009899（C15-2 账本累计 USD0.0538/0.9）；结束、建议说法已修好，改目标、偏题回复、多余 coachNote 仍不稳定
 - C15-4 视频小样 BLOCKED：LTX 余额不足（第一笔 ltx-2-3-pro 段需 USD1.00，202 后即 insufficient_funds_error，未扣费，未重试）；实付 USD0.0466（脚本+10 句配音），C15 合计 USD0.2607/26.5；无视频、闸门与看片未做；需要用户给 LTX 充值至少 USD12；证据 docs/evidence/c15-video-sample.md
+- [audit] phase → implementing @ 2026-10-18T13:50:01+00:00
+- [audit] phase → test-writing @ 2026-10-18T14:11:06+00:00
+- 2026-10-18 C15-2c 提示词兜底（零费用）：红 5a5ae75 → 绿 7b136f4，verify 2492/2492 exit0（verify-20261018-135056）；goalChange→confirm、没听懂→一句含本课实词的问句否则重述对方台词、听懂时无引用无建议句的 coachNote 丢掉；回放 46 轮已记录真实回答：改正 RC-R7a/RC-R7b/RC-R3d/RC2-R3b 的回复与 8 条多余提示；漏 goalChange、understood=true 偏题、带引号夸奖仍是残余风险

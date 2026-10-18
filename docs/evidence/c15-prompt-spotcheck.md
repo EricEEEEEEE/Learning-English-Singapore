@@ -162,3 +162,35 @@ C15-2 账本累计 USD0.053800（上限 0.9）。无失败、无未知、无重�
 
 - 每条只抽 2 轮、单次采样，结论只说明“会不会出现”，不是遵守率。
 - 仍不稳定的三项（改目标、偏题时 reply 顺着聊、多余 coachNote）只靠提示词，没有确定性兜底；本次不再继续改（授权只含修后一次复查）。可选的确定性兜底：有 goalChange 时 reply 直接用 confirm、understood=false 时丢掉 coachNote 之外的建议性文字、正确回答回合由代码清空 coachNote（需要能判“正确”，不简单）。是否继续由用户决定。
+
+## 代码兜底（C15-2c，2026-10-18，零费用）
+
+用户 2026-10-18 要求：复查后仍不稳定的三项不再只靠提示词，在服务端加确定性兜底，不调用任何付费 API。改在 `lib/practice-turn.ts` 的回合服务（模型回应之后、配音之前），提示词和回应合同都没改；适配器只把 suggestedWording 的拼接符改成共用常量 `WORDING_JOIN`（仍是 “ → ”）。
+
+| 问题 | 兜底规则 | 考题 |
+| --- | --- | --- |
+| 有 goalChange，但 reply 已经接受新目标（RC-R7a） | 有 goalChange 时，配音和显示的回复一律换成 goalChange.confirm；confirm 不是一句英文问句（例如 RC-R7b 写成中文）时换成固定英文 “Just to check, you want to change the plan, right?”。goalChange 本身原样返回，页面照常弹“换成新目标 / 保持原来” | c15 2 项 |
+| understood=false，reply 仍顺着闲聊（RC-R3d 先答 “Yes, I like durian very much.”、RC2-R3b “Oh, where is his school?”） | understood=false 时，reply 必须只有一句、以问号结尾，且至少含一个本课台词里的实词（去掉 the/you/what/please/sorry 一类虚词，简单去复数 s）；否则换成本课**当前对方台词**的简短重述：台词里最后一个问句；台词没有问句时把最后一句改成 “…, okay?”。台词来自已存课程，不新调模型 | c15 6 项 |
+| understood=true 时多余的 coachNote（夸奖、解释场景、告诉学员下一步做什么） | 少纠正时照旧全丢；正常纠正时，coachNote 只有在引用了学员原话（引号里的英文词都在本轮转写里，或非英文引文原样出现在转写里）或带着适配器接上的 suggestedWording（“ → ”）时才保留，否则丢掉，回复照常 | c15 8 项 |
+
+Loopwork：红 5a5ae75（新考题 16 项，红跑 13 失败 / 159 通过）→ 绿 7b136f4，完整 verify 2492/2492 exit0（verify-20261018-135056）。旧考题按新行为改期望：C12-2 “无引号”“只引中文”两行在听懂时改为丢掉（同样两条在没听懂时仍保留，新考题锁定）；C15-2 R10d 九例夹具加上对学员原话 “Is it allowed” 的引用，期望不变，仍只由辅助语言规则决定。
+
+### 用已记录的真实回答回放（零费用）
+
+把三次真实调用（首轮抽查 26 轮对练回应、两轮复查 10 + 10 轮）记下的模型原始 JSON 原样喂给新回合服务（替身转写、替身配音，不联网）。脚本和逐轮结果：`/mnt/project-files/les-c15/prompt-fallback-replay/replay.mjs`、`replay.json`。
+
+| 规则 | 被兜底改正 | 兜底后仍漏 |
+| --- | --- | --- |
+| 改目标 | RC-R7a 回复由 “Sure, three packets to take away…” 换成确认问句；RC-R7b 中文 confirm → 固定英文确认（模型原回复本身就是问句，换后意思不变） | R7a、R7b（首轮）、RC2-R7b：模型**根本没给 goalChange**，回复直接接受新时间 / 数量，代码无法判断 |
+| 偏题 | RC-R3d 换成 “Do you have your appointment letter and your passport?”；RC2-R3b 换成 “Hi, what would you like today?” | R3b、RC-R3b：模型给了 understood=true 并跟着聊（“That's good. What school does he go to?”），代码不判断偏题 |
+| 多余 coachNote | 首轮丢掉 7 条（R1a 解释对方的词、R3c、R9a、R10a–c 说空话或解释、R6b），RC-R7b 夸奖丢掉 | 带引号的夸奖或解释仍保留：R2b “句型正确”、R9b “是很好地回答”、R11a “是合适的表达”、R7a “注意“packets”表示打包食物”、RC-R3b、RC2-R2b（引了正确原句又给了几乎相同的建议句）；understood=false 时的指令类提示（RC-R3d “引导回话题…”、RC2-R3d “不要换话题…”）按规则保留 |
+
+另：首轮 R6b “说have brought更自然，但你的意思明白。” 是有用的提示，因为没有引号也没有 suggestedWording 被丢掉（C15-2b 之后模型会把建议放进 suggestedWording，如 RC2-R6b 保留）。回放没有出现正确澄清问句被误换：R3a “Do you want chicken rice or some other rice?” 保留。
+
+### 残余风险（如实）
+
+- **漏给 goalChange 无法确定性检测**：模型不给 goalChange 而直接接受新时间、数量时（首轮 R7a/R7b、RC2-R7b），回合服务只看到普通回复，没有可靠的规则区分“改任务”和“同一任务内的小选择”。仍只靠提示词；三次真实调用里 6 条改目标请求（R7a、R7b、RC-R7a、RC-R7b、RC2-R7a、RC2-R7b）有 3 条漏掉。
+- **understood=true 的偏题不处理**：偏题判断只信模型的 understood；模型标 true 并跟着聊时照样配音（R3b、RC-R3b）。
+- **实词重叠是粗规则**：澄清问句只用虚词（“Sorry, can you say that again?”）也会被换成对方台词的重述；问句碰巧含本课词但仍在闲聊时会被放过；含 “Mr.” 之类缩写的句子会被算成两句而被换掉。重述用的是脚本当前对方台词，已经确认新目标（currentGoal）后可能与新目标不符。
+- **coachNote 规则只看形式**：有引号或有建议句的夸奖、解释仍会显示；没有引号的有用提示（模型没用 suggestedWording 时）会被丢，“宁丢不错”。
+- 本次没有新的真实模型调用；兜底在真实流量上的效果只由上面的回放说明（46 轮、单次采样），不是遵守率估计。
