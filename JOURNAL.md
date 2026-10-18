@@ -733,3 +733,6 @@
 - C15-2 新提示词真实抽查：29 轮 gpt-4.1-mini + 1 次 gpt-4.1 脚本生成，实付 USD0.0439（预留上限 0.9）；17 遵守 / 7 部分 / 5 不遵守；修复 C15-2a 红 afec873 绿 45c85d5，verify 2472/2472 exit0；真实复查需另批；证据 docs/evidence/c15-prompt-spotcheck.md
 - C15-1 转写小评测（合成代理版，不能代替真人口音）：30 段 TTS/噪声/无语音 × 6 组设置，实付 USD0.0603（上限 0.5）；夹中文未被译成英语；关键词提示意思保留 20→23–24/25 但无语音 5/5 回显提示词，决定不加提示、保持 mini-transcribe + en；真人录音待用户；证据 docs/evidence/c15-asr-eval.md
 - C15-3 新加坡口音配音样本：20 句 × 两版 mp3 与盲听评分表在 /mnt/project-files/les-c15/voice-ab/，账本 USD0.0999（上限 0.1；TTS 0.0563 + 26 次 HTTP 400 转写自测按预留记 0.0436，触顶自动停，未重发）；Azure en-SG blocked（需 Azure Speech 密钥与区域）；听者待安排；证据 docs/evidence/c15-voice-ab.md
+- [audit] phase → implementing @ 2026-10-18T13:14:27+00:00
+- [audit] phase → test-writing @ 2026-10-18T13:36:20+00:00
+- 2026-10-18 C15-2b：C15-2a 修复后真实复查 12 轮 + C15-2b 修复（红 b4d9202 绿 54c36ad，verify 2476/2476）后复查 10 轮，gpt-4.1-mini，实付 USD0.009899（C15-2 账本累计 USD0.0538/0.9）；结束、建议说法已修好，改目标、偏题回复、多余 coachNote 仍不稳定

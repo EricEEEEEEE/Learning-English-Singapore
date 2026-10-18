@@ -85,6 +85,80 @@
 
 ## 最终决定与未完成
 
-- 新提示词在真实模型上的修复效果**没有复查**：本项授权上限是 30 轮，已用 29 轮 + 1 次脚本生成。复查约需 10 轮（R3b、R7a、R7b、R8c、R11b、几条正确回答看 coachNote 是否为 null），预计约 USD0.005，需要用户另批。
+- （2026-10-18 后续：已复查并做 C15-2b 修复，见下节“修复后复查”。）当时新提示词在真实模型上的修复效果**没有复查**：本项授权上限是 30 轮，已用 29 轮 + 1 次脚本生成。复查约需 10 轮（R3b、R7a、R7b、R8c、R11b、几条正确回答看 coachNote 是否为 null），预计约 USD0.005，需要用户另批。
 - 修复只靠提示词的 5 项（改目标、闲聊、多余提示、结束、语气词）没有确定性兜底，真实效果以复查为准。
 - 考题注释里写的“25 of 27 replies”是笔误，实际是 26 轮回应中 23 轮带 coachNote（代码注释已改正）。
+
+## 修复后复查（2026-10-18，C15-2b）
+
+- 授权：属于用户 2026-10-18 已批准的 C15-2（账本上限 USD0.9），本次复查自设预留 ≤ USD0.05，记在同一账本（标签 `RC-` / `RC2-`）。
+- 脚本：`scripts/c15/prompt-spotcheck.mjs --recheck --turns`（第 1 轮，基线 8db5fe6 = C15-2a 修复后）和 `--recheck --round 2 --turns`（第 2 轮，C15-2b 修复后 54c36ad；母语建议提示词没改，不重跑 R8）。方法同上：文字转写替身、不配音、单次采样、gpt-4.1-mini-2025-04-14。
+- 原始结果：`/mnt/project-files/les-c15/prompt-recheck/results.json`、`/mnt/project-files/les-c15/prompt-recheck-2/results.json`。
+
+### 费用
+
+| 轮次 | 请求 | 预留合计 | 实际 | token（输入 / 输出） |
+| --- | --- | --- | --- | --- |
+| 第 1 轮（C15-2a 后） | 12 | USD0.031493 | USD0.004825 | 10,022 / 510 |
+| 第 2 轮（C15-2b 后） | 10 | USD0.026622 | USD0.005074 | 10,542 / 536 |
+| **复查合计** | 22 | 逐个预留，同时在途最多 1 个 | **USD0.009899**（自设上限 0.05） | — |
+
+C15-2 账本累计 USD0.053800（上限 0.9）。无失败、无未知、无重发。
+
+### 第 1 轮：C15-2a 修复后（12 轮）
+
+| 规则 | 轮次 | 结论 | 摘录 |
+| --- | --- | --- | --- |
+| 改目标走 goalChange | RC-R7a | 部分 | goalChange 有（“帮家人打包三份鸡饭”，界面会弹确认），但 reply 已接受：“Sure, three packets to take away. Will you want steamed or roasted chicken?” |
+| | RC-R7b | 部分 | goalChange 有，reply 是确认问题；confirm 写成中文（界面不用 confirm，不影响）；附带一条夸奖式 coachNote “问句表示确认，适合初学者。” |
+| 偏题拉回、understood 正确 | RC-R3b | **不遵守** | “My son goes to school near here.” → “That's good. What school does he go to?”，understood=true（和修复前一样） |
+| | RC-R3d | 部分 | “The weather is so hot today. Do you like durian?” → understood=false，拉回了，但先答了闲聊 “Yes, I like durian very much.”；coachNote “引导回话题，关注重要文件。”（解释场景） |
+| 母语只有语气词算没听懂 | RC-R8c | 遵守 | “嗯……那个……” → understood=false，suggestion=null |
+| | RC-R8d | 遵守 | “呃……就是……那个……” → understood=false，suggestion=null |
+| 最后一句即结束 | RC-R11b | **不遵守** | “Okay, thank you very much.” → “Please wait at the seating area. Your number will be called soon.”，done=false |
+| | RC-R11c | 遵守 | 诊所脚本最后一回合 → “Yes, please wait here. The doctor will see you soon.”，done=true |
+| 能懂时 coachNote 为空 | RC-R1a | 遵守 | “One chicken rice, please.” → coachNote null |
+| | RC-R2b | 遵守 | “Is the chicken rice spicy?” → coachNote null |
+| 建议说法放进引号被 C12-2 丢掉 | RC-R4b | 模型不遵守 / 产品端碰巧保留 | “"Chili no want" 可以说成 "no chili" 更简洁。”——建议句仍加引号，因 no、chili 都在转写里才没被丢 |
+| | RC-R6b | **不遵守（产品端丢失）** | “"Have bring"改为"have brought"更正确…”——brought 不在转写里，整条提示被丢 |
+
+结论：语气词 2/2、能懂时不给提示 2/2 已遵守；偏题、结束、建议引号仍不遵守，改目标只做到一半。按 Loopwork 登记 C15-2b 修复。
+
+### C15-2b 修复（红 b4d9202 → 绿 54c36ad，verify 2476/2476 exit0，verify-20261018-131514）
+
+| 问题 | 修复 |
+| --- | --- |
+| reply 先写、标记跟着 reply 走（RC-R3b、RC-R7a、RC-R11b） | 严格输出的字段顺序改为 understood、done、goalChange、reply、coachNote、suggestedWording；提示词：先定 understood、done、goalChange，reply 与之一致（understood=false 时不接闲聊；有 goalChange 时 reply 就是确认问题；done=true 时只礼貌收尾） |
+| 最后一回合不结束（RC-R11b） | 对方台词是脚本最后一句对方台词时，提示词多一行“This is the last turn of the script…set done to true” |
+| 建议说法加引号（RC-R4b、RC-R6b） | 新字段 suggestedWording（英文、不加引号）；coachNote 只引用学员原话；适配器把 suggestedWording 去掉引号后以 “ → ” 接在 coachNote 后面（超过 120 字只留 coachNote；没有 coachNote 就不显示）。C12-2 校验本身不改，turn 服务和界面不改 |
+
+考题：`tests/domain/c15-prompt-fixes.spec.mjs` 新增 4 项；c6、c9、t63b 的字段清单加 suggestedWording。
+
+### 第 2 轮：C15-2b 修复后（10 轮）
+
+| 规则 | 轮次 | 结论 | 摘录 |
+| --- | --- | --- | --- |
+| 改目标走 goalChange | RC2-R7a | 遵守 | reply 就是确认问题 “You want to buy three packets of chicken rice to take home, right?”，goalChange 有 |
+| | RC2-R7b | **不遵守** | “Okay, no problem. Tomorrow afternoon is fine. What time will you come?”，goalChange=null（第 1 轮这条是有的；单次采样，时好时坏） |
+| 偏题拉回、understood 正确 | RC2-R3b | 部分 | understood=false（产品端按没听懂处理），但 reply 仍顺着问 “Oh, where is his school?” |
+| | RC2-R3d | 遵守（回复）/ 不遵守（coachNote） | reply 直接拉回 “Do you have your appointment letter and your passport with you?”；coachNote “不要换话题…”（告诉学员该做什么，规则不允许），产品端保留 |
+| 最后一句即结束 | RC2-R11b | 遵守 | “You are welcome. Have a good day!”，done=true |
+| | RC2-R11c | 遵守 | “Thank you, take care!”，done=true |
+| 能懂时 coachNote 为空 | RC2-R1a | 遵守 | coachNote null |
+| | RC2-R2b | **不遵守** | 正确问句也给了提示 ““Is the chicken rice spicy?” 提问是否辣 → Is chicken rice spicy?”（第 1 轮这条是 null） |
+| 建议说法与 C12-2 | RC2-R4b | 遵守 | “Chili no want” 更自然的表达是 no chili, please. → No chili, please（产品端保留） |
+| | RC2-R6b | 遵守 | ""Yes I have bring" 应为简单过去式或现在完成时。 → Yes, I have brought the passport and letter."（第 1 轮同一输入被丢，这次保留） |
+
+### 复查结论
+
+| 规则 | 第 1 轮（C15-2a 后） | 第 2 轮（C15-2b 后） | 现状 |
+| --- | --- | --- | --- |
+| 改目标走 goalChange | 2 轮 goalChange 都有，reply 1 条已接受 | 1 条完全遵守，1 条 goalChange 漏掉 | **仍不稳定** |
+| 偏题拉回且 understood 正确 | 1 不遵守、1 部分 | understood 2/2 正确；reply 1 条仍顺着闲聊 | 有改善，仍不稳定 |
+| 母语只有语气词算没听懂 | 2/2 | 未重跑（提示词未改） | 遵守 |
+| 回答最后一句即结束 | 1/2 | 2/2 | 遵守 |
+| 能懂时 coachNote 为空 | 2/2 | 1/2（RC2-R2b 多给）；另 RC-R7b、RC-R3d、RC2-R3d 在非“正确回答”回合附带夸奖或解释 | **仍不稳定** |
+| 建议说法被 C12-2 丢掉 | 2 条都加引号，1 条被丢 | 2/2 建议进 suggestedWording，产品端都保留 | 已修复 |
+
+- 每条只抽 2 轮、单次采样，结论只说明“会不会出现”，不是遵守率。
+- 仍不稳定的三项（改目标、偏题时 reply 顺着聊、多余 coachNote）只靠提示词，没有确定性兜底；本次不再继续改（授权只含修后一次复查）。可选的确定性兜底：有 goalChange 时 reply 直接用 confirm、understood=false 时丢掉 coachNote 之外的建议性文字、正确回答回合由代码清空 coachNote（需要能判“正确”，不简单）。是否继续由用户决定。
