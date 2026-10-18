@@ -1,6 +1,17 @@
 import { createHash } from 'node:crypto';
 import type { encodeVideoAudio } from './encode-video-audio';
-type Options = { enabled?: boolean; apiKey?: string; fetch?: typeof fetch };
+// C14-3: the only LTX models this project may request (LES_LTX_MODEL), with the reservation per 20-second
+// segment: 2.5-fast USD0.09/s plus the existing margin (unchanged), 2.3-pro USD0.06/s = USD1.20.
+export const LTX_MODELS = { 'ltx-2-5-fast': { segmentMicros: 1_900_000 }, 'ltx-2-3-pro': { segmentMicros: 1_200_000 } } as const;
+export type LtxModel = keyof typeof LTX_MODELS;
+export const DEFAULT_LTX_MODEL: LtxModel = 'ltx-2-5-fast';
+// Unset keeps the default model; anything else outside the whitelist is refused (no trimming or case folding).
+export function resolveLtxModel(value: string | undefined): LtxModel {
+  if (value === undefined || value === '') return DEFAULT_LTX_MODEL;
+  if (!Object.hasOwn(LTX_MODELS, value)) throw new Error('Video model not allowed');
+  return value as LtxModel;
+}
+type Options = { enabled?: boolean; apiKey?: string; fetch?: typeof fetch; model?: string };
 type VideoInput = { audioUri: string; duration: number; prompt: string; imageUri?: string };
 type ReferenceImage = { bytes: Uint8Array; sha256: string; mimeType: 'image/png' };
 type Submission = { status: 'pending'; jobId: string } | { status: 'submission_unknown' };
@@ -14,6 +25,7 @@ const httpsUri = (v: unknown): v is string => {
 };
 function configured(options: Options) {
   if (options.enabled !== true || !options.apiKey) throw new Error('Video provider disabled');
+  resolveLtxModel(options.model);
   return { Authorization: `Bearer ${options.apiKey}`, 'Content-Type': 'application/json' };
 }
 
@@ -53,7 +65,7 @@ async function submit(input: VideoInput, options: Options, headers: Record<strin
   try {
     const response = await (options.fetch ?? fetch)(endpoint, {
       method: 'POST', headers, redirect: 'error', signal: AbortSignal.timeout(30_000),
-      body: JSON.stringify({ audio_uri: input.audioUri, ...(input.imageUri === undefined ? {} : { image_uri: input.imageUri }), prompt: input.prompt, model: 'ltx-2-5-fast', resolution: '720x1280', fps: 24 }),
+      body: JSON.stringify({ audio_uri: input.audioUri, ...(input.imageUri === undefined ? {} : { image_uri: input.imageUri }), prompt: input.prompt, model: resolveLtxModel(options.model), resolution: '720x1280', fps: 24, camera_motion: 'static' }),
     });
     if (response.status !== 202) return { status: 'submission_unknown' };
     const body: unknown = await response.json();

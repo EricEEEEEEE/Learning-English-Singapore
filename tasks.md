@@ -44,10 +44,12 @@
 
 用户 2026-10-17 决定真实视频放到最后。本批只在预演模式和合成样例上做质检和参数准备，不调用 LTX，也不调用图像模型。新增的本地 Python 质检依赖（PySceneDetect BSD-3、MediaPipe Apache-2.0）需用户先批准，只在离线脚本里用 python -I 运行。
 
-- [ ] C14-1 · 视频质检闸门：对每段和成片检查五项：段内切镜为 0；单人脸帧占比 ≥90%；学员台词时段对方嘴动比 ≤0.35；段间接缝 SSIM ≥0.6；没有超过 1 秒的黑帧或冻结。阈值待 C15-4 标定。不通过就记为 quality_failed，附上原因和关键帧，不向学员展示；生成状态页如实写“画面没过检查”；可以在预留费用后只重做该段一次。验收：合成的双人脸、切镜、黑帧样例都被拦下；预演卡片能通过；quality_failed 的任务在学习页不可见；重做不超过一次，并经过预算守卫〔报告4 P0-1,P0-4 / F12.1,K4.1；零费用，新依赖需批准〕
+- [x] C14-1 · 视频质检闸门：对每段和成片检查五项：段内切镜为 0；单人脸帧占比 ≥90%；学员台词时段对方嘴动比 ≤0.35；段间接缝 SSIM ≥0.6；没有超过 1 秒的黑帧或冻结。阈值待 C15-4 标定。不通过就记为 quality_failed，附上原因和关键帧，不向学员展示；生成状态页如实写“画面没过检查”；可以在预留费用后只重做该段一次。验收：合成的双人脸、切镜、黑帧样例都被拦下；预演卡片能通过；quality_failed 的任务在学习页不可见；重做不超过一次，并经过预算守卫〔报告4 P0-1,P0-4 / F12.1,K4.1；零费用，新依赖需批准〕
   - 2026-10-18 改动（用户尚未批准新增 Python 库）：不装 PySceneDetect/MediaPipe，切镜、黑帧、冻结、接缝 SSIM 只用系统 ffmpeg/ffprobe；“单人脸帧占比”和“学员台词时段对方嘴动比”做成可插拔检查，当前一律返回 not_checked（“需要人脸检测库，待用户批准”），不算通过；闸门三态 passed / quality_failed / needs_review，有 not_checked 时最多 needs_review，生成页如实写“画面还没经过人脸检查，需要人工看一遍”；预演卡片按预演路径通过。
-- [ ] C14-2 · 用对方定妆照做第 1 段首帧：脚本生成后，按对方外观和场景生成一张定妆照（预演时用本地占位图），第 1 段的 image_uri 用它；后续段继续用上一段末帧接续，末帧没有正脸或模糊时退回定妆照；生成页可以显示“对方长这样”。验收：domain 中预演链路的首段带首帧，末帧被判坏时会退回定妆照；真实图像调用为 0〔报告4 P0-2 / F6.1；零费用（真实约 USD0.02–0.07/课，放在 C15-4）〕
-- [ ] C14-3 · 视频参数和模型白名单：请求加 camera_motion:"static"，提示词改成“steady eye-level shot, single shot”。模型改为白名单配置 LES_LTX_MODEL=ltx-2-5-fast|ltx-2-3-pro，预留额按模型计算（2.3-pro 每段 USD1.20）。验收：domain 中请求体带这些参数；不在白名单的模型在启动时就被拒绝；预留额按模型计算；没有配置时行为不变〔报告4 P0-3 / K7；零费用〕
+- [x] C14-2 · 用对方定妆照做第 1 段首帧：脚本生成后，按对方外观和场景生成一张定妆照（预演时用本地占位图），第 1 段的 image_uri 用它；后续段继续用上一段末帧接续，末帧没有正脸或模糊时退回定妆照；生成页可以显示“对方长这样”。验收：domain 中预演链路的首段带首帧，末帧被判坏时会退回定妆照；真实图像调用为 0〔报告4 P0-2 / F6.1；零费用（真实约 USD0.02–0.07/课，放在 C15-4）〕
+- [x] C14-3 · 视频参数和模型白名单：请求加 camera_motion:"static"，提示词改成“steady eye-level shot, single shot”。模型改为白名单配置 LES_LTX_MODEL=ltx-2-5-fast|ltx-2-3-pro，预留额按模型计算（2.3-pro 每段 USD1.20）。验收：domain 中请求体带这些参数；不在白名单的模型在启动时就被拒绝；预留额按模型计算；没有配置时行为不变〔报告4 P0-3 / K7；零费用〕
+
+  **C14 绿**：红2fcb0b9。①闸门 lib/video-quality.ts（三态与阈值，纯函数）+ lib/video-quality-gate.ts（只用系统 ffmpeg/ffprobe：scdet 切镜、blackdetect 黑帧、freezedetect 冻结 >1 秒、前段末帧与本段首帧灰度 SSIM ≥0.6）；单人脸与嘴动比为可插拔检查，默认 not_checked（“需要人脸检测库，待用户批准”），从不算通过；store 自己按检查重算结论，任一 not_checked 最多 needs_review；quality_failed 记原因和关键帧时间点，runner 先过预算守卫再重做该段一次（新资产 id，旧记录留在 videoQuality/videoRedos），仍不过停在 quality_failed，不组装，课程构建拒绝，学习页客户端也滤掉；预演卡片走 preview 路径通过。②预演用本地占位定妆照（lib/generated-keyframe.ts，ffmpeg 画图，只接受 source=placeholder，真实图像调用 0）做第 1 段首帧；末帧用 blurdetect/signalstats 判模糊或过暗时退回定妆照（正脸判断同样 not_checked，不单独触发退回）；生成页“对方长这样”经新路由 /api/scene-generation/keyframe 按需求读取。③请求固定 camera_motion:"static"，提示词改 steady eye-level shot, single shot, not multi-shot；LES_LTX_MODEL 白名单 ltx-2-5-fast（默认，每段预留 1.90）/ ltx-2-3-pro（1.20），白名单外启动时不建执行器、运行时直接抛错；runbook 已补。生成页新文案 app/c14-copy.ts 五语（非中文未经母语审查）。考题改写（红阶段）：T61B 视频请求体加 camera_motion。实现中放宽一处：组装只拒绝“当前段记录为 quality_failed”，C14 之前的任务无记录仍可组装（T61B CFR 运行时题）。domain c14 23/23；完整 verify 2442/2442 exit0（verify-20261018-091241）。零模型调用。仍未做：人脸检测（需用户批准新依赖）；阈值未用真实视频标定（C15-4）；关键帧只存时间点没存图；成片整体未另跑一遍闸门（各段+接缝已覆盖）；真实模式没有定妆照（图像模型放 C15-4）。
 
 ## C15 · 付费验证（最后做，每项单独批准）
 

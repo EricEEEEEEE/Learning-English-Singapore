@@ -9,7 +9,8 @@ type Library = { owner: string; status: 'loading' | 'ready' | 'failed'; scenes: 
 function catalogue(value: unknown): Pick<Library, 'scenes' | 'unavailable'> {
   const data = value as Pick<Library, 'scenes' | 'unavailable'>;
   if (!data || !Array.isArray(data.scenes) || !Number.isSafeInteger(data.unavailable) || data.unavailable < 0) throw new Error('Invalid catalogue');
-  const scenes = data.scenes.map(scene => {
+  // C14-1: a scene whose picture failed the quality gate is never listed, even if a server sent it.
+  const scenes = data.scenes.filter(scene => (scene as { quality?: unknown })?.quality !== 'quality_failed').map(scene => {
     const pointer = scene?.course, requirement = parseSceneRequirement(scene?.requirement);
     if (!pointer || !/^[A-Za-z0-9_-]{1,120}$/.test(pointer.id) || !Number.isSafeInteger(pointer.revision) || pointer.revision < 1
       || pointer.materialsRevision !== undefined && (!Number.isSafeInteger(pointer.materialsRevision) || pointer.materialsRevision < 1)

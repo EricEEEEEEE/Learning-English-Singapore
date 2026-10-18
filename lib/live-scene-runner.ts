@@ -3,12 +3,18 @@ import { createLiveGenerationRuntime } from './live-generation-runtime';
 import { createPrivateMediaStore } from './private-media-store';
 import { createGenerationRunner } from './generation-runner';
 import { createMachineAudioReview } from './machine-audio-review';
+import { LTX_MODELS, resolveLtxModel } from './generated-video';
 
 // C3 batch: the user approved at most USD30 of real provider calls (2026-10-16). No configuration may exceed it.
 export const C3_BATCH_CEILING_MICROS = 30_000_000;
 // Per-call reservations are upper bounds, not prices: script and one TTS line stay well under USD0.05;
 // one video segment is at most 20 seconds at USD0.09 per second.
 export const LIVE_RESERVATIONS = { scriptMicros: 50_000, audioMicros: 50_000, videoMicros: 1_900_000 };
+// C14-3: LES_LTX_MODEL picks a whitelisted model and its per-segment reservation; unset is today's behaviour.
+export function liveVideoSettings(env: Record<string, string | undefined>) {
+  const model = resolveLtxModel(env.LES_LTX_MODEL);
+  return { model, videoMicros: LTX_MODELS[model].segmentMicros };
+}
 
 type Env = Record<string, string | undefined>;
 const whole = (value: string | undefined) => value !== undefined && /^(0|[1-9]\d*)$/.test(value) ? Number(value) : NaN;
@@ -25,11 +31,13 @@ export function createLiveSceneRunner(env: Env, directory: string, options: { fe
   if (!Number.isSafeInteger(maxReservedMicros) || maxReservedMicros <= 0 || maxReservedMicros > C3_BATCH_CEILING_MICROS) return null;
   if (!Number.isSafeInteger(priorSpentMicros) || priorSpentMicros > maxReservedMicros) return null;
   if (!hosts.length || !isAbsolute(ffmpeg) || !isAbsolute(ffprobe) || !isAbsolute(directory)) return null;
+  let video: ReturnType<typeof liveVideoSettings>;
+  try { video = liveVideoSettings(env); } catch { return null; } // a model outside the whitelist never starts a runner
   try {
     const store = createLiveGenerationRuntime({
-      enabled: true, directory, sessionSecret: env.AUTH_SESSION_SECRET, openaiKey: env.OPENAI_API_KEY, ltxKey: env.LTX_API_KEY ?? '', previewVideo: preview,
+      enabled: true, directory, sessionSecret: env.AUTH_SESSION_SECRET, openaiKey: env.OPENAI_API_KEY, ltxKey: env.LTX_API_KEY ?? '', previewVideo: preview, videoModel: video.model,
       // A preview reserves only the script and voices; its local video cards cost nothing.
-      budget: { scope: env.LES_LIVE_BUDGET_SCOPE.trim(), priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS, ...(preview ? { videoMicros: 1 } : {}) },
+      budget: { scope: env.LES_LIVE_BUDGET_SCOPE.trim(), priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS, videoMicros: preview ? 1 : video.videoMicros },
       media: { ffmpeg, ffprobe, allowedHosts: hosts, maxBytes: 100_000_000 },
       ...(options.fetch ? { fetch: options.fetch } : {}),
     });

@@ -20,7 +20,7 @@ export function createPreviewVideoProvider(options: { ffmpeg: string; font?: str
     try {
       const audio = join(directory, 'audio.m4a'), text = join(directory, 'prompt.txt'), image = join(directory, 'reference.png'), output = join(directory, 'preview.mp4');
       await writeFile(audio, input.audio.bytes);
-      const wrapped = `PREVIEW card ${index + 1}, no paid video${input.referenceImage ? ", starts from the previous last frame" : ""}\n\n` + input.prompt.replace(/(.{1,46})(\s+|$)/g, "$1\n");
+      const wrapped = `PREVIEW card ${index + 1}, no paid video${input.referenceImage ? ", starts from a reference frame" : ""}\n\n` + input.prompt.replace(/(.{1,46})(\s+|$)/g, "$1\n");
       await writeFile(text, wrapped);
       const background = input.referenceImage ? ['-loop', '1', '-framerate', '24', '-i', image] : ['-f', 'lavfi', '-i', 'color=c=0x22313f:s=720x1280:r=24'];
       if (input.referenceImage) await writeFile(image, input.referenceImage.bytes);

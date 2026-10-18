@@ -1,11 +1,12 @@
 import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
+import { MAX_SEGMENT_REDOS, redoCount } from './video-quality';
 
-type Store = Partial<Pick<ReturnType<typeof createGenerationTaskStore>, 'stopState'>> & Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
+type Store = Partial<Pick<ReturnType<typeof createGenerationTaskStore>, 'stopState' | 'checkVideoQuality' | 'redoVideoSegment' | 'prepareKeyframe' | 'videoQualityEnabled' | 'keyframeEnabled'>> & Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
 type Input = { cookie?: string | null; now?: number; id: string };
 type Encoded = NonNullable<GenerationTask['encodedAudio']>[number];
 type Segment = NonNullable<GenerationTask['audioAssembly']>['segments'][number];
 export type AudioReview = (input: Input & { task: GenerationTask; segmentIndex: number; encoded: Encoded; segment: Segment }) => Promise<boolean>;
-export type RunStop = 'ready' | 'waiting' | 'unknown' | 'failed' | 'budget' | 'needs_review' | 'review_failed' | 'cancelled' | 'error';
+export type RunStop = 'ready' | 'waiting' | 'unknown' | 'failed' | 'budget' | 'needs_review' | 'review_failed' | 'cancelled' | 'quality_failed' | 'error';
 export type RunResult = { stopped: RunStop; status?: GenerationTask['status'] };
 
 const MAX_STEPS = 500;
@@ -36,6 +37,8 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
           return null;
         }
         if (encoded.length < segments.length) await store.encodeAudio(input);
+        // C14-2: before the first segment, the partner keyframe (local placeholder only) becomes its first frame.
+        else if (store.keyframeEnabled && store.prepareKeyframe && task.script?.scene && !task.keyframe && !task.videoJobs?.length) await store.prepareKeyframe(input);
         else await store.runVideo(input);
         return null;
       }
@@ -70,9 +73,21 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
           }
           return null;
         }
+        // C14-1: the quality gate runs on every verified segment. A failure is redone once (through the budget
+        // guard); a second failure stops the course as quality_failed and it is never assembled or shown.
+        if (store.videoQualityEnabled && store.checkVideoQuality && store.redoVideoSegment) {
+          const record = task.videoQuality?.find(item => item.segmentIndex === job.segmentIndex && item.sha256 === asset.sha256);
+          if (!record) { await store.checkVideoQuality(input); return null; }
+          if (record.verdict === 'quality_failed') {
+            if (redoCount(task, job.segmentIndex) >= MAX_SEGMENT_REDOS) return 'quality_failed';
+            await store.redoVideoSegment(input); return null;
+          }
+        }
         const segments = task.audioAssembly?.segments.length ?? 0;
+        const reference = task.referenceImage;
+        const chained = !!reference && ((reference.sourceCourseId === task.id && reference.sourceAssetId === asset.assetId) || reference.chainedFromSha256 === asset.sha256);
         // A segment after the first continues from the previous one's last frame (scripts with a scene only).
-        if (jobs.length < segments && task.script?.scene && !(task.referenceImage?.sourceCourseId === task.id && task.referenceImage.sourceAssetId === asset.assetId)) { await store.chainReferenceImage(input); return null; }
+        if (jobs.length < segments && task.script?.scene && !chained) { await store.chainReferenceImage(input); return null; }
         if (jobs.length < segments) await store.runVideo(input);
         else await store.assembleVideo(input);
         return null;

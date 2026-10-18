@@ -43,6 +43,14 @@ node --experimental-strip-types -e "import('./lib/google-auth.ts').then(async m 
 
 所有请求带 `Origin: http://127.0.0.1:3300` 和这个 cookie。
 
+### 1.1 C14 视频模型与出片前质检（2026-10-18 增补）
+
+- 模型白名单：`LES_LTX_MODEL=ltx-2-5-fast`（不设时的默认，每段预留 USD1.90）或 `LES_LTX_MODEL=ltx-2-3-pro`（每段预留 USD1.20）。其他值启动时就被拒绝，服务不会建立付费执行器。请求固定带 `camera_motion: "static"`，提示词为 “steady eye-level shot, single shot”。
+- 每段视频在探测和音轨还原之后过本地 ffmpeg 质检：段内切镜为 0、黑帧/冻结不超过 1 秒、段间接缝 SSIM ≥0.6。“单人脸帧占比”“学员台词时段对方嘴动比”需要人脸检测库，用户尚未批准，当前一律记 `not_checked`。
+- 结果三态：`passed` / `quality_failed` / `needs_review`。有 `not_checked` 时最多 `needs_review`：课程照常可看，生成页写“画面还没经过人脸检查，需要人工看一遍”，必须人工看片，不能当作通过。
+- `quality_failed` 的段先过预算守卫再重做一次；仍不过则整课停在 `quality_failed`，不组装、不进“我的场景”。原因和关键帧时间点记在任务的 `videoQuality` / `videoRedos` 里。重做也计入本批上限。
+- 预演（`LES_VIDEO_PREVIEW=1`）按预演路径通过质检，并用本地占位图做对方定妆照（第 1 段首帧），真实图像调用为 0；末帧模糊或过暗时退回定妆照。
+
 ## 2. 生成两节不同场景的短课（约 60 秒默认）
 
 每节：`PUT /api/scene-requirements`（`expectedRevision` 按当前修订号）保存需求，再 `POST /api/scene-generation` `{requirementRevision}` 提交，然后每 15–30 秒 `GET /api/scene-generation?revision=N` 读状态（读状态会自动续跑）。

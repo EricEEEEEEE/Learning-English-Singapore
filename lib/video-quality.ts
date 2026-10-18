@@ -1,0 +1,83 @@
+// C14-1: pure rules of the video quality gate (no Node imports, safe to share with course builders).
+// Initial thresholds come from report 4 P0-1 and are to be calibrated in C15-4 with paid samples.
+export const QUALITY_THRESHOLDS = {
+  // ffmpeg scdet score (0-100) at or above which a frame starts a new shot.
+  sceneChangeScore: 10,
+  maxCutsPerSegment: 0,
+  minSingleFaceRatio: 0.9,
+  maxLearnerMouthRatio: 0.35,
+  minSeamSsim: 0.6,
+  maxBlackSeconds: 1,
+  maxFreezeSeconds: 1,
+} as const;
+// A failed segment may be generated again once (after a fresh reservation); a second failure stops the course.
+export const MAX_SEGMENT_REDOS = 1;
+// The user has not approved a face-detection library yet, so these checks are reported, never passed.
+export const FACE_CHECK_PENDING = '需要人脸检测库，待用户批准';
+export const QUALITY_CHECK_IDS = ['cuts', 'single_face', 'learner_mouth', 'seam_ssim', 'black_freeze'] as const;
+
+export type QualityCheckId = typeof QUALITY_CHECK_IDS[number];
+export type QualityCheck = { id: QualityCheckId; status: 'passed' | 'failed' | 'not_checked'; value?: number; reason?: string; keyframes?: number[] };
+export type QualityVerdict = 'passed' | 'quality_failed' | 'needs_review';
+export type QualityReport = { sha256: string; mode: 'ffmpeg' | 'preview'; checks: QualityCheck[] };
+export type QualityRecord = QualityReport & { segmentIndex: number; verdict: QualityVerdict; checkedAt: number };
+export type VideoRedo = { segmentIndex: number; jobId: string; sha256: string; reasons: QualityCheckId[]; at: number };
+export type TaskQualityVerdict = QualityVerdict | 'preview';
+
+const statuses = ['passed', 'failed', 'not_checked'];
+const finite = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
+
+export function validQualityCheck(value: unknown): value is QualityCheck {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const check = value as Record<string, unknown>;
+  if (Object.keys(check).some(key => !['id', 'status', 'value', 'reason', 'keyframes'].includes(key))) return false;
+  if (!QUALITY_CHECK_IDS.includes(check.id as QualityCheckId) || !statuses.includes(check.status as string)) return false;
+  if (check.value !== undefined && !finite(check.value)) return false;
+  if (check.reason !== undefined && (typeof check.reason !== 'string' || check.reason.length > 300)) return false;
+  if (check.keyframes !== undefined && (!Array.isArray(check.keyframes) || check.keyframes.length > 20 || check.keyframes.some(time => !finite(time) || time < 0))) return false;
+  return true;
+}
+
+// Three states. Any failure blocks; otherwise every one of the five checks must be present once and passed.
+// A missing, duplicated, malformed or not_checked check can only ever give needs_review.
+export function combineQualityChecks(checks: unknown): QualityVerdict {
+  if (!Array.isArray(checks)) return 'needs_review';
+  if (checks.some(check => !!check && typeof check === 'object' && (check as { status?: unknown }).status === 'failed')) return 'quality_failed';
+  if (checks.length !== QUALITY_CHECK_IDS.length) return 'needs_review';
+  for (const id of QUALITY_CHECK_IDS) {
+    const matches = checks.filter(check => (check as { id?: unknown } | null)?.id === id);
+    if (matches.length !== 1 || !validQualityCheck(matches[0]) || matches[0].status !== 'passed') return 'needs_review';
+  }
+  return 'passed';
+}
+
+// A preview card is a local stand-in, not a course video: it takes the preview path and passes without checks.
+export function qualityVerdict(report: { mode?: unknown; checks?: unknown }): QualityVerdict {
+  if (report?.mode === 'preview') return Array.isArray(report.checks) && report.checks.length === 0 ? 'passed' : 'needs_review';
+  return combineQualityChecks(report?.checks);
+}
+
+type QualityTask = {
+  videoAssets?: { segmentIndex: number; sha256: string }[];
+  videoQuality?: QualityRecord[];
+  videoRedos?: VideoRedo[];
+  audioAssembly?: { segments: unknown[] };
+};
+export const redoCount = (task: QualityTask, segmentIndex: number) => (task.videoRedos ?? []).filter(redo => redo.segmentIndex === segmentIndex).length;
+
+// failed: some current segment did not pass (it must never be shown). blocked: it already used its redo, so the
+// course stops as quality_failed. verdict: only once every segment has a record for its current bytes.
+export function taskQuality(task: QualityTask): { failed: boolean; blocked: boolean; verdict?: TaskQualityVerdict } {
+  const records = task.videoQuality;
+  if (!records?.length) return { failed: false, blocked: false };
+  const current = (task.videoAssets ?? []).map(asset => ({ asset, record: records.find(item => item.segmentIndex === asset.segmentIndex && item.sha256 === asset.sha256) }));
+  const failing = current.filter(item => item.record?.verdict === 'quality_failed');
+  const failed = failing.length > 0;
+  const blocked = failing.some(item => redoCount(task, item.asset.segmentIndex) >= MAX_SEGMENT_REDOS);
+  const segments = task.audioAssembly?.segments.length ?? 0;
+  if (failed || !segments || current.length !== segments || current.some(item => !item.record)) return { failed, blocked };
+  const verdicts = current.map(item => item.record!);
+  const verdict: TaskQualityVerdict = verdicts.every(item => item.mode === 'preview' && item.verdict === 'passed') ? 'preview'
+    : verdicts.some(item => item.verdict === 'needs_review') ? 'needs_review' : 'passed';
+  return { failed, blocked, verdict };
+}

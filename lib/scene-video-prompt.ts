@@ -13,7 +13,7 @@ export function sceneVideoPrompt(goal: string, script?: GeneratedScript) {
     `One fictional adult ${person}, ${scene.partnerLook}, faces the camera and talks directly to the viewer.`,
     `${pronoun} is the only person on screen and the only one whose lips move. ${pronoun} says: ${said}.`,
     `While the unseen viewer answers, ${pronoun.toLowerCase()} listens quietly with a closed mouth and small nods.`,
-    `One continuous handheld shot in one place: same person, clothing, background and lighting throughout, no cuts, no scene changes, no other people speaking.`,
+    `One steady eye-level shot, single shot, not multi-shot, in one place: same person, clothing, background and lighting throughout, no cuts, no scene changes, no other people speaking.`,
     `No readable signs, no subtitles. Match the supplied audio; do not add dialogue.`,
   ].join(' ');
   return prompt.length <= 5000 ? prompt : prompt.slice(0, 5000);

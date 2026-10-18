@@ -6,7 +6,9 @@ import { createGenerationTaskStore } from './generation-tasks';
 import { createPrivateMediaStore } from './private-media-store';
 import { generateSceneScript } from './generated-script';
 import { generateLineAudio } from './generated-audio';
-import { submitEncodedVideoSegment, queryVideoSegment } from './generated-video';
+import { submitEncodedVideoSegment, queryVideoSegment, resolveLtxModel } from './generated-video';
+import { createVideoQualityGate, createPreviewQualityGate } from './video-quality-gate';
+import { createPlaceholderKeyframeProvider, createReferenceFrameCheck } from './generated-keyframe';
 import { downloadGeneratedMedia } from './download-generated-media';
 import { encodeVideoAudio } from './encode-video-audio';
 import { probeVideoBytes } from './probe-video-bytes';
@@ -20,6 +22,8 @@ type Options = {
   enabled?: boolean; directory: string; sessionSecret: string; openaiKey: string; ltxKey: string;
   // Preview: real script and voices, but each video segment is a local card instead of a paid video.
   previewVideo?: boolean;
+  // C14-3: one of the whitelisted LTX models; unset keeps the default.
+  videoModel?: string;
   budget: { scope: string; priorSpentMicros: number; maxReservedMicros: number; scriptMicros: number; audioMicros: number; videoMicros: number };
   media: { ffmpeg: string; ffprobe: string; allowedHosts: string[]; maxBytes: number };
   fetch?: typeof fetch;
@@ -34,10 +38,12 @@ export function createLiveGenerationRuntime(options: Options) {
   if (options?.enabled !== true || !nonempty(options.directory) || !isAbsolute(options.directory) || !nonempty(options.sessionSecret) || !nonempty(options.openaiKey) || (!options.previewVideo && !nonempty(options.ltxKey))) throw new Error('Live runtime configuration required');
   if (!b || !nonempty(b.scope) || b.scope.length > 128 || !Number.isSafeInteger(b.priorSpentMicros) || b.priorSpentMicros < 0 || !positive(b.maxReservedMicros) || b.priorSpentMicros > b.maxReservedMicros || !positive(b.scriptMicros) || !positive(b.audioMicros) || !positive(b.videoMicros)) throw new Error('Live runtime budget required');
   if (!m || !nonempty(m.ffmpeg) || !isAbsolute(m.ffmpeg) || !nonempty(m.ffprobe) || !isAbsolute(m.ffprobe) || !positive(m.maxBytes) || m.maxBytes > 100_000_000 || !Array.isArray(m.allowedHosts) || !m.allowedHosts.length || m.allowedHosts.some(host => typeof host !== 'string' || !/^[a-z0-9]+(?:[.-][a-z0-9]+)*$/.test(host) || isIP(host) || host === 'localhost' || host.endsWith('.localhost'))) throw new Error('Live runtime media configuration required');
+  let videoModel: ReturnType<typeof resolveLtxModel>;
+  try { videoModel = resolveLtxModel(options.videoModel); } catch { throw new Error('Live runtime video model not allowed'); }
   const media = { ...m, allowedHosts: [...m.allowedHosts] };
   const openai = { enabled: true, apiKey: options.openaiKey, fetch: options.fetch };
   const preview = options.previewVideo ? createPreviewVideoProvider({ ffmpeg: media.ffmpeg }) : undefined;
-  const video = { enabled: true, apiKey: options.ltxKey, fetch: options.fetch };
+  const video = { enabled: true, apiKey: options.ltxKey, fetch: options.fetch, model: videoModel };
   const transport = options.fetch;
   return createGenerationTaskStore({
     directory: options.directory, sessionSecret: options.sessionSecret, simulation: false,
@@ -61,6 +67,11 @@ export function createLiveGenerationRuntime(options: Options) {
     referenceExtractor: input => extractReferenceImage(input, media),
     videoConcat: (inputs, verifiedDuration) => concatVideoBytes(inputs, { executable: media.ffmpeg, normalizeDuration: verifiedDuration }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
+    // C14-1: every segment goes through the quality gate. Preview cards take the preview path; provider video gets
+    // the local ffmpeg checks, with the face checks reported as not_checked until a detector is approved.
+    videoQualityGate: preview ? createPreviewQualityGate() : createVideoQualityGate(media),
+    // C14-2: in preview only, a local placeholder keyframe starts the first segment (no image model exists here yet).
+    ...(preview ? { keyframeProvider: createPlaceholderKeyframeProvider(media), referenceFrameCheck: createReferenceFrameCheck(media) } : {}),
   });
 }
 

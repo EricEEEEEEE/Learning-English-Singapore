@@ -9,7 +9,7 @@ type Target = number | 'invalid' | null;
 type Result = { owner: string; revision: Target; view?: SceneGenerationView; error?: 'read' | 'version' };
 class VersionFailure extends Error {}
 const statuses = ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending', 'video_assembled'];
-const phases = ['not_submitted', ...statuses.filter(status => status !== 'video_assembled'), 'failed', 'simulation', 'media_unavailable', 'ready', 'cancelled', 'stopped'];
+const phases = ['not_submitted', ...statuses.filter(status => status !== 'video_assembled'), 'failed', 'simulation', 'media_unavailable', 'ready', 'cancelled', 'stopped', 'quality_failed'];
 
 function parseView(input: unknown, revision: number): SceneGenerationView {
   const value = input as SceneGenerationView;
@@ -25,11 +25,16 @@ function parseView(input: unknown, revision: number): SceneGenerationView {
       // C8-4: "cancelled" only before any provider call; "stopped" only after one.
       if (value.phase === 'cancelled' && (task.status !== 'awaiting_budget' || task.providerCalls !== 0)) throw new Error();
       if (value.phase === 'stopped' && (task.providerCalls < 1 || task.status === 'video_assembled')) throw new Error();
+      // C14-1: quality_failed only after a video call and before any course was assembled.
+      if (value.phase === 'quality_failed' && (task.providerCalls < 1 || task.status === 'video_assembled')) throw new Error();
       if (value.phase === 'ready') {
         const course = value.course;
         if (task.status !== 'video_assembled' || !course || course.id !== task.id || course.revision !== revision || (course.materialsRevision !== undefined && (!Number.isSafeInteger(course.materialsRevision) || course.materialsRevision < 1))) throw new Error();
       } else if (value.course !== null) throw new Error();
     }
+    // C14: a quality note only on a ready course; the keyframe flag only with a task.
+    if (value.quality !== undefined && (value.phase !== 'ready' || !['passed', 'needs_review', 'preview'].includes(value.quality))) throw new Error();
+    if (value.keyframe !== undefined && (value.keyframe !== true || value.task === null)) throw new Error();
     return { ...value, requirement };
   } catch { throw new VersionFailure('Invalid generation version'); }
 }

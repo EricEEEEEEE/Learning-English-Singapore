@@ -23,6 +23,7 @@ import { ActionBar, AppBar, Icon, Sheet, ShellContext, type CommonOptions } from
 import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
 import { c13Copy } from './c13-copy';
+import { c14Copy } from './c14-copy';
 import ReviewListen, { useReviewQueue, type ReviewToday } from './review-listen';
 
 const storageKey = 'le-sg-entry-preferences-v1';
@@ -427,13 +428,13 @@ export default function LearningEntry() {
           <ActionBar><button className="btn btn-primary" type="button" onClick={library.close}>{libraryCopy.input}</button></ActionBar>
         </section>
         : generation.target !== null ? (() => {
-          const gen = sceneGenerationCopy[language];
+          const gen = sceneGenerationCopy[language], c14 = c14Copy[language];
           const phase = generation.view?.phase;
           const active = !!generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(phase ?? '');
           const stageIndex = generation.error || !phase ? -1 : ({ not_submitted: 0, awaiting_budget: 0, submitting: 0, submission_unknown: 0, script_ready: 1, audio_ready: 1, audio_assembled: 2, video_pending: 2, video_assembled: 2, simulation: 3, ready: 3 } as Record<string, number>)[phase] ?? -1;
-          const tone = generation.error || phase === 'failed' || phase === 'media_unavailable' ? 'alert' : phase === 'ready' || phase === 'simulation' ? 'done' : phase === 'cancelled' || phase === 'stopped' ? 'stopped' : 'busy';
+          const tone = generation.error || phase === 'failed' || phase === 'quality_failed' || phase === 'media_unavailable' ? 'alert' : phase === 'ready' || phase === 'simulation' ? 'done' : phase === 'cancelled' || phase === 'stopped' ? 'stopped' : 'busy';
           const icon = tone === 'alert' ? 'alert' : tone === 'done' ? 'check' : tone === 'stopped' ? 'stop' : stageIndex === 1 ? 'voice' : stageIndex === 2 ? 'image' : 'script';
-          const primary = phase === 'ready' && !generation.error ? 'watch' : !generation.error && (phase === 'failed' || phase === 'cancelled' || phase === 'stopped') ? 'back' : !active && (generation.error || phase) ? 'retry' : null;
+          const primary = phase === 'ready' && !generation.error ? 'watch' : !generation.error && (phase === 'failed' || phase === 'quality_failed' || phase === 'cancelled' || phase === 'stopped') ? 'back' : !active && (generation.error || phase) ? 'retry' : null;
           const retryButton = (className: string) => <button className={className} type="button" disabled={generation.preparing} onClick={generation.retry}>{gen.retry}</button>;
           const backButton = (className: string) => <button className={className} type="button" onClick={() => {
             if (requirements.draft) requirements.change({ ...requirements.draft, page: 'background' });
@@ -444,8 +445,14 @@ export default function LearningEntry() {
             <h1>{gen.title}</h1>
             {generation.view ? <p className="generation-description">{generation.view.requirement.content.description}</p> : null}
             {generation.error ? <p className="scene-entry-error" role="alert">{gen[generation.error === 'version' ? 'version' : 'error']}</p>
-              : <p className="panel-copy generation-status" role="status" data-testid={phase === 'cancelled' ? 'generation-cancelled' : phase === 'stopped' ? 'generation-stopped' : undefined}>
+              : <p className="panel-copy generation-status" role="status" data-testid={phase === 'cancelled' ? 'generation-cancelled' : phase === 'stopped' ? 'generation-stopped' : phase === 'quality_failed' ? 'generation-quality-failed' : undefined}>
                 {!generation.view ? gen.loading : phase === 'cancelled' ? extra.cancelled : phase === 'stopped' ? extra.stopped : gen.phases[generation.view.phase]}</p>}
+            {!generation.error && phase === 'quality_failed' ? <p className="generation-note">{c14.qualityFailedDetail}</p> : null}
+            {!generation.error && phase === 'ready' && generation.view?.quality === 'needs_review' ? <p className="generation-note" data-testid="generation-needs-review">{c14.needsReview}</p> : null}
+            {!generation.error && generation.view?.keyframe ? <figure className="partner-look" data-testid="partner-look">
+              <img src={`/api/scene-generation/keyframe?revision=${generation.view.requirement.revision}`} alt={c14.partnerLook} width={720} height={1280} />
+              <figcaption>{c14.partnerLook}<small>{c14.partnerLookNote}</small></figcaption>
+            </figure> : null}
             {stageIndex >= 0 ? <ol className="generation-stages" data-testid="generation-stages" aria-label={c11.stagesLabel}>
               {c11.stages.map((label, index) => <li key={label} data-done={index < stageIndex || undefined} aria-current={index === stageIndex ? 'step' : undefined}><span className="stage-dot" aria-hidden="true" />{label}</li>)}
             </ol> : null}
