@@ -7,6 +7,7 @@ import { requestLearningJson } from './learning-request';
 import type { GenerationRecord, DeletionEvent } from '../lib/my-data';
 import type { SentenceReportStatus, SameSentencePlace } from '../lib/sentence-reports';
 import { auditGapsCopy } from './audit-gaps-copy';
+import { ActionBar, Icon } from './shell';
 
 const marker = 'le-sg-account-mode-v1';
 type Pointer = { id: string; revision: number; materialsRevision?: number };
@@ -23,27 +24,30 @@ async function send(url: string, method: 'POST' | 'DELETE', body?: object) {
   } finally { window.clearTimeout(deadline); }
 }
 
-export function SignOutButton({ language }: { language: EntryLanguage }) {
+// C11: in a sheet the button is a row, and a failure is reported by the page (onFailed), never inside the sheet.
+export function SignOutButton({ language, row = false, onStart, onFailed }: { language: EntryLanguage; row?: boolean; onStart?: () => void; onFailed?: () => void }) {
   const copy = dataTrustCopy[language];
   const [state, setState] = useState<'idle' | 'busy' | 'failed'>('idle');
-  return <div className="data-action">
-    <button className="text-button" type="button" disabled={state === 'busy'} onClick={async () => {
-      setState('busy');
+  const button = <button className={row ? 'sheet-row' : 'text-button'} type="button" disabled={state === 'busy'} onClick={async () => {
+      setState('busy'); onStart?.();
       try {
         await send('/api/auth/signout', 'POST');
         try { localStorage.removeItem(marker); } catch { /* The session check below is what matters. */ }
         setState('idle');
         window.dispatchEvent(new Event('le-sg-auth-invalid'));
-      } catch { setState('failed'); }
-    }}>{state === 'busy' ? copy.signingOut : copy.signOut}</button>
+      } catch { setState(onFailed ? 'idle' : 'failed'); onFailed?.(); }
+    }}>{row ? <Icon name="exit" /> : null}{state === 'busy' ? copy.signingOut : copy.signOut}</button>;
+  if (onFailed) return button;
+  return <div className="data-action">
+    {button}
     {state === 'failed' ? <p className="scene-entry-error" role="alert">{copy.signOutFailed}</p> : null}
   </div>;
 }
 
-export function SceneDelete({ language, description, course, onDeleted, onFailed }: { language: EntryLanguage; description: string; course: Pointer; onDeleted: () => void; onFailed: () => void }) {
+export function SceneDelete({ language, description, course, onDeleted, onFailed, onCancel }: { language: EntryLanguage; description: string; course: Pointer; onDeleted: () => void; onFailed: () => void; onCancel?: () => void }) {
   const copy = dataTrustCopy[language];
   const [step, setStep] = useState<'idle' | 'confirm' | 'busy'>('idle');
-  if (step === 'idle') return <button className="text-button danger-text" type="button" aria-label={copy.deleteScene(description)} onClick={() => setStep('confirm')}>{copy.deleteShort}</button>;
+  if (step === 'idle') return <div className="sheet-rows"><button className="sheet-row danger-text" type="button" aria-label={copy.deleteScene(description)} onClick={() => setStep('confirm')}><Icon name="close" />{copy.deleteShort}</button></div>;
   return <div className="data-confirm">
     <p>{copy.sceneConfirm}</p>
     <div className="data-confirm-actions">
@@ -52,7 +56,7 @@ export function SceneDelete({ language, description, course, onDeleted, onFailed
         try { await send(`/api/learning-library?id=${encodeURIComponent(course.id)}&revision=${course.revision}`, 'DELETE'); onDeleted(); }
         catch { setStep('idle'); onFailed(); }
       }}>{step === 'busy' ? copy.deleting : copy.confirmDelete}</button>
-      <button className="text-button" type="button" disabled={step === 'busy'} onClick={() => setStep('idle')}>{copy.cancel}</button>
+      <button className="btn btn-ghost" type="button" disabled={step === 'busy'} onClick={() => { setStep('idle'); onCancel?.(); }}>{copy.cancel}</button>
     </div>
   </div>;
 }
@@ -60,7 +64,7 @@ export function SceneDelete({ language, description, course, onDeleted, onFailed
 export function DeleteAllData({ language, onDeleted, onFailed }: { language: EntryLanguage; onDeleted: () => void; onFailed: () => void }) {
   const copy = dataTrustCopy[language];
   const [step, setStep] = useState<'idle' | 'confirm' | 'busy'>('idle');
-  if (step === 'idle') return <button className="text-button danger-text" type="button" onClick={() => setStep('confirm')}>{copy.deleteAll}</button>;
+  if (step === 'idle') return <div className="sheet-rows"><button className="sheet-row danger-text" type="button" onClick={() => setStep('confirm')}>{copy.deleteAll}</button></div>;
   return <div className="data-confirm">
     <p>{copy.allConfirm}</p>
     <div className="data-confirm-actions">
@@ -69,7 +73,7 @@ export function DeleteAllData({ language, onDeleted, onFailed }: { language: Ent
         try { await send('/api/my-data', 'DELETE', { confirm: 'delete-all-my-data' }); setStep('idle'); onDeleted(); }
         catch { setStep('idle'); onFailed(); }
       }}>{step === 'busy' ? copy.deleting : copy.confirmAll}</button>
-      <button className="text-button" type="button" disabled={step === 'busy'} onClick={() => setStep('idle')}>{copy.cancel}</button>
+      <button className="btn btn-ghost" type="button" disabled={step === 'busy'} onClick={() => setStep('idle')}>{copy.cancel}</button>
     </div>
   </div>;
 }
@@ -105,20 +109,25 @@ export function GenerationRecords({ language, onBack }: { language: EntryLanguag
     requestLearningJson('/api/generation-records', controller).then(data => { if (active) setResult(parseRecords(data)); }).catch(() => { if (active) setResult('failed'); });
     return () => { active = false; controller.abort(); };
   }, [attempt]);
-  return <section data-testid="generation-records">
+  const tone = (status: GenerationRecord['status']) => status === 'ready' ? 'green' : status === 'failed' ? 'red' : status === 'unknown' || status === 'in_progress' ? 'amber' : 'grey';
+  return <section data-testid="generation-records" className="records">
     <h1>{copy.records}</h1>
-    <p className="panel-copy">{copy.recordsNote}</p>
+    <p className="records-note">{copy.recordsNote}</p>
     {result === 'loading' ? <p role="status">{copy.recordsLoading}</p>
       : result === 'failed' ? <><p className="scene-entry-error" role="alert">{copy.recordsError}</p><button className="text-button" type="button" onClick={() => setAttempt(value => value + 1)}>{copy.recordsRetry}</button></>
       : <>
-        {result.tasks.length ? <ul className="generation-records">{result.tasks.map(task => <li key={task.id} data-testid="generation-record" className="scene-card">
-          <p className="scene-description">{task.description ?? copy.deletedScene}</p>
-          <p><strong>{copy.status[task.status]}</strong>{task.status === 'deleted' && task.deletedAt !== undefined ? ` · ${copy.deletedOn(day(task.deletedAt))}` : ''}</p>
-          <p>{copy.reserved(usd(task.reservedMicros))}</p>
-        </li>)}</ul> : <p>{copy.recordsEmpty}</p>}
+        {result.tasks.length ? <ul className="generation-records">{result.tasks.map(task => {
+          const reserved = copy.reserved(usd(task.reservedMicros)), amount = `US$${usd(task.reservedMicros)}`;
+          const label = reserved.endsWith(amount) ? reserved.slice(0, -amount.length) : `${reserved} `;
+          return <li key={task.id} data-testid="generation-record" className="record-row">
+            <p className="record-text">{task.description ?? copy.deletedScene}</p>
+            <p className="record-amount" data-testid="record-amount">{reserved.endsWith(amount) ? <><span className="sr-only">{label}</span>{amount}</> : reserved}</p>
+            <p className="record-meta"><span className="record-badge" data-testid="record-badge" data-tone={tone(task.status)}>{copy.status[task.status]}</span>{task.status === 'deleted' && task.deletedAt !== undefined ? <span>{copy.deletedOn(day(task.deletedAt))}</span> : null}</p>
+          </li>;
+        })}</ul> : <p>{copy.recordsEmpty}</p>}
         {result.deletions.length ? <ul className="deletion-events">{result.deletions.map((event, index) => <li key={index} data-testid="deletion-event">{`${copy.deletion[event.kind]} · ${day(event.at)}`}</li>)}</ul> : null}
       </>}
-    <button className="text-button" type="button" onClick={onBack}>{copy.recordsBack}</button>
+    <ActionBar><button className="btn btn-ghost" type="button" onClick={onBack}>{copy.recordsBack}</button></ActionBar>
   </section>;
 }
 

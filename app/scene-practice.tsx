@@ -11,6 +11,7 @@ import { auditGapsCopy } from './audit-gaps-copy';
 import { classifyPracticeTurn, countOutcomes, practiceOutcomes, type PracticeOutcome, type PracticeReview } from '../lib/practice-review-outcomes';
 import { ActionBar, Icon, Sheet, useShell } from './shell';
 import { shellCopy } from './shell-copy';
+import { c11Copy } from './c11-copy';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
@@ -92,6 +93,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const extra = resumeSafetyCopy[language];
   const gaps = auditGapsCopy[language];
   const shell = shellCopy[language];
+  const c11 = c11Copy[language];
   const shellContext = useShell();
   const online = useOnline();
   const choiceId = useId();
@@ -376,7 +378,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
           {mediaBusy
             ? <button type="button" className="icon-btn icon-btn--soft" aria-label={extra.pause} onClick={pause}><Icon name="pause" /></button>
             : <button type="button" className="icon-btn icon-btn--soft" aria-label={copy.replay} disabled={busy} onClick={() => playPartner(partner.id)}><Icon name="replay" /></button>}
-          <button type="button" className="icon-btn icon-btn--soft" aria-label={tools.slower} disabled={busy} onClick={() => playPartner(partner.id, 0.75)}><Icon name="slow" /></button>
+          <button type="button" className="icon-btn icon-btn--soft" aria-label={tools.slower} disabled={busy} onClick={() => playPartner(partner.id, 0.75)}><span className="speed-text">0.75×</span></button>
           <button type="button" className="chip-btn" aria-pressed={partnerHelp} onClick={() => { if (!partnerHelp) { stats.current.translations++; helped.current[turnIndex] = true; } setPartnerHelp(open => !open); }}><Icon name="translate" size={18} />{partnerHelp ? tools.helpClose : tools.help}</button>
         </div>
       </div>
@@ -429,24 +431,34 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     </div>}
     {ending && <section data-testid="practice-ending" className="practice-ending">
       <h3>{ending === 'done' ? quality.doneTitle : quality.endedTitle}</h3>
-      <div data-testid="practice-review">
-        <h4>{quality.reviewTitle}</h4>
-        <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? `${quality.turnAnswered(i + 1, answered.current[i])} · ${outcomeLabel[outcomeOf(i)]}` : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
-        <ul><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{gaps.nativeCount(stats.current.native ?? 0)}</li><li>{quality.unknownTransfer}</li></ul>
-        <p className="scene-note">{quality.reviewNote}</p>
+      <div data-testid="practice-review" className="practice-review">
+        {(() => {
+          const spoken = course.turns.filter((_, i) => answered.current[i] !== undefined).length;
+          const small: [string, number][] = [[c11.small.hints, stats.current.hints], [c11.small.help, stats.current.autoHelp + stats.current.translations], [c11.small.native, stats.current.native ?? 0]];
+          return <div data-testid="review-counts" className="review-counts">
+            <p data-testid="review-spoken" className="review-spoken">{c11.spoken} <span className="review-spoken-figure"><strong data-testid="review-spoken-number" className="review-spoken-number">{spoken}</strong><span className="review-spoken-total">/{course.turns.length}</span></span></p>
+            <ul className="review-small">{small.map(([label, n]) => <li key={label} data-testid="review-small">{label} <strong>{n}</strong></li>)}</ul>
+          </div>;
+        })()}
+        <details data-testid="review-turns" className="review-turns">
+          <summary><h4>{quality.reviewTitle}</h4><Icon name="chevron" size={18} /></summary>
+          <ul className="review-turn-list">{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? `${quality.turnAnswered(i + 1, answered.current[i])} · ${outcomeLabel[outcomeOf(i)]}` : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
+          <ul className="review-stat-list"><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{gaps.nativeCount(stats.current.native ?? 0)}</li><li>{quality.unknownTransfer}</li></ul>
+          <p className="scene-note">{quality.reviewNote}</p>
+        </details>
         {reviewSave === 'failed' && <p data-testid="practice-review-unsaved" role="status">{gaps.reviewUnsaved}</p>}
-        {reviewSave === 'saved' && !previousReview && <p data-testid="practice-compare-first">{gaps.compareFirst}</p>}
+        {reviewSave === 'saved' && !previousReview && <p data-testid="practice-compare-first" className="scene-note">{gaps.compareFirst}</p>}
         {reviewSave === 'saved' && previousReview && <div className="practice-compare">
           <p data-testid="practice-compare-previous">{compareLine(gaps.previousReview, previousReview.turns.map(turn => turn.outcome))}</p>
           <p data-testid="practice-compare-current">{compareLine(gaps.thisReview, course.turns.map((_, i) => outcomeOf(i)))}</p>
           <p className="scene-note">{gaps.compareNote}</p>
         </div>}
       </div>
-      <div className="ending-actions">
+      {ending === 'ended' && <button type="button" className="text-button keep-going" onClick={() => setEnding(null)}>{quality.keepGoing}</button>}
+      <ActionBar>
         <button type="button" className="btn btn-primary" onClick={practiseAgain}>{quality.again}</button>
-        {ending === 'ended' && <button type="button" className="btn btn-ghost" onClick={() => setEnding(null)}>{quality.keepGoing}</button>}
         {onLeave && <button type="button" className="btn btn-ghost" onClick={onLeave}>{quality.back}</button>}
-      </div>
+      </ActionBar>
     </section>}
     {!ending && <ActionBar className="action-bar--practice">
       <div className="practice-messages">

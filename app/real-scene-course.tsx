@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { validateSceneCourse, type SceneCourse, type SceneLine } from '../lib/scene-course';
 import { parseSceneRequirement, type SceneRequirement } from '../lib/scene-requirement-content';
 import type { EntryLanguage } from './entry-copy';
@@ -17,6 +17,7 @@ import { auditGapsCopy } from './audit-gaps-copy';
 import { sceneSafetyKind } from '../lib/scene-safety';
 import { ActionBar, AppBar, Icon, Sheet, useShell } from './shell';
 import { shellCopy } from './shell-copy';
+import { c11Copy } from './c11-copy';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
 export const realSceneCopy: Record<EntryLanguage, Copy> = {
@@ -44,6 +45,10 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const [page, setPage] = useState<'watch' | 'role' | 'learn'>('watch');
   const [roles, setRoles] = useState<{ learner: string; partner: string } | null>(null);
   const [watchComplete, setWatchComplete] = useState(false);
+  // C11-1: once the scene has been watched to the end in this visit, "enter the role" becomes the primary action.
+  const [watchedOnce, setWatchedOnce] = useState(false);
+  // C11-2: "you could say" on the prompt page stays folded until tapped (or until a hint asked for it).
+  const [answerShown, setAnswerShown] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [slow, setSlow] = useState(false);
   const [captionsHidden, setCaptionsHidden] = useState(false);
@@ -85,6 +90,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   // C10: the guided pages share the thin top bar and a "more" sheet; practice puts its own items into that sheet.
   const shellContext = useShell();
   const shell = shellCopy[language];
+  const c11 = c11Copy[language];
   const [moreOpen, setMoreOpen] = useState(false);
   const moreRef = useRef<HTMLButtonElement>(null);
   const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : step === 5 ? practiceCopy.title : copy.steps[step - 1] : copy.title;
@@ -93,7 +99,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   }, [guided, page, step]);
   useEffect(() => {
     const controller = new AbortController(); let loading = true;
-    stop(); setCourse(null); setProgressContext(null); setLoadFailed(false); setRoles(null); setPage('watch'); setStep(1); setTurnIndex(0); setWatchComplete(false); setTime(0); setError(false);
+    stop(); setCourse(null); setProgressContext(null); setLoadFailed(false); setRoles(null); setPage('watch'); setStep(1); setTurnIndex(0); setWatchComplete(false); setWatchedOnce(false); setAnswerShown(false); setTime(0); setError(false);
     position.current = { page: 'watch', time: 0, turnIndex: 0 }; restoreTime.current = null; mediaReady.current = false;
     practiceMemory.current = { turnIndex: 0, history: [], reply: null }; setAb(null); setPartnerHelp(false);
     if (guided) {
@@ -136,7 +142,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     stop(); position.current = { ...restored }; restoreTime.current = restored.time;
     setPage(restored.page === 'watch' || restored.page === 'role' ? restored.page : 'learn');
     setStep(restored.page === 'terms' ? 2 : restored.page === 'sentences' ? 3 : restored.page === 'prompt' ? 4 : restored.page === 'practice' ? 5 : 1);
-    setResumedPractice(restored.page === 'practice');
+    setResumedPractice(restored.page === 'practice'); setWatchedOnce(restored.page !== 'watch'); setAnswerShown(false);
     setTurnIndex(restored.turnIndex); setTime(restored.time); setWatchComplete(false);
     if (video.current && video.current.readyState >= 1) { video.current.currentTime = restored.time; restoreTime.current = null; }
   }, [progress.restore]);
@@ -185,6 +191,12 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     const next = !slowRef.current; slowRef.current = next; setSlow(next);
     if (video.current) { video.current.playbackRate = next ? 0.75 : 1; video.current.preservesPitch = true; }
   }
+  // C11-1: the line that starts after the current time (or the first one).
+  function nextLine() {
+    const t = video.current?.currentTime ?? time, lines = course!.lines;
+    const next = lines.find(line => line.start > t + 0.05) ?? lines[lines.length - 1];
+    void playLine(next);
+  }
   function previousLine() {
     const t = video.current?.currentTime ?? time, lines = course!.lines;
     const current = lines.findIndex(line => t >= line.start && t < line.end);
@@ -197,15 +209,15 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   function move(next: number) { stop(); setStep(next); }
   const lineById = (id: string) => course!.lines.find(line => line.id === id)!;
   const playLine = (line: SceneLine, rate?: number) => play(line.start, line.end, false, { rate });
-  function changePage(next: 'watch' | 'role' | 'learn', nextStep = 1, turn = turnIndex) {
+  function changePage(next: 'watch' | 'role' | 'learn', nextStep = 1, turn = turnIndex, reveal = false) {
     position.current = { ...position.current, page: next === 'learn' ? nextStep === 2 ? 'terms' : nextStep === 3 ? 'sentences' : nextStep === 5 ? 'practice' : 'prompt' : next };
-    stop(); focusNext.current = true; setPage(next); setStep(nextStep); setResumedPractice(false);
+    stop(); focusNext.current = true; setPage(next); setStep(nextStep); setResumedPractice(false); setAnswerShown(reveal); setMoreOpen(false);
     savePosition(true);
     if (next === 'learn' && (nextStep === 4 || (nextStep === 5 && practiceMemory.current.setupAsked))) void playLine(lineById(course!.turns[turn].partnerLineId));
   }
   function changeTurn(next: number) {
     position.current = { ...position.current, turnIndex: next };
-    stop(); setTurnIndex(next); setPartnerHelp(false);
+    stop(); setTurnIndex(next); setPartnerHelp(false); setAnswerShown(false);
     savePosition(true);
     if (guided) void playLine(lineById(course!.turns[next].partnerLineId));
   }
@@ -241,14 +253,36 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
       {progress.stage === 'conflict' && <button className="text-button" type="button" onClick={progress.retryRead}>{libraryCopy.reload}</button>}
     </div>
   </> : null;
+  // C11: the ‹ in the top bar is "one page back": leave the course on the watch page, back to watching from the
+  // role page, and the previous step on the learning pages. Leaving the course moves into "more" there.
+  const learnBack = page === 'learn' && step >= 2 && step <= 4 ? { label: step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence, go: () => step === 2 ? changePage('role') : changePage('learn', step - 1) } : null;
+  const appBarStart = practising ? undefined
+    : page === 'role' && course ? <button className="icon-btn" type="button" aria-label={guide.watchAgain} onClick={() => changePage('watch')}><Icon name="back" /></button>
+    : learnBack && course ? <button className="icon-btn" type="button" aria-label={learnBack.label} onClick={learnBack.go}><Icon name="back" /></button>
+    : <button data-testid="scene-back" className="icon-btn" type="button" aria-label={backText} disabled={leaving} onClick={leave}><Icon name="back" /></button>;
+  const stepBar = guided && page === 'learn' && course ? <ol className="step-bar" data-testid="step-bar" aria-label={c11.stepsLabel}>
+    {c11.steps.map((label, i) => <li key={label} aria-current={step === i + 2 ? 'step' : undefined} data-done={step > i + 2 || undefined}><span className="step-bar-line" aria-hidden="true" /><span className="step-bar-label">{label}</span></li>)}
+  </ol> : null;
   const appBar = guided ? <AppBar moreLabel={shell.more} moreOpen={moreOpen} onMore={() => setMoreOpen(true)} moreRef={moreRef}
-    start={practising ? undefined : <button data-testid="scene-back" className="icon-btn" type="button" aria-label={backText} disabled={leaving} onClick={leave}><Icon name="back" /></button>}
-    center={<div className="step-dots" role="img" aria-label={shell.progress(stepIndex, 5)}>{[1, 2, 3, 4, 5].map(i => <span key={i} data-on={i <= stepIndex} />)}</div>}
+    start={appBarStart} center={stepBar}
     end={practising && course ? <span className="app-bar-meta" data-testid="practice-turn">{shell.turn(turnIndex + 1, course.turns.length)}</span> : undefined}>{progressLine}</AppBar> : null;
   const meta = guided && course ? `${guide.short(Math.max(1, Math.round(course.media.duration)))} · ${copy.notice}` : copy.notice;
   const watchAgainRow = <button type="button" className="sheet-row" onClick={() => { setMoreOpen(false); changePage('watch'); }}><Icon name="watch" />{guide.watchAgain}</button>;
+  const leaveRow = <button data-testid="scene-back" type="button" className="sheet-row" disabled={leaving} onClick={() => { setMoreOpen(false); void leave(); }}><Icon name="exit" />{backText}</button>;
+  // C11-1: the A-B loop and the global slow switch sit in "more → practice tools" on the sentences page.
+  const abLoop = course ? (() => {
+    const a = ab?.a ?? course.lines[0].id, b = ab?.b ?? course.lines[course.lines.length - 1].id;
+    const ai = course.lines.findIndex(line => line.id === a), bi = course.lines.findIndex(line => line.id === b);
+    return <div className="ab-loop">
+      <label className="sheet-field" htmlFor={`${abId}-a`}><span className="sheet-label">{tools.abStart}</span></label><select id={`${abId}-a`} value={a} onChange={event => { stop(); setAb({ a: event.target.value, b }); }}>{course.lines.map(line => <option key={line.id} value={line.id}>{line.text}</option>)}</select>
+      <label className="sheet-field" htmlFor={`${abId}-b`}><span className="sheet-label">{tools.abEnd}</span></label><select id={`${abId}-b`} value={b} onChange={event => { stop(); setAb({ a, b: event.target.value }); }}>{course.lines.map(line => <option key={line.id} value={line.id}>{line.text}</option>)}</select>
+      <div className="ab-actions"><button type="button" className="btn btn-tonal btn-small" disabled={bi < ai} aria-pressed={loopKey === 'ab'} onClick={() => toggleLoop('ab', course.lines[ai].start, course.lines[bi].end)}><Icon name="loop" size={18} />{tools.abLoop}</button>
+        <button type="button" className="btn btn-tonal btn-small" aria-pressed={slow} onClick={toggleSlow}>{tools.slow}</button></div>
+    </div>;
+  })() : null;
   const sheet = guided && !practising ? <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={shell.more} testId="more-sheet" closeLabel={shell.close}>
-    {page === 'learn' ? <div className="sheet-rows">{watchAgainRow}</div> : null}
+    {page === 'learn' && step === 3 && course ? <section className="sheet-section"><h3 className="sheet-label">{c11.practiceTools}</h3>{abLoop}</section> : null}
+    {page === 'learn' ? <div className="sheet-rows">{watchAgainRow}{leaveRow}</div> : page === 'role' && course ? <div className="sheet-rows">{leaveRow}</div> : null}
     {shellContext?.common({ meta: course ? meta : undefined, trial: true })}
   </Sheet> : null;
   if (!course) return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`}>{appBar}<h1>{title}</h1><p role={loadFailed ? 'alert' : 'status'}>{loadFailed ? notices.invalid : notices.loading}</p>{guided ? null : back}{sheet}</section>;
@@ -257,6 +291,12 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const partner = lineById(turn.partnerLineId);
   const learner = lineById(turn.learnerLineId);
   const learning = !guided || page === 'learn';
+  const showAnswer = !guided || answerShown;
+  const playing = segmentPlaying && fullPlayback.current;
+  // C11-1: before the scene has been watched, the play circle is the page's one primary action.
+  const playPrimary = guided && !watchedOnce ? ' btn-primary' : '';
+  const tool = (icon: ReactNode, label: string, props: ButtonHTMLAttributes<HTMLButtonElement> & { 'data-testid'?: string }) =>
+    <button type="button" className="tool-btn" {...props}><span className="tool-icon" aria-hidden="true">{icon}</span><span className="tool-label" aria-hidden="true">{label}</span></button>;
   return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`} data-step={guided ? page === 'learn' ? step : page : undefined}>
     {appBar}
     <h1 ref={heading} tabIndex={-1}>{title}</h1>{guided ? null : <p className="trial-note">{copy.notice}</p>}
@@ -267,7 +307,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     <video ref={video} src={course.media.src} hidden={guided && page === 'role'} preload="auto" playsInline aria-label={title} onError={() => { mediaReady.current = false; stop(); setWatchComplete(false); setError(true); }} onEnded={() => {
       const range = loopRange.current, media = video.current;
       if (range && media && wantsPlayback.current) { media.currentTime = range.start; void media.play().catch(() => setError(true)); return; }
-      if (guided && page === 'watch' && fullPlayback.current && wantsPlayback.current && !error && (video.current?.currentTime ?? 0) >= course.media.duration - 0.1) setWatchComplete(true);
+      if (guided && page === 'watch' && fullPlayback.current && wantsPlayback.current && !error && (video.current?.currentTime ?? 0) >= course.media.duration - 0.1) { setWatchComplete(true); setWatchedOnce(true); }
       wantsPlayback.current = false; fullPlayback.current = false; setSegmentPlaying(false); savePosition(true);
     }} onLoadedMetadata={() => {
       const duration = video.current?.duration;
@@ -287,48 +327,66 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
       setTime(media.currentTime);
       savePosition();
     }} onPause={() => savePosition(true)} />
-    {step === 1 && (!guided || page === 'watch') && <div data-testid="scene-panel-1">
-      <p data-testid="scene-caption" lang="en" className="scene-caption" aria-live="off" hidden={captionsHidden}>{caption || '\u00a0'}</p>
-      <div className="scene-actions"><button data-testid="scene-play" onClick={() => play(video.current?.ended ? 0 : video.current?.currentTime ?? 0, course.media.duration, true)}>{copy.play}</button><button onClick={stop}>{copy.pause}</button><button data-testid="scene-replay" onClick={() => play(0, course.media.duration, true)}>{copy.replay}</button></div>
-      <div className="scene-actions"><button type="button" onClick={previousLine}>{tools.previous}</button><button type="button" aria-pressed={slow} onClick={toggleSlow}>{tools.slow}</button><button type="button" onClick={() => setCaptionsHidden(hidden => !hidden)}>{captionsHidden ? tools.showCaption : tools.hideCaption}</button></div>
-      {guided && <>{watchComplete && <p role="status">{guide.complete}</p>}<ActionBar><button className="btn btn-primary" type="button" onClick={() => changePage('role')}>{guide.enter}</button></ActionBar></>}
+    {step === 1 && (!guided || page === 'watch') && <div data-testid="scene-panel-1" className="watch-panel">
+      <p data-testid="scene-caption" lang="en" className="scene-caption" aria-live="off" hidden={captionsHidden} data-empty={caption ? undefined : ''}>{caption || ' '}</p>
+      <div className="watch-tools" data-testid="watch-tools">
+        {tool(<Icon name="prev" />, c11.tools.previous, { 'aria-label': tools.previous, onClick: previousLine })}
+        {tool(<Icon name="replay" />, c11.tools.replay, { 'aria-label': copy.replay, 'data-testid': 'scene-replay', onClick: () => play(0, course.media.duration, true) })}
+        {playing
+          ? <button type="button" className={`play-btn${playPrimary}`} onClick={stop}><Icon name="pause" size={26} /><span className="sr-only">{copy.pause}</span></button>
+          : <button type="button" className={`play-btn${playPrimary}`} data-testid="scene-play" onClick={() => play(video.current?.ended ? 0 : video.current?.currentTime ?? 0, course.media.duration, true)}><Icon name="play" size={26} /><span className="sr-only">{copy.play}</span></button>}
+        {tool(<Icon name="next" />, c11.tools.next, { 'aria-label': c11.nextLine, onClick: nextLine })}
+        {tool(<Icon name="cc" />, c11.tools.caption, { 'aria-label': captionsHidden ? tools.showCaption : tools.hideCaption, onClick: () => setCaptionsHidden(hidden => !hidden), 'data-off': captionsHidden || undefined } as ButtonHTMLAttributes<HTMLButtonElement>)}
+        {tool(<span className="speed-text">0.75×</span>, c11.tools.slow, { 'aria-label': tools.slow, 'aria-pressed': slow, onClick: toggleSlow })}
+      </div>
+      {guided && <>{watchComplete && <p className="watch-done" role="status">{guide.complete}</p>}<ActionBar><button className={`btn ${watchedOnce ? 'btn-primary' : 'btn-tonal'}`} type="button" onClick={() => changePage('role')}>{guide.enter}</button></ActionBar></>}
     </div>}
     {guided && page === 'role' && <div className="role-cards"><p className="scene-note">{contextSource === 'legacy-neutral' ? libraryCopy.neutral : guide.roleSource}</p>
-      <p className="role-card role-card--me" data-testid="scene-learner-role">{guide.learner}：{roles?.learner || guide.learnerFallback}</p>
-      <p className="role-card" data-testid="scene-partner-role">{guide.partner}：{roles?.partner || guide.partnerFallback}</p>
-      <ActionBar><button type="button" className="btn btn-ghost" onClick={() => changePage('watch')}>{guide.watchAgain}</button><button type="button" className="btn btn-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button></ActionBar>
+      <div className="role-card role-card--me" data-testid="scene-learner-role"><span className="role-avatar" aria-hidden="true"><Icon name="person" /></span><p>{guide.learner}：{roles?.learner || guide.learnerFallback}</p></div>
+      <div className="role-card" data-testid="scene-partner-role"><span className="role-avatar" aria-hidden="true"><Icon name="person" /></span><p>{guide.partner}：{roles?.partner || guide.partnerFallback}</p></div>
+      <ActionBar><button type="button" className="btn btn-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button></ActionBar>
     </div>}
-    {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
+    {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}<div className="term-list">{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="term-row">
+      <div className="term-text"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p></div>
+      <button type="button" className="icon-btn icon-btn--soft" aria-label={copy.listen} onClick={() => playLine(lineById(phrase.lineId))}><Icon name="speaker" /></button>
+    </article>)}</div></div>}
     {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => {
         const status = reports.statusOf(line.id), places = reports.elsewhere(line.id);
-        return <div key={line.id} className="sentence-row" data-status={status ?? undefined}><article data-testid="scene-sentence" className={`scene-card${status === 'disabled' ? ' sentence-disabled' : ''}`}><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p><button onClick={() => playLine(line)}>{copy.listen}</button></article>
-        {status === 'disabled' && <p data-testid="sentence-disabled-note" className="sentence-disabled-note" lang={language}>{gaps.sentenceDisabled}</p>}
-        <button type="button" className="text-button" aria-pressed={loopKey === line.id} aria-label={`${tools.loopLine}：${line.text}`} onClick={() => toggleLoop(line.id, line.start, line.end)}>{tools.loopLine}</button>
-        {saved ? <SentenceReport language={language} course={saved} lineId={line.id} text={line.text} received={reports.has(line.id)} status={status} onReceived={reports.mark} /> : null}
-        {places.length > 0 && <p data-testid="sentence-elsewhere" className="sentence-elsewhere" lang={language}>{gaps.elsewhere(places.map(place => place.description).join(listSeparator))}</p>}</div>;
+        return <div key={line.id} className={`sentence-row${status === 'disabled' ? ' sentence-disabled' : ''}`} data-status={status ?? undefined}>
+          <article data-testid="scene-sentence" className="sentence-card"><strong lang="en">{line.text}</strong><p lang={language}>{line.translations[language]}</p>
+            <button type="button" className="icon-btn icon-btn--soft sentence-play" aria-label={copy.listen} onClick={() => playLine(line)}><Icon name="play" /></button></article>
+          <button type="button" className="icon-btn icon-btn--soft sentence-loop" aria-pressed={loopKey === line.id} aria-label={`${tools.loopLine}：${line.text}`} onClick={() => toggleLoop(line.id, line.start, line.end)}><Icon name="loop" /></button>
+          {status === 'disabled' && <p data-testid="sentence-disabled-note" className="sentence-disabled-note" lang={language}>{gaps.sentenceDisabled}</p>}
+          {saved ? <SentenceReport language={language} course={saved} lineId={line.id} text={line.text} received={reports.has(line.id)} status={status} onReceived={reports.mark} /> : null}
+          {places.length > 0 && <p data-testid="sentence-elsewhere" className="sentence-elsewhere" lang={language}>{gaps.elsewhere(places.map(place => place.description).join(listSeparator))}</p>}</div>;
       })}
-      {(() => {
-        const a = ab?.a ?? course.lines[0].id, b = ab?.b ?? course.lines[course.lines.length - 1].id;
-        const ai = course.lines.findIndex(line => line.id === a), bi = course.lines.findIndex(line => line.id === b);
-        return <div className="scene-card ab-loop">
-          <label htmlFor={`${abId}-a`}>{tools.abStart}</label><select id={`${abId}-a`} value={a} onChange={event => { stop(); setAb({ a: event.target.value, b }); }}>{course.lines.map(line => <option key={line.id} value={line.id}>{line.text}</option>)}</select>
-          <label htmlFor={`${abId}-b`}>{tools.abEnd}</label><select id={`${abId}-b`} value={b} onChange={event => { stop(); setAb({ a, b: event.target.value }); }}>{course.lines.map(line => <option key={line.id} value={line.id}>{line.text}</option>)}</select>
-          <div className="scene-actions"><button type="button" disabled={bi < ai} aria-pressed={loopKey === 'ab'} onClick={() => toggleLoop('ab', course.lines[ai].start, course.lines[bi].end)}>{tools.abLoop}</button><button type="button" aria-pressed={slow} onClick={toggleSlow}>{tools.slow}</button></div>
-        </div>;
-      })()}</div>}
-    {learning && step === 4 && <div data-testid="scene-panel-4">{!guided && <h2>{copy.steps[3]}</h2>}<article className="scene-card"><p data-testid="scene-partner" lang="en">{partner.text}</p>{partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations[language]}</p>}<button data-testid="scene-turn-play" onClick={() => playLine(partner)}>{copy.listen}</button></article>
-      <div className="scene-actions"><button type="button" onClick={() => setPartnerHelp(open => !open)}>{partnerHelp ? tools.helpClose : tools.help}</button></div>{reports.statusOf(learner.id) === 'disabled'
-        ? <article className="scene-card sentence-disabled-answer"><p data-testid="scene-answer-disabled" lang={language}>{gaps.answerDisabled}</p></article>
-        : <article className="scene-card"><p data-testid="scene-answer" lang="en">{learner.text}</p><p>{learner.translations[language]}</p><button data-testid="scene-answer-play" onClick={() => playLine(learner)}>{copy.answer}</button></article>}<p>{guided ? practiceCopy.promptHint : copy.hint}</p>
-      {course.turns.length > 1 && <div className="scene-actions"><button disabled={turnIndex === 0} onClick={() => changeTurn(turnIndex - 1)}>{notices.previous}</button><button data-testid="scene-next-turn" disabled={turnIndex === course.turns.length - 1} onClick={() => changeTurn(turnIndex + 1)}>{notices.next}</button></div>}
+      {guided ? null : <div className="scene-card ab-loop-inline">{abLoop}</div>}</div>}
+    {learning && step === 4 && <div data-testid="scene-panel-4" className="prompt-panel">{!guided && <h2>{copy.steps[3]}</h2>}
+      <div className="chat">
+        <div className="bubble bubble--partner">
+          <p data-testid="scene-partner" lang="en" className="bubble-text">{partner.text}</p>
+          {partnerHelp && <p data-testid="partner-help" className="bubble-sub" lang={language}>{partner.translations[language]}</p>}
+          <div className="bubble-tools"><button data-testid="scene-turn-play" type="button" className="icon-btn icon-btn--soft" aria-label={copy.listen} onClick={() => playLine(partner)}><Icon name="play" /></button>
+            <button type="button" className="chip-btn" aria-pressed={partnerHelp} onClick={() => setPartnerHelp(open => !open)}><Icon name="translate" size={18} />{partnerHelp ? tools.helpClose : tools.help}</button></div>
+        </div>
+        {reports.statusOf(learner.id) === 'disabled'
+          ? <div className="bubble bubble--me bubble--soft sentence-disabled-answer"><p data-testid="scene-answer-disabled" lang={language}>{gaps.answerDisabled}</p></div>
+          : showAnswer ? <div className="bubble bubble--me bubble--soft"><p className="bubble-label">{c11.youCanSay}</p><p data-testid="scene-answer" lang="en" className="bubble-text">{learner.text}</p><p className="bubble-sub" lang={language}>{learner.translations[language]}</p>
+            <div className="bubble-tools"><button data-testid="scene-answer-play" type="button" className="icon-btn icon-btn--soft" aria-label={copy.answer} onClick={() => playLine(learner)}><Icon name="play" /></button></div></div>
+          : <><button type="button" data-testid="answer-reveal" className="bubble bubble--reveal" onClick={() => setAnswerShown(true)}><span className="bubble-label">{c11.youCanSay}</span><span className="reveal-hint">{c11.reveal}</span></button>
+            <p data-testid="scene-answer" lang="en" hidden>{learner.text}</p></>}
+      </div>
+      <p className="scene-note prompt-hint">{guided ? practiceCopy.promptHint : copy.hint}</p>
+      {course.turns.length > 1 && <div className="turn-pager" data-testid="turn-pager"><button type="button" className="icon-btn" aria-label={notices.previous} disabled={turnIndex === 0} onClick={() => changeTurn(turnIndex - 1)}><Icon name="back" /></button>
+        <span className="turn-pager-count">{turnIndex + 1}/{course.turns.length}</span>
+        <button type="button" className="icon-btn" data-testid="scene-next-turn" aria-label={notices.next} disabled={turnIndex === course.turns.length - 1} onClick={() => changeTurn(turnIndex + 1)}><Icon name="chevron" /></button></div>}
     </div>}
     {guided && saved && page === 'learn' && step === 5 && <ScenePractice key={`${saved.id}:${saved.revision}:${saved.materialsRevision ?? 0}`} course={{ ...saved, lines: course.lines, turns: course.turns }} language={language} startTurn={turnIndex} memory={practiceMemory.current} mediaBusy={segmentPlaying} resumed={resumedPractice} stopPartner={stop}
       onTurn={turn => { position.current = { ...position.current, page: 'practice', turnIndex: turn }; setTurnIndex(turn); setResumedPractice(false); savePosition(true); }}
-      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); setPartnerHelp(false); changePage('learn', 4, turn); }} onLeave={() => changePage('watch')} playPartner={(id, rate) => void playLine(lineById(id), rate)}
+      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); setPartnerHelp(false); changePage('learn', 4, turn, true); }} onLeave={() => changePage('watch')} playPartner={(id, rate) => void playLine(lineById(id), rate)}
       more={{ open: moreOpen, close: () => setMoreOpen(false), returnFocus: moreRef }} meta={meta}
-      moreRows={<>{watchAgainRow}<button data-testid="scene-back" type="button" className="sheet-row" disabled={leaving} onClick={() => { setMoreOpen(false); void leave(); }}><Icon name="exit" />{backText}</button></>} />}
+      moreRows={<>{watchAgainRow}{leaveRow}</>} />}
     {guided && page === 'learn' && step < 5 && <ActionBar>
-      <button type="button" className="btn btn-ghost" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>
       <button type="button" className="btn btn-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : step === 3 ? guide.nextPrompt : practiceCopy.enter}</button>
     </ActionBar>}
     {error && <p role="alert">{copy.error}</p>}

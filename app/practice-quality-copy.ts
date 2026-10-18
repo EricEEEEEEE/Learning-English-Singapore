@@ -26,9 +26,9 @@ export const practiceQualityCopy: Record<EntryLanguage, Copy> = {
     correctionLegend: 'Seberapa banyak koreksi', correctionNormal: 'Biasa', correctionLess: 'Lebih sedikit',
     clarify: 'Lawan bicara ingin memastikan maksud Anda. Silakan katakan sekali lagi.', coach: 'Tips: ', wrong: 'Masukan ini salah', wrongSaved: 'Sudah dicatat, terima kasih. Kami akan memeriksanya; pelajaran tidak diubah.', wrongFailed: 'Belum tercatat. Silakan coba lagi.',
     end: 'Akhiri latihan', doneTitle: 'Situasi ini sudah selesai dilatih', endedTitle: 'Latihan selesai', again: 'Latihan lagi', back: 'Kembali ke situasi', keepGoing: 'Lanjut latihan',
-    reviewTitle: 'Ringkasan latihan ini', turnAnswered: (turn, said) => `Giliran ${turn}: Anda mengatakan "${said}"`, turnSilent: turn => `Giliran ${turn}: belum bicara, belum bisa dinilai`,
+    reviewTitle: 'Ringkasan latihan ini', turnAnswered: (turn, said) => `Giliran ${turn}: Anda mengatakan "${said}"`, turnSilent: turn => `Giliran ${turn}: belum bicara, belum diketahui`,
     hints: n => `Lihat petunjuk: ${n} kali`, autoHelp: n => `Bantuan otomatis: ${n} kali`, translations: n => `Penjelasan bahasa ibu: ${n} kali`,
-    unknownTransfer: 'Bisa menghadapi pertanyaan yang belum dilatih: belum bisa dinilai', reviewNote: 'Hanya mencatat apa yang terjadi di halaman ini. Memakai bantuan tidak apa-apa.',
+    unknownTransfer: 'Bisa menghadapi pertanyaan yang belum dilatih: belum diketahui', reviewNote: 'Hanya mencatat apa yang terjadi di halaman ini. Memakai bantuan tidak apa-apa.',
   },
   ja: {
     focusLegend: '今回は何を多めに練習しますか', focusNormal: 'ふつうに練習', focusRefusal: '断りや気が変わる場面を多めに', focusRephrase: '相手が別の聞き方をする',

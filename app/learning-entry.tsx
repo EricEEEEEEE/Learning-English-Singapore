@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { entryCopy, languageChoices, type EntryLanguage } from './entry-copy';
 import { useAccountBoundary } from './use-account-boundary';
 import { sceneEntryCopy } from './scene-entry-copy';
@@ -21,6 +21,7 @@ import { resumeSafetyCopy } from './resume-safety-copy';
 import { useOnline } from './use-online';
 import { ActionBar, AppBar, Icon, Sheet, ShellContext, type CommonOptions } from './shell';
 import { shellCopy } from './shell-copy';
+import { c11Copy } from './c11-copy';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -35,6 +36,15 @@ const journeyCopy = {
 
 function supportedLanguage(value: unknown): EntryLanguage | undefined {
   return languageChoices.find(choice => choice.code === value)?.code;
+}
+
+// C11-3: the last three keywords are optional and fold away; anything already filled there opens them on arrival.
+function KeywordsMore({ summary, filled, children }: { summary: string; filled: boolean; children: ReactNode }) {
+  const [open, setOpen] = useState(filled);
+  return <details className="keywords-more" data-testid="keywords-more" open={open} onToggle={event => setOpen(event.currentTarget.open)}>
+    <summary><Icon name="plus" size={18} />{summary}</summary>
+    <div className="keywords-more-fields">{children}</div>
+  </details>;
 }
 
 type InputFocus = { owner: string; start: number; end: number; direction: 'forward' | 'backward' | 'none' };
@@ -59,6 +69,7 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
   // C7 T14A: "generate" first shows what will be generated; nothing is saved or sent until it is confirmed.
   const [confirming, setConfirming] = useState(false);
   const confirmCopy = sceneConfirmCopy[language];
+  const c11 = c11Copy[language];
   const submitting = useRef(false);
 
   useLayoutEffect(() => {
@@ -82,17 +93,13 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
     } else if (nextFocus.current === 'heading') heading.current?.focus();
     else if (nextFocus.current === 'confirm') confirmHeading.current?.focus();
     nextFocus.current = null;
-  }, [draft.page, draft.text, confirming]);
+  }, [draft.page, draft.text, confirming, seedsOpen]);
 
   function pick(seed: SceneSeed) {
     const text = seed.text[language];
-    setInvalid(false); setPicked(true);
-    if (draft.text === text.description && JSON.stringify(draft.keywords) === JSON.stringify(text.keywords)) {
-      input.current?.focus();
-      input.current?.setSelectionRange(text.description.length, text.description.length);
-      return;
-    }
+    setInvalid(false); setPicked(true); setSeedsOpen(false);
     nextFocus.current = 'input';
+    if (draft.text === text.description && JSON.stringify(draft.keywords) === JSON.stringify(text.keywords)) return;
     onChange({ ...draft, text: text.description, keywords: { ...text.keywords } });
   }
 
@@ -114,15 +121,18 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
         <h1 id="scene-confirm-title" ref={confirmHeading} tabIndex={-1}>{confirmCopy.title}</h1>
         <h2>{confirmCopy.scene}</h2>
         <p className="scene-description">{draft.text}</p>
+        <div className="confirm-roles">
+          <p className="scene-confirm-role">{confirmCopy.you(role(draft.keywords.learnerRole))}</p>
+          <span className="confirm-arrow" aria-hidden="true">→</span>
+          <p className="scene-confirm-role">{confirmCopy.partner(role(draft.keywords.partnerRole))}</p>
+        </div>
         <h2>{confirmCopy.keywords}</h2>
-        {filled.length ? <dl className="scene-confirm-keywords">{filled.map(key => <div key={key}>
+        {filled.length ? <dl className="scene-confirm-keywords">{filled.map(key => <div key={key} className="confirm-chip" data-testid="confirm-chip">
           <dt>{requirementCopy.fields[key].label}</dt><dd>{draft.keywords[key].trim()}</dd>
         </div>)}</dl> : <p>{confirmCopy.none}</p>}
-        <p className="scene-confirm-role">{confirmCopy.you(role(draft.keywords.learnerRole))}</p>
-        <p className="scene-confirm-role">{confirmCopy.partner(role(draft.keywords.partnerRole))}</p>
-        <p className="scene-confirm-length">{confirmCopy.length}</p>
         <p className="scene-note">{confirmCopy.wait}</p>
         <ActionBar>
+          <p className="action-note action-note--quiet scene-confirm-length">{confirmCopy.length}</p>
           <p className="action-note">{confirmCopy.cost}</p>
           <button className="btn btn-ghost" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'heading'; setConfirming(false); }}>{confirmCopy.edit}</button>
           <button className="btn btn-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{confirmCopy.confirm}</button>
@@ -135,11 +145,18 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
     <h1 ref={heading} tabIndex={-1}>{copy.background}</h1>
     <p className="scene-description">{draft.text}</p>
     <p className="panel-copy" id="scene-keyword-hint">{requirementCopy.hint}</p>
-    <div className="scene-keywords">{sceneKeywordKeys.map(key => <div key={key}>
-      <label htmlFor={`scene-keyword-${key}`}>{requirementCopy.fields[key].label}</label>
-      <input id={`scene-keyword-${key}`} type="text" maxLength={200} disabled={generation.preparing} value={draft.keywords[key]} aria-describedby="scene-keyword-hint"
-        placeholder={requirementCopy.fields[key].example} onChange={event => onChange({ ...draft, keywords: { ...draft.keywords, [key]: event.target.value } })} />
-    </div>)}</div>
+    {(() => {
+      const field = (key: typeof sceneKeywordKeys[number]) => <div key={key} className="scene-keyword">
+        <label htmlFor={`scene-keyword-${key}`}>{requirementCopy.fields[key].label}</label>
+        <input id={`scene-keyword-${key}`} type="text" maxLength={200} disabled={generation.preparing} value={draft.keywords[key]} aria-describedby="scene-keyword-hint"
+          placeholder={requirementCopy.fields[key].example} onChange={event => onChange({ ...draft, keywords: { ...draft.keywords, [key]: event.target.value } })} />
+      </div>;
+      const later = sceneKeywordKeys.slice(3);
+      return <div className="scene-keywords">
+        {sceneKeywordKeys.slice(0, 3).map(field)}
+        <KeywordsMore summary={c11.keywordsMore} filled={later.some(key => draft.keywords[key].trim())}>{later.map(field)}</KeywordsMore>
+      </div>;
+    })()}
     {requirements.saveFailed || requirements.conflict ? <p className="scene-entry-error" role="alert">{requirements.conflict ? requirementCopy.conflict : requirementCopy.saveError}</p> : null}
     {requirements.conflict ? <button className="text-button" type="button" onClick={requirements.retry}>{requirementCopy.loadSaved}</button> : null}
     {requirements.unsavedOffline ? <p className="scene-entry-error" role="alert">{resumeSafetyCopy[language].unsavedOffline}</p> : null}
@@ -179,19 +196,19 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
       }}>{example.label}</button>)}
     </div>
     <div className="scene-seeds">
-      <button className="btn btn-tonal" type="button" aria-expanded={seedsOpen} aria-controls="scene-seed-panel" onClick={() => setSeedsOpen(open => !open)}>{seedCopy.open}</button>
-      {seedsOpen ? <div id="scene-seed-panel">
-        <p className="scene-note">{seedCopy.note}</p>
-        <div className="scene-seed-categories" role="group" aria-label={seedCopy.categoriesLabel}>
-          {sceneSeedCategories.map(item => <button key={item.id} type="button" aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{seedCopy.categories[item.id]}</button>)}
-        </div>
-        <ul className="scene-seed-list" aria-label={seedCopy.listLabel}>
-          {sceneSeeds.filter(seed => seed.category === category).map(seed => <li key={seed.id}><button type="button" onClick={() => pick(seed)}>{seed.text[language].label}</button></li>)}
-        </ul>
-      </div> : null}
+      <button className="text-button browse-link" type="button" aria-haspopup="dialog" aria-expanded={seedsOpen} onClick={() => setSeedsOpen(true)}>{seedCopy.open}<Icon name="chevron" size={18} /></button>
       {picked ? <p className="scene-save-status" role="status">{seedCopy.picked}</p> : null}
     </div>
-    <ActionBar><button className="btn btn-primary" type="submit">{copy.next}</button></ActionBar>
+    <Sheet open={seedsOpen} onClose={() => setSeedsOpen(false)} title={seedCopy.open} testId="seed-sheet" closeLabel={shellCopy[language].close}>
+      <p className="sheet-note">{seedCopy.note}</p>
+      <div className="scene-seed-categories" role="group" aria-label={seedCopy.categoriesLabel}>
+        {sceneSeedCategories.map(item => <button key={item.id} type="button" aria-pressed={category === item.id} onClick={() => setCategory(item.id)}>{seedCopy.categories[item.id]}</button>)}
+      </div>
+      <ul className="scene-seed-list" aria-label={seedCopy.listLabel}>
+        {sceneSeeds.filter(seed => seed.category === category).map(seed => <li key={seed.id}><button type="button" onClick={() => pick(seed)}>{seed.text[language].label}</button></li>)}
+      </ul>
+    </Sheet>
+    <ActionBar><button className={`btn btn-primary btn-submit${draft.text.trim() ? '' : ' is-idle'}`} type="submit">{copy.next}</button></ActionBar>
   </form>;
 }
 
@@ -223,6 +240,9 @@ export default function LearningEntry() {
   const requirementCopy = sceneRequirementCopy[language];
   const trustCopy = dataTrustCopy[language];
   const [recordsOpen, setRecordsOpen] = useState(false);
+  const [rowMenu, setRowMenu] = useState<string | null>(null);
+  const [signOutFailed, setSignOutFailed] = useState(false);
+  const c11 = c11Copy[language];
   const [moreOpen, setMoreOpen] = useState(false);
   const moreButton = useRef<HTMLButtonElement>(null);
   const online = useOnline();
@@ -231,7 +251,8 @@ export default function LearningEntry() {
   const [stopAsk, setStopAsk] = useState(false);
   useEffect(() => { setStopAsk(false); }, [generation.target, requirementsOwner]);
   const [dataNotice, setDataNotice] = useState<{ text: 'sceneDeleted' | 'sceneDeleteFailed' | 'allDeleted' | 'allDeleteFailed'; error: boolean } | null>(null);
-  useEffect(() => { setRecordsOpen(false); setDataNotice(null); }, [requirementsOwner, library.open]);
+  useEffect(() => { setRecordsOpen(false); setDataNotice(null); setRowMenu(null); }, [requirementsOwner, library.open]);
+  useEffect(() => { setSignOutFailed(false); setMoreOpen(false); }, [requirementsOwner]);
 
   useEffect(() => {
     if (initialized.current) return;
@@ -303,6 +324,7 @@ export default function LearningEntry() {
 
   const shell = shellCopy[language];
   const showPlayer = !!player && verified;
+  const signedIn = !checking && !account.failed && account.authenticated && !!account.accountKey;
   // The brand and slogan stay only on the first pages (sign-in and the scene input); other pages get a short mark.
   const home = !account.authenticated || (!viewing && !library.open && generation.target === null && requirements.draft?.page === 'scene');
   const openMore = () => setMoreOpen(true);
@@ -334,58 +356,91 @@ export default function LearningEntry() {
       {player}
       {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="btn btn-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
         : account.authenticated && account.accountKey ? viewing ? null
-        : library.open ? recordsOpen ? <GenerationRecords language={language} onBack={() => setRecordsOpen(false)} /> : <section>
+        : library.open ? recordsOpen ? <GenerationRecords language={language} onBack={() => setRecordsOpen(false)} /> : <section className="library">
           <h1>{libraryCopy.title}</h1><p className="panel-copy">{libraryCopy.local}</p>
           {dataNotice ? <p className={dataNotice.error ? 'scene-entry-error' : 'scene-save-status'} role={dataNotice.error ? 'alert' : 'status'}>{trustCopy[dataNotice.text]}</p> : null}
+          {signOutFailed ? <p className="scene-entry-error" role="alert">{trustCopy.signOutFailed}</p> : null}
           {!library.result || library.result.status === 'loading' ? <p role="status">{libraryCopy.loading}</p> : library.result.status === 'failed'
             ? <><p role="alert">{libraryCopy.error}</p><button className="text-button" type="button" onClick={library.retry}>{libraryCopy.retry}</button></>
             : <>{library.result.unavailable > 0 && <p role="status">{libraryCopy.unavailable(library.result.unavailable)}</p>}
-              {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map(scene => <li key={`${scene.course.id}:${scene.course.revision}:${scene.course.materialsRevision ?? 0}`} className="scene-card">
-                <p className="scene-description">{scene.description}</p><button className="text-button" type="button" onClick={() => library.choose(scene)}>{libraryCopy.learn}</button>
-                <SceneDelete language={language} description={scene.description} course={scene.course}
-                  onDeleted={() => { library.drop(scene.course); setDataNotice({ text: 'sceneDeleted', error: false }); }}
-                  onFailed={() => setDataNotice({ text: 'sceneDeleteFailed', error: true })} />
-              </li>)}</ul> : library.result.unavailable === 0 ? <p>{libraryCopy.empty}</p> : null}</>}
-          <button className="text-button" type="button" onClick={() => setRecordsOpen(true)}>{trustCopy.records}</button>
-          <StoredData language={language} />
-          <DeleteAllData language={language}
-            onDeleted={() => { library.drop(null); requirements.retry(); setDataNotice({ text: 'allDeleted', error: false }); }}
-            onFailed={() => setDataNotice({ text: 'allDeleteFailed', error: true })} />
-          <button className="text-button" type="button" onClick={library.close}>{libraryCopy.input}</button>
+              {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map(scene => {
+                const key = `${scene.course.id}:${scene.course.revision}:${scene.course.materialsRevision ?? 0}`;
+                const words = scene.requirement.content.keywords;
+                const meta = [words.learnerRole.trim() || words.partnerRole.trim(), c11.seconds(Math.round(scene.duration))].filter(Boolean).join(' · ');
+                return <li key={key} className="scene-card scene-row">
+                  <button className="scene-row-main" type="button" aria-label={libraryCopy.learn} aria-describedby={`scene-row-${key}`} onClick={() => library.choose(scene)}>
+                    <span className="scene-row-icon" aria-hidden="true"><Icon name="watch" size={22} /></span>
+                    <span className="scene-row-text">
+                      <span className="scene-description" id={`scene-row-${key}`}>{scene.description}</span>
+                      <span className="scene-row-meta" data-testid="scene-row-meta">{meta}</span>
+                    </span>
+                    <span className="scene-row-go" aria-hidden="true"><Icon name="chevron" size={20} /></span>
+                  </button>
+                  <button className="icon-btn scene-row-more" type="button" aria-label={c11.rowMore(scene.description)} aria-haspopup="dialog" aria-expanded={rowMenu === key} onClick={() => setRowMenu(key)}><Icon name="more" /></button>
+                </li>;
+              })}</ul> : library.result.unavailable === 0 ? <p className="library-empty">{libraryCopy.empty}</p> : null}</>}
+          {(() => {
+            const scenes = library.result?.status === 'ready' ? library.result.scenes : [];
+            const scene = scenes.find(item => `${item.course.id}:${item.course.revision}:${item.course.materialsRevision ?? 0}` === rowMenu);
+            return <Sheet open={!!scene} onClose={() => setRowMenu(null)} title={scene?.description ?? ''} testId="scene-row-sheet" closeLabel={shell.close}>
+              {scene ? <SceneDelete language={language} description={scene.description} course={scene.course} onCancel={() => setRowMenu(null)}
+                onDeleted={() => { setRowMenu(null); library.drop(scene.course); setDataNotice({ text: 'sceneDeleted', error: false }); }}
+                onFailed={() => { setRowMenu(null); setDataNotice({ text: 'sceneDeleteFailed', error: true }); }} /> : null}
+            </Sheet>;
+          })()}
+          <ActionBar><button className="btn btn-primary" type="button" onClick={library.close}>{libraryCopy.input}</button></ActionBar>
         </section>
-        : generation.target !== null ? <section className="scene-form">
-          <h1>{sceneGenerationCopy[language].title}</h1>
-          {generation.view ? <p className="scene-description">{generation.view.requirement.content.description}</p> : null}
-          {generation.error ? <p className="scene-entry-error" role="alert">{sceneGenerationCopy[language][generation.error === 'version' ? 'version' : 'error']}</p>
-            : <p className="panel-copy generation-status" role="status" data-testid={generation.view?.phase === 'cancelled' ? 'generation-cancelled' : generation.view?.phase === 'stopped' ? 'generation-stopped' : undefined}>
-              {!generation.view ? sceneGenerationCopy[language].loading : generation.view.phase === 'cancelled' ? extra.cancelled : generation.view.phase === 'stopped' ? extra.stopped : sceneGenerationCopy[language].phases[generation.view.phase]}</p>}
-          {generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(generation.view.phase) ? stopAsk
-            ? <div className="notice-card" data-testid="generation-stop-explain">
-              <p>{extra.stopExplain}</p>
-              <button className="btn btn-tonal" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => { void generation.cancel(); setStopAsk(false); }}>{extra.stopConfirm}</button>
-              <button className="text-button" type="button" onClick={() => setStopAsk(false)}>{extra.keepGoing}</button>
-            </div>
-            : <button className="text-button" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => {
-              if (generation.view?.task?.providerCalls === 0) void generation.cancel(); else setStopAsk(true);
-            }}>{extra.cancel}</button> : null}
-          {generation.cancelling === 'failed' ? <p className="scene-entry-error" role="alert">{extra.cancelFailed}</p> : null}
-          <button className="text-button" type="button" disabled={generation.preparing} onClick={generation.retry}>{sceneGenerationCopy[language].retry}</button>
-          <button className="text-button" type="button" onClick={() => {
+        : generation.target !== null ? (() => {
+          const gen = sceneGenerationCopy[language];
+          const phase = generation.view?.phase;
+          const active = !!generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(phase ?? '');
+          const stageIndex = generation.error || !phase ? -1 : ({ not_submitted: 0, awaiting_budget: 0, submitting: 0, submission_unknown: 0, script_ready: 1, audio_ready: 1, audio_assembled: 2, video_pending: 2, video_assembled: 2, simulation: 3, ready: 3 } as Record<string, number>)[phase] ?? -1;
+          const tone = generation.error || phase === 'failed' || phase === 'media_unavailable' ? 'alert' : phase === 'ready' || phase === 'simulation' ? 'done' : phase === 'cancelled' || phase === 'stopped' ? 'stopped' : 'busy';
+          const icon = tone === 'alert' ? 'alert' : tone === 'done' ? 'check' : tone === 'stopped' ? 'stop' : stageIndex === 1 ? 'voice' : stageIndex === 2 ? 'image' : 'script';
+          const primary = phase === 'ready' && !generation.error ? 'watch' : !generation.error && (phase === 'failed' || phase === 'cancelled' || phase === 'stopped') ? 'back' : !active && (generation.error || phase) ? 'retry' : null;
+          const retryButton = (className: string) => <button className={className} type="button" disabled={generation.preparing} onClick={generation.retry}>{gen.retry}</button>;
+          const backButton = (className: string) => <button className={className} type="button" onClick={() => {
             if (requirements.draft) requirements.change({ ...requirements.draft, page: 'background' });
             generation.back();
-          }}>{sceneGenerationCopy[language].back}</button>
-          {generation.view?.phase === 'ready' ? <ActionBar><button className="btn btn-primary" type="button" onClick={generation.watch}>{sceneGenerationCopy[language].watch}</button></ActionBar> : null}
-        </section>
+          }}>{gen.back}</button>;
+          return <section className="scene-form generation-page" data-tone={tone}>
+            <div className="generation-icon" data-testid="generation-icon" aria-hidden="true"><Icon name={icon} size={30} /></div>
+            <h1>{gen.title}</h1>
+            {generation.view ? <p className="generation-description">{generation.view.requirement.content.description}</p> : null}
+            {generation.error ? <p className="scene-entry-error" role="alert">{gen[generation.error === 'version' ? 'version' : 'error']}</p>
+              : <p className="panel-copy generation-status" role="status" data-testid={phase === 'cancelled' ? 'generation-cancelled' : phase === 'stopped' ? 'generation-stopped' : undefined}>
+                {!generation.view ? gen.loading : phase === 'cancelled' ? extra.cancelled : phase === 'stopped' ? extra.stopped : gen.phases[generation.view.phase]}</p>}
+            {stageIndex >= 0 ? <ol className="generation-stages" data-testid="generation-stages" aria-label={c11.stagesLabel}>
+              {c11.stages.map((label, index) => <li key={label} data-done={index < stageIndex || undefined} aria-current={index === stageIndex ? 'step' : undefined}><span className="stage-dot" aria-hidden="true" />{label}</li>)}
+            </ol> : null}
+            {generation.cancelling === 'failed' ? <p className="scene-entry-error" role="alert">{extra.cancelFailed}</p> : null}
+            <div className="generation-links">
+              {active ? <button className="text-button" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => {
+                if (generation.view?.task?.providerCalls === 0) void generation.cancel(); else setStopAsk(true);
+              }}>{extra.cancel}</button> : null}
+              {primary !== 'retry' && primary !== 'watch' ? retryButton('text-button') : null}
+              {primary !== 'back' ? backButton('text-button') : null}
+            </div>
+            <Sheet open={stopAsk && active} onClose={() => setStopAsk(false)} title={extra.cancel} testId="stop-sheet" closeLabel={shell.close}>
+              {stopAsk && active ? <div className="sheet-section" data-testid="generation-stop-explain">
+                <p>{extra.stopExplain}</p>
+                <div className="sheet-actions">
+                  <button className="btn btn-danger" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => { void generation.cancel(); setStopAsk(false); }}>{extra.stopConfirm}</button>
+                  <button className="btn btn-ghost" type="button" onClick={() => setStopAsk(false)}>{extra.keepGoing}</button>
+                </div>
+              </div> : null}
+            </Sheet>
+            {primary ? <ActionBar>{primary === 'watch' ? <button className="btn btn-primary" type="button" onClick={generation.watch}>{gen.watch}</button>
+              : primary === 'back' ? backButton('btn btn-primary') : retryButton('btn btn-primary')}</ActionBar> : null}
+          </section>;
+        })()
         : requirements.readFailed ? <section>
           <p className="scene-entry-error" role="alert">{requirementCopy.readError}</p>
           <button className="btn btn-primary" type="button" onClick={requirements.retry}>{requirementCopy.retry}</button>
         </section> : requirements.loading || !requirements.draft ? <p role="status">{requirementCopy.loading}</p>
         : <><SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
           draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} generation={generation} />
-          <div className="page-links">
-            <button className="text-button" type="button" onClick={library.show}>{libraryCopy.title}</button>
-            <SignOutButton language={language} />
-          </div></>
+          {signOutFailed ? <p className="scene-entry-error" role="alert">{trustCopy.signOutFailed}</p> : null}</>
         : <><section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">
@@ -396,10 +451,25 @@ export default function LearningEntry() {
         </section>
         <button className="text-button language-link" type="button" aria-haspopup="dialog" aria-expanded={moreOpen} onClick={openMore}><Icon name="globe" size={18} />{shell.changeLanguage(languageName)}</button></>}
       <p className="entry-status" role="status" aria-live="polite">{status}</p>
+      {showPlayer ? null : <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={shell.more} testId="more-sheet" closeLabel={shell.close} fallbackFocus={moreButton}>
+        {signedIn && !viewing && !library.open && generation.target === null && !requirements.readFailed && !requirements.loading && requirements.draft ? <div className="sheet-rows">
+          <button className="sheet-row" type="button" onClick={() => { setMoreOpen(false); library.show(); }}><Icon name="watch" />{libraryCopy.title}</button>
+        </div> : null}
+        {signedIn && library.open ? <section className="sheet-section" aria-labelledby="data-privacy-title"><h3 className="sheet-label" id="data-privacy-title">{c11.dataPrivacy}</h3>
+          <div className="sheet-rows">
+            <button className="sheet-row" type="button" onClick={() => { setMoreOpen(false); setRecordsOpen(true); }}><Icon name="script" />{trustCopy.records}</button>
+          </div>
+          <StoredData language={language} />
+          <DeleteAllData language={language}
+            onDeleted={() => { setMoreOpen(false); library.drop(null); requirements.retry(); setDataNotice({ text: 'allDeleted', error: false }); }}
+            onFailed={() => { setMoreOpen(false); setDataNotice({ text: 'allDeleteFailed', error: true }); }} />
+        </section> : null}
+        {common({ trial: false })}
+        {signedIn && !viewing && (library.open || (generation.target === null && !requirements.readFailed && !requirements.loading && requirements.draft)) ? <div className="sheet-rows">
+          <SignOutButton language={language} row onStart={() => { setSignOutFailed(false); setMoreOpen(false); }} onFailed={() => setSignOutFailed(true)} />
+        </div> : null}
+      </Sheet>}
     </main>
-    {showPlayer ? null : <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={shell.more} testId="more-sheet" closeLabel={shell.close}>
-      {common({ trial: false })}
-    </Sheet>}
     {showPlayer ? null : <footer className="simple-footer"><p>{copy.trial}</p></footer>}
   </div></ShellContext.Provider>;
 }

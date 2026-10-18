@@ -19,6 +19,15 @@ const paths = {
   help: 'M4 6h16v10H9l-5 4V6Zm5 4h6', globe: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-9 9h18M12 3c2.5 2.6 3.7 5.6 3.7 9s-1.2 6.4-3.7 9c-2.5-2.6-3.7-5.6-3.7-9S9.5 5.6 12 3Z',
   translate: 'M4 5h9M8.5 3v2c0 4-2.5 7-5 8m3-4c1 2 3 3.5 5 4M13 21l4-10 4 10m-6.8-3.5h5.6', flag: 'M6 21V4m0 1h11l-2 4 2 4H6',
   watch: 'M4 6h16v12H4Zm6 3v6l5-3Z', exit: 'M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10',
+  // C11: watch tools, sentence tools, roles, my scenes and the generation stages.
+  prev: 'M6 5v14M18 6.5 9.5 12l8.5 5.5Z', next: 'M18 5v14M6 6.5l8.5 5.5L6 17.5Z',
+  cc: 'M4 6h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1Zm6.5 4.3a2 2 0 1 0 0 3.4m6.5-3.4a2 2 0 1 0 0 3.4',
+  loop: 'M17 3l3.5 3.5L17 10M4 12V9.5a3 3 0 0 1 3-3h13M7 21l-3.5-3.5L7 14M20 12v2.5a3 3 0 0 1-3 3H4',
+  speaker: 'M11 5 6.5 9H3.5v6h3l4.5 4V5Zm4.5 3.5a5 5 0 0 1 0 7m3-10a9 9 0 0 1 0 13',
+  person: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7.5 8.5a7.5 7.5 0 0 1 15 0', chevron: 'M9 5l7 7-7 7', plus: 'M12 5v14M5 12h14',
+  script: 'M7 3h7l5 5v13H7ZM14 3v5h5M10 13h6M10 17h6', voice: 'M3 12h2M7 9v6M11 5v14M15 8v8M19 11v2',
+  image: 'M4 5h16v14H4ZM4 16l5-5 4 4 3-3 4 4M15.5 9.5h.01', check: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Zm-4 9 3 3 5-6',
+  alert: 'M12 4 2.5 20h19L12 4Zm0 6v4m0 3h.01', spark: 'M12 3v4M12 17v4M3 12h4M17 12h4M5.6 5.6l2.8 2.8M15.6 15.6l2.8 2.8M5.6 18.4l2.8-2.8M15.6 8.4l2.8-2.8',
 } as const;
 export type IconName = keyof typeof paths;
 
