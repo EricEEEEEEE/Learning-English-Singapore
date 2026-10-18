@@ -84,7 +84,7 @@ if (process.argv[2] === 'sheet') {
   // One row per listener per line; the listener plays X and Y and scores each 1-5 on three questions.
   const header = 'listener_id,line,text,version_label,sounds_local_1to5,easy_to_understand_1to5,not_exaggerated_1to5,prefer_X_or_Y_or_same,comment';
   const rows = [];
-  for (let i = 0; i < lines.length; i++) for (const label of ['X', 'Y']) rows.push(['', i + 1, `"${lines[i][1].replace(/"/g, '""')}"`, label, '', '', '', label === 'X' ? '' : '(same row as X)', ''].join(','));
+  for (let i = 0; i < lines.length; i++) for (const label of ['X', 'Y']) rows.push(['', i + 1, `"${lines[i][1].replace(/"/g, '""')}"`, label, '', '', '', label === 'X' ? '' : '-', ''].join(','));
   writeFileSync(join(dir, 'rating-sheet.csv'), [header, ...rows].join('\n') + '\n');
   writeFileSync(join(work, 'key.csv'), ['line,label,version,voice,seconds,heard_back', ...key.items.sort((a, b) => a.line - b.line || a.label.localeCompare(b.label)).map(k => [k.line, k.label, k.version, k.voice, k.seconds, `"${(k.heard ?? '').replace(/"/g, '""')}"`].join(','))].join('\n') + '\n');
   console.log('sheet written');

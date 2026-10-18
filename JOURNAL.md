@@ -728,3 +728,8 @@
 - [audit] phase → implementing @ 2026-10-18T12:08:29+00:00
 - [audit] phase → test-writing @ 2026-10-18T12:30:59+00:00
 - C14-4 人脸检查：红2e302f5 绿8321813，verify 2456/2456（verify-20261018-120908）。离线脚本 scripts/video-qa/face_checks.py（python3 -I）用 MediaPipe 官方 face_landmarker 模型测单人脸占比与学员时段嘴动比，缺依赖/模型/出错/超时一律 not_checked；本机 mediapipe 原生库缺系统 libEGL/libGLESv2，改用 OpenCV DNN 跑同一模型。实测 hotel-pov-12s 单人脸1.0、学员时段嘴动0；C3 hawker 0.4254、school 0.5891。阈值待 C15-4 标定。
+- [audit] phase → implementing @ 2026-10-18T12:47:15+00:00
+- [audit] phase → test-writing @ 2026-10-18T13:09:27+00:00
+- C15-2 新提示词真实抽查：29 轮 gpt-4.1-mini + 1 次 gpt-4.1 脚本生成，实付 USD0.0439（预留上限 0.9）；17 遵守 / 7 部分 / 5 不遵守；修复 C15-2a 红 afec873 绿 45c85d5，verify 2472/2472 exit0；真实复查需另批；证据 docs/evidence/c15-prompt-spotcheck.md
+- C15-1 转写小评测（合成代理版，不能代替真人口音）：30 段 TTS/噪声/无语音 × 6 组设置，实付 USD0.0603（上限 0.5）；夹中文未被译成英语；关键词提示意思保留 20→23–24/25 但无语音 5/5 回显提示词，决定不加提示、保持 mini-transcribe + en；真人录音待用户；证据 docs/evidence/c15-asr-eval.md
+- C15-3 新加坡口音配音样本：20 句 × 两版 mp3 与盲听评分表在 /mnt/project-files/les-c15/voice-ab/，账本 USD0.0999（上限 0.1；TTS 0.0563 + 26 次 HTTP 400 转写自测按预留记 0.0436，触顶自动停，未重发）；Azure en-SG blocked（需 Azure Speech 密钥与区域）；听者待安排；证据 docs/evidence/c15-voice-ab.md

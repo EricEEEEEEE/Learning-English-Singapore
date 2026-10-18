@@ -49,7 +49,8 @@ export async function transcribe({ path, mimeType = 'audio/wav', model = 'gpt-4o
   if (language) form.set('language', language);
   if (prompt) form.set('prompt', prompt);
   form.set('response_format', 'json');
-  form.set('file', new Blob([readFileSync(path)], { type: mimeType }), 'answer.' + (mimeType.split('/')[1] ?? 'wav'));
+  // C15-3: 26 mp3 uploads named answer.mpeg came back HTTP 400; name the file by its real extension.
+  form.set('file', new Blob([readFileSync(path)], { type: mimeType }), 'answer.' + (path.split('.').pop() ?? 'wav'));
   const response = await fetch('https://api.openai.com/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: `Bearer ${key()}` }, body: form, signal: AbortSignal.timeout(60_000) });
   if (!response.ok) throw new Error(`transcribe http ${response.status}`);
   const body = await response.json();
