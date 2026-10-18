@@ -9,7 +9,8 @@ import { LTX_MODELS, resolveLtxModel } from './generated-video';
 export const C3_BATCH_CEILING_MICROS = 30_000_000;
 // Per-call reservations are upper bounds, not prices: script and one TTS line stay well under USD0.05;
 // one video segment is at most 20 seconds at USD0.09 per second.
-export const LIVE_RESERVATIONS = { scriptMicros: 50_000, audioMicros: 50_000, videoMicros: 1_900_000 };
+// C15-2: script worst case = 6,000 output tokens x USD8/1M + a 20,000-byte payload x USD2/1M (gpt-4.1, checked 2026-10-18).
+export const LIVE_RESERVATIONS = { scriptMicros: 90_000, audioMicros: 50_000, videoMicros: 1_900_000 };
 // C14-3: LES_LTX_MODEL picks a whitelisted model and its per-segment reservation; unset is today's behaviour.
 export function liveVideoSettings(env: Record<string, string | undefined>) {
   const model = resolveLtxModel(env.LES_LTX_MODEL);

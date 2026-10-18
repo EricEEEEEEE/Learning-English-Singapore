@@ -50,6 +50,13 @@ export function quotesOnlyLearnerWords(note: string, transcript: string): boolea
   }
   return true;
 }
+// C15-2 R10d: a coach note is for the learner's help language. When that language has its own writing system, a
+// note with no letter of any non-Latin script was written only in English and is dropped (the reply stays).
+const NON_LATIN = /[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}\p{Script=Hangul}\p{Script=Devanagari}]/u;
+const LATIN_HELP: readonly SceneLanguage[] = ['id'];
+export function inHelpLanguage(note: string, language: SceneLanguage): boolean {
+  return LATIN_HELP.includes(language) || NON_LATIN.test(note);
+}
 // C12-4: what the server may log about a turn: stage timings in ms and byte counts, never what was said.
 export type PracticeTurnLog = { event: 'practice_turn'; kind: 'reply' | 'native' | 'silence' | 'failed'; stt_ms?: number; llm_ms?: number; tts_ms?: number; total_ms: number; audio_bytes: number; reply_bytes?: number };
 const REPLY_AUDIO_TYPES = ['audio/mpeg', 'audio/wav'];
@@ -185,7 +192,7 @@ export function createPracticeTurnService(options: Options) {
         const goalChange = proposed ? { summary: proposed.summary.trim(), confirm: proposed.confirm.trim() } : null;
         let coachNote = typeof answer.coachNote === 'string' && answer.coachNote.trim() ? answer.coachNote.trim() : null;
         // Less correction: a note only when the meaning was unclear, so the needed clarification stays.
-        if (coachNote && (SOUND_JUDGEMENT.test(coachNote) || (correction === 'less' && answer.understood) || !quotesOnlyLearnerWords(coachNote, transcript))) coachNote = null;
+        if (coachNote && (SOUND_JUDGEMENT.test(coachNote) || (correction === 'less' && answer.understood) || !quotesOnlyLearnerWords(coachNote, transcript) || !inHelpLanguage(coachNote, language))) coachNote = null;
         stage = performance.now();
         const spoken = await options.speak({ text: reply });
         times.tts_ms = since(stage);
