@@ -1,0 +1,12 @@
+# C14-4 offline video QA (face checks). Approved by the user on 2026-10-18 for this offline script only;
+# never imported by the web app. Install outside the repo's node toolchain, e.g.:
+#   python3 -m pip install -r scripts/video-qa/requirements.txt
+# Always run the script isolated, from outside any media/download directory:
+#   python3 -I scripts/video-qa/face_checks.py --fetch-model   (once: official MediaPipe model into ~/.cache/les-video-qa)
+#   python3 -I scripts/video-qa/face_checks.py --probe
+#   python3 -I scripts/video-qa/face_checks.py --video SEGMENT.mp4 --learner-windows '[{"start":6,"end":7.7}]'
+# Note: the MediaPipe native runtime also needs the system libraries libEGL.so.1 / libGLESv2.so.2; without them the
+# script runs the same official model with OpenCV DNN (backend "opencv-dnn" in its output).
+mediapipe==1.1.1
+opencv-python-headless==5.0.0
+scenedetect==0.7.2

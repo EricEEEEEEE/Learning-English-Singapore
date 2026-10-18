@@ -25,12 +25,12 @@ export function createLiveSceneRunner(env: Env, directory: string, options: { fe
   if (env.LES_LIVE_GENERATION !== '1') return null;
   const maxReservedMicros = whole(env.LES_LIVE_MAX_MICROS), priorSpentMicros = whole(env.LES_LIVE_PRIOR_SPENT_MICROS ?? '0');
   const hosts = (env.LES_MEDIA_HOSTS ?? '').split(',').map(host => host.trim()).filter(Boolean);
-  const ffmpeg = env.LES_FFMPEG ?? '/usr/bin/ffmpeg', ffprobe = env.LES_FFPROBE ?? '/usr/bin/ffprobe';
+  const ffmpeg = env.LES_FFMPEG ?? '/usr/bin/ffmpeg', ffprobe = env.LES_FFPROBE ?? '/usr/bin/ffprobe', python = env.LES_PYTHON ?? '/usr/bin/python3';
   const preview = env.LES_VIDEO_PREVIEW === '1';
   if (!filled(env.OPENAI_API_KEY) || (!preview && !filled(env.LTX_API_KEY)) || !filled(env.AUTH_SESSION_SECRET) || !filled(env.LES_LIVE_BUDGET_SCOPE)) return null;
   if (!Number.isSafeInteger(maxReservedMicros) || maxReservedMicros <= 0 || maxReservedMicros > C3_BATCH_CEILING_MICROS) return null;
   if (!Number.isSafeInteger(priorSpentMicros) || priorSpentMicros > maxReservedMicros) return null;
-  if (!hosts.length || !isAbsolute(ffmpeg) || !isAbsolute(ffprobe) || !isAbsolute(directory)) return null;
+  if (!hosts.length || !isAbsolute(ffmpeg) || !isAbsolute(ffprobe) || !isAbsolute(python) || !isAbsolute(directory)) return null;
   let video: ReturnType<typeof liveVideoSettings>;
   try { video = liveVideoSettings(env); } catch { return null; } // a model outside the whitelist never starts a runner
   try {
@@ -38,7 +38,7 @@ export function createLiveSceneRunner(env: Env, directory: string, options: { fe
       enabled: true, directory, sessionSecret: env.AUTH_SESSION_SECRET, openaiKey: env.OPENAI_API_KEY, ltxKey: env.LTX_API_KEY ?? '', previewVideo: preview, videoModel: video.model,
       // A preview reserves only the script and voices; its local video cards cost nothing.
       budget: { scope: env.LES_LIVE_BUDGET_SCOPE.trim(), priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS, videoMicros: preview ? 1 : video.videoMicros },
-      media: { ffmpeg, ffprobe, allowedHosts: hosts, maxBytes: 100_000_000 },
+      media: { ffmpeg, ffprobe, python, allowedHosts: hosts, maxBytes: 100_000_000 },
       ...(options.fetch ? { fetch: options.fetch } : {}),
     });
     const mediaStore = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret: env.AUTH_SESSION_SECRET });

@@ -46,7 +46,7 @@ node --experimental-strip-types -e "import('./lib/google-auth.ts').then(async m 
 ### 1.1 C14 视频模型与出片前质检（2026-10-18 增补）
 
 - 模型白名单：`LES_LTX_MODEL=ltx-2-5-fast`（不设时的默认，每段预留 USD1.90）或 `LES_LTX_MODEL=ltx-2-3-pro`（每段预留 USD1.20）。其他值启动时就被拒绝，服务不会建立付费执行器。请求固定带 `camera_motion: "static"`，提示词为 “steady eye-level shot, single shot”。
-- 每段视频在探测和音轨还原之后过本地 ffmpeg 质检：段内切镜为 0、黑帧/冻结不超过 1 秒、段间接缝 SSIM ≥0.6。“单人脸帧占比”“学员台词时段对方嘴动比”需要人脸检测库，用户尚未批准，当前一律记 `not_checked`。
+- 每段视频在探测和音轨还原之后过本地 ffmpeg 质检：段内切镜为 0、黑帧/冻结不超过 1 秒、段间接缝 SSIM ≥0.6。“单人脸帧占比 ≥0.9”“学员台词时段对方嘴动比 ≤0.35”由 C14-4 脚本 `scripts/video-qa/face_checks.py` 检查（用户 2026-10-18 批准 MediaPipe / PySceneDetect，只在离线脚本里用）：开跑前先 `python3 -m pip install -r scripts/video-qa/requirements.txt`、`python3 -I scripts/video-qa/face_checks.py --fetch-model`（官方模型进 `~/.cache/les-video-qa`，不进仓库）、`python3 -I scripts/video-qa/face_checks.py --probe` 看到 `ready`；Python 路径可用 `LES_PYTHON` 指定（默认 `/usr/bin/python3`）。Python、库或模型不可用、脚本出错或超时时这两项记 `not_checked`。阈值待本轮（C15-4）用真实视频标定。
 - 结果三态：`passed` / `quality_failed` / `needs_review`。有 `not_checked` 时最多 `needs_review`：课程照常可看，生成页写“画面还没经过人脸检查，需要人工看一遍”，必须人工看片，不能当作通过。
 - `quality_failed` 的段先过预算守卫再重做一次；仍不过则整课停在 `quality_failed`，不组装、不进“我的场景”。原因和关键帧时间点记在任务的 `videoQuality` / `videoRedos` 里。重做也计入本批上限。
 - 预演（`LES_VIDEO_PREVIEW=1`）按预演路径通过质检，并用本地占位图做对方定妆照（第 1 段首帧），真实图像调用为 0；末帧模糊或过暗时退回定妆照。

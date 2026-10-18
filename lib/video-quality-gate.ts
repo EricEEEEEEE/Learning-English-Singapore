@@ -2,19 +2,19 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { createHash } from 'node:crypto';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
-import { QUALITY_THRESHOLDS, FACE_CHECK_PENDING, type QualityCheck, type QualityReport } from './video-quality';
+import { QUALITY_THRESHOLDS, FACE_CHECK_PENDING, FACE_DETECTION, type QualityCheck, type QualityReport } from './video-quality';
 
-export { QUALITY_THRESHOLDS, MAX_SEGMENT_REDOS, FACE_CHECK_PENDING, QUALITY_CHECK_IDS, combineQualityChecks, qualityVerdict, validQualityCheck, taskQuality } from './video-quality';
+export { QUALITY_THRESHOLDS, MAX_SEGMENT_REDOS, FACE_CHECK_PENDING, FACE_DETECTION, QUALITY_CHECK_IDS, combineQualityChecks, qualityVerdict, validQualityCheck, taskQuality } from './video-quality';
 
 type Media = { bytes: Uint8Array; sha256: string };
 export type QualityGateInput = { segmentIndex: number; video: Media; previous?: Media; learnerWindows: { start: number; end: number }[] };
 export type QualityGate = (input: QualityGateInput) => Promise<QualityReport>;
 // Pluggable face checks (single face share, partner mouth movement while the learner speaks). They receive a local
-// file and return the two checks; without an approved detector they must say not_checked.
+// file and return the two checks; createFaceChecks runs the C14-4 script, and without it they must say not_checked.
 export type FaceChecks = (input: { file: string; duration: number; learnerWindows: { start: number; end: number }[] }) => Promise<QualityCheck[]>;
-type Execute = (file: string, args: string[], options: { timeout: number; maxBuffer: number; encoding: 'utf8' }) => Promise<{ stdout: string; stderr: string }>;
+type Execute = (file: string, args: string[], options: { timeout: number; maxBuffer: number; encoding: 'utf8'; cwd?: string; env?: Record<string, string> }) => Promise<{ stdout: string; stderr: string }>;
 const run = promisify(execFile) as unknown as Execute;
 const round = (value: number) => Math.round(value * 1000) / 1000;
 
@@ -22,6 +22,64 @@ export const notCheckedFaces: FaceChecks = async () => [
   { id: 'single_face', status: 'not_checked', reason: FACE_CHECK_PENDING },
   { id: 'learner_mouth', status: 'not_checked', reason: FACE_CHECK_PENDING },
 ];
+
+type Window = { start: number; end: number };
+const keyframeList = (value: unknown) => Array.isArray(value) && value.length <= 20 && value.every(time => typeof time === 'number' && Number.isFinite(time) && time >= 0) ? value as number[] : undefined;
+const ratio = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : undefined;
+const open = (reason: string): QualityCheck[] => [
+  { id: 'single_face', status: 'not_checked', reason: reason.slice(0, 300) },
+  { id: 'learner_mouth', status: 'not_checked', reason: reason.slice(0, 300) },
+];
+
+// C14-4: turn the script's measurements into the two checks. The script only measures; the thresholds live here.
+// Anything that is not a well-formed measurement is not_checked, never passed.
+export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[]): QualityCheck[] {
+  const result = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, any> : {};
+  if (result.status !== 'measured') return open(`人脸检测没有完成：${typeof result.reason === 'string' ? result.reason : 'no measurement'}`);
+  const t = QUALITY_THRESHOLDS, checks: QualityCheck[] = [];
+  const face = result.single_face, faceRatio = ratio(face?.ratio), faceKeys = keyframeList(face?.keyframes);
+  if (!Number.isSafeInteger(result.frames) || result.frames <= 0 || faceRatio === undefined || !faceKeys) checks.push(open('人脸检测结果不完整')[0]);
+  else checks.push({ id: 'single_face', status: faceRatio >= t.minSingleFaceRatio ? 'passed' : 'failed', value: faceRatio,
+    ...(faceRatio >= t.minSingleFaceRatio ? {} : { reason: 'not exactly one face on screen in too many frames', keyframes: faceKeys }) });
+  const mouth = result.learner_mouth;
+  if (!learnerWindows.length) checks.push({ id: 'learner_mouth', status: 'passed', value: 0, reason: 'no learner line in this segment' });
+  else if (mouth?.ratio === null && mouth?.frames === 0) checks.push({ id: 'learner_mouth', status: 'not_checked', reason: 'partner face not found during learner lines' });
+  else {
+    const mouthRatio = ratio(mouth?.ratio), mouthKeys = keyframeList(mouth?.keyframes);
+    if (mouthRatio === undefined || !mouthKeys || !Number.isSafeInteger(mouth?.frames) || mouth.frames <= 0) checks.push(open('人脸检测结果不完整')[1]);
+    else checks.push({ id: 'learner_mouth', status: mouthRatio <= t.maxLearnerMouthRatio ? 'passed' : 'failed', value: mouthRatio,
+      ...(mouthRatio <= t.maxLearnerMouthRatio ? {} : { reason: 'partner mouth moves while the learner speaks', keyframes: mouthKeys }) });
+  }
+  return checks;
+}
+
+export const FACE_SCRIPT = join(process.cwd(), 'scripts', 'video-qa', 'face_checks.py');
+
+// C14-4: the face checks as a child process: python3 -I scripts/video-qa/face_checks.py, with a timeout, a small
+// output limit and an environment without any keys. A missing Python, missing library or model, a crash, a timeout
+// or unreadable output all give not_checked.
+export function createFaceChecks(options: { python: string; script?: string; modelDir?: string; timeoutMs?: number; execute?: Execute }): FaceChecks {
+  const script = options?.script ?? FACE_SCRIPT;
+  if (!options || [options.python, script, ...(options.modelDir !== undefined ? [options.modelDir] : [])].some(path => typeof path !== 'string' || !isAbsolute(path) || path.includes('\0'))) throw new Error('Invalid face check configuration');
+  const timeout = options.timeoutMs ?? FACE_DETECTION.timeoutMs;
+  if (!Number.isSafeInteger(timeout) || timeout <= 0) throw new Error('Invalid face check configuration');
+  const execute = options.execute ?? run, d = FACE_DETECTION;
+  return async input => {
+    const windows = Array.isArray(input?.learnerWindows) ? input.learnerWindows.filter(item => Number.isFinite(item?.start) && Number.isFinite(item?.end)).map(item => ({ start: item.start, end: item.end })) : [];
+    const args = ['-I', script, '--video', input.file, '--learner-windows', JSON.stringify(windows), '--fps', String(d.sampleFps),
+      '--min-face-height', String(d.minFaceHeight), '--mouth-delta', String(d.mouthMoveDelta), ...(options.modelDir ? ['--model-dir', options.modelDir] : [])];
+    let stdout: string;
+    try {
+      ({ stdout } = await execute(options.python, args, { timeout, maxBuffer: 1_000_000, encoding: 'utf8', cwd: tmpdir(), env: { PATH: '/usr/bin:/bin', HOME: homedir(), LANG: 'C.UTF-8' } }));
+    } catch (error) {
+      const killed = !!error && typeof error === 'object' && ((error as { killed?: boolean }).killed || (error as { code?: unknown }).code === 'ETIMEDOUT');
+      return open(killed ? '人脸检测超时' : '人脸检测脚本无法运行');
+    }
+    let parsed: unknown;
+    try { parsed = JSON.parse(stdout.trim().split('\n').pop() ?? ''); } catch { return open('人脸检测输出无法读取'); }
+    return judgeFaceMeasurement(parsed, windows);
+  };
+}
 
 // Event intervals from ffmpeg's blackdetect / freezedetect log lines; an interval still open at the end runs to the end.
 function intervals(log: string, kind: 'black' | 'freeze', duration: number) {

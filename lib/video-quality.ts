@@ -12,8 +12,21 @@ export const QUALITY_THRESHOLDS = {
 } as const;
 // A failed segment may be generated again once (after a fresh reservation); a second failure stops the course.
 export const MAX_SEGMENT_REDOS = 1;
-// The user has not approved a face-detection library yet, so these checks are reported, never passed.
-export const FACE_CHECK_PENDING = '需要人脸检测库，待用户批准';
+// C14-4: the two face checks run scripts/video-qa/face_checks.py (MediaPipe face landmarker, python3 -I). A gate
+// built without that script, or a run where it cannot measure, reports them as not_checked, never as passed.
+export const FACE_CHECK_PENDING = '没有接人脸检测';
+// C14-4 detector settings handed to the script. First values come from local samples (public/media/hotel-pov-12s.mp4
+// and the C3 course videos); all of them are to be calibrated in C15-4 with paid samples, like the thresholds above.
+export const FACE_DETECTION = {
+  // Frames sampled per second of video.
+  sampleFps: 5,
+  // A face counts only if its landmark box is at least this share of the frame height (ignores tiny background faces).
+  minFaceHeight: 0.06,
+  // A sampled frame counts as "mouth moving" when lip gap / mouth width changes by at least this much from the previous one.
+  mouthMoveDelta: 0.03,
+  // The script is killed after this long and both checks become not_checked.
+  timeoutMs: 120_000,
+} as const;
 export const QUALITY_CHECK_IDS = ['cuts', 'single_face', 'learner_mouth', 'seam_ssim', 'black_freeze'] as const;
 
 export type QualityCheckId = typeof QUALITY_CHECK_IDS[number];
