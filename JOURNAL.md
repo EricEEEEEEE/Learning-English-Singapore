@@ -702,3 +702,5 @@
 - [audit] phase → test-writing @ 2026-10-17T16:53:52+00:00
 - 2026-10-18 用户要求界面再简化 + GitHub 调研：5 份独立报告存 docs/research-archive/2026-10-18/，综合 Agent 并入 plan.md「调研后第三圈」与 tasks.md C10–C15（25 项；C10–C14 零费用，C15 逐项付费另批）
 - [audit] phase → implementing @ 2026-10-18T04:56:03+00:00
+- [audit] phase → test-writing @ 2026-10-18T05:45:55+00:00
+- C10 前端简化（一）绿：2150 项全绿；共享外壳（顶部栏/更多 dialog/底部操作栏）、令牌与五级按钮、对练页单麦克风与求助弹层、首回合设置与恢复弹层；截图 /mnt/project-files/les-plan/c10-*.png
