@@ -88,7 +88,8 @@ test('T63B / K5.3: one spoken turn is sent once after the learner finishes and t
   await panel(main).getByRole('button', { name: '开始说', exact: true }).click();
   await expect(panel(main).getByText('正在听你说…', { exact: true })).toBeVisible();
   expect(await page.evaluate(() => window.t69MicCalls)).toBe(1);
-  expect(await page.evaluate(() => window.t63Constraints)).toEqual({ audio: true });
+  // C12-4 (report 2 P0-3): echo cancellation, noise suppression and automatic gain are asked for explicitly.
+  expect(await page.evaluate(() => window.t63Constraints)).toEqual({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
   expect(bodies).toHaveLength(0);
   await panel(main).getByRole('button', { name: '说完了', exact: true }).click();
   await expect(panel(main).getByTestId('practice-reply')).toHaveText('Great. May I see your passport?');

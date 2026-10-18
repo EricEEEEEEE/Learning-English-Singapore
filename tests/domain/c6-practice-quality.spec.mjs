@@ -76,7 +76,8 @@ for (const [name, bad] of [
 // ---- T21A: one light coach note, learner-controlled ----
 
 test('T21A / F8.3: one short coach note is passed through next to the in-role reply', async () => {
-  const note = '“change to Friday” 很清楚；也可以说 “Could we move it to Friday?”';
+  // C12-2: a coach note may only put quotation marks around the learner's own words; a suggestion is written without them.
+  const note = '“change to Friday” 很清楚；也可以说 Could we move it to Friday?';
   const { turn } = await setup({ respond: async () => answer({ coachNote: note }) });
   expect(await turn()).toMatchObject({ understood: true, coachNote: note, reply: { text: 'Sure, no problem. What time is better for you?' } });
 });

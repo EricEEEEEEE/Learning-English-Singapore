@@ -66,14 +66,17 @@ for (const [name, reply] of [['refusal', { id: 'r', status: 'completed', output:
   await expect(respondInScene(context(), { enabled: true, apiKey: 'synthetic', fetch: async () => Response.json(reply) })).rejects.toThrow();
 });
 
-test('T63B adapters: the reply is spoken in the partner voice as WAV', async () => {
+// C12-4 (report 2 P0-2): the practice reply is spoken as mp3 so phones play it and it loads faster; course audio stays wav
+// (see tests/domain/c12-practice-reliability.spec.mjs). The provider stub now returns mp3 bytes.
+test('T63B adapters: the reply is spoken in the partner voice as mp3', async () => {
   const { speakReply } = await providers(); const bodies = [];
-  const wav = Buffer.alloc(44 + 1600); wav.write('RIFF'); wav.writeUInt32LE(36 + 1600, 4); wav.write('WAVE', 8); wav.write('fmt ', 12); wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(8000, 24); wav.writeUInt32LE(16000, 28); wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36); wav.writeUInt32LE(1600, 40);
-  const result = await speakReply({ text: 'Please follow me.' }, { enabled: true, apiKey: 'synthetic', fetch: async (_u, o) => { bodies.push(JSON.parse(o.body)); return new Response(wav); } });
+  const mp3 = Buffer.concat([Buffer.from('ID3'), Buffer.from([4, 0, 0, 0, 0, 0, 0]), Buffer.from([0xff, 0xfb, 0x90, 0x64]), Buffer.alloc(400)]);
+  const result = await speakReply({ text: 'Please follow me.' }, { enabled: true, apiKey: 'synthetic', fetch: async (_u, o) => { bodies.push(JSON.parse(o.body)); return new Response(mp3); } });
   expect(bodies[0].voice).toBe('marin');
   expect(bodies[0].input).toBe('Please follow me.');
-  expect(result.mimeType).toBe('audio/wav');
-  expect(Buffer.from(result.bytes).equals(wav)).toBe(true);
+  expect(bodies[0].response_format).toBe('mp3');
+  expect(result.mimeType).toBe('audio/mpeg');
+  expect(Buffer.from(result.bytes).equals(mp3)).toBe(true);
 });
 
 const body = over => ({ courseId: 'c', revision: 1, turnIndex: 0, language: 'zh-Hans', history: [], mimeType: 'audio/webm', audioBase64: Buffer.from('voice').toString('base64'), ...over });
