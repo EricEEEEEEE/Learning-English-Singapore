@@ -47,7 +47,7 @@ export function SceneDelete({ language, description, course, onDeleted, onFailed
   return <div className="data-confirm">
     <p>{copy.sceneConfirm}</p>
     <div className="data-confirm-actions">
-      <button className="danger-button" type="button" disabled={step === 'busy'} onClick={async () => {
+      <button className="btn btn-danger" type="button" disabled={step === 'busy'} onClick={async () => {
         setStep('busy');
         try { await send(`/api/learning-library?id=${encodeURIComponent(course.id)}&revision=${course.revision}`, 'DELETE'); onDeleted(); }
         catch { setStep('idle'); onFailed(); }
@@ -64,7 +64,7 @@ export function DeleteAllData({ language, onDeleted, onFailed }: { language: Ent
   return <div className="data-confirm">
     <p>{copy.allConfirm}</p>
     <div className="data-confirm-actions">
-      <button className="danger-button" type="button" disabled={step === 'busy'} onClick={async () => {
+      <button className="btn btn-danger" type="button" disabled={step === 'busy'} onClick={async () => {
         setStep('busy');
         try { await send('/api/my-data', 'DELETE', { confirm: 'delete-all-my-data' }); setStep('idle'); onDeleted(); }
         catch { setStep('idle'); onFailed(); }
@@ -182,7 +182,7 @@ export function SentenceReport({ language, course, lineId, text, received, statu
     <p className="scene-note">{copy.unchanged}</p>
     {failed ? <p className="scene-entry-error" role="alert">{copy.failed}</p> : null}
     <div className="data-confirm-actions">
-      <button className="guide-primary" type="submit" disabled={!reason || busy}>{copy.submit}</button>
+      <button className="btn btn-tonal" type="submit" disabled={!reason || busy}>{copy.submit}</button>
       <button className="text-button" type="button" disabled={busy} onClick={() => { setOpen(false); setFailed(false); }}>{copy.cancel}</button>
     </div>
   </form>;

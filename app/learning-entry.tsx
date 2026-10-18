@@ -19,6 +19,8 @@ import { sceneSeedCopy } from './scene-seed-copy';
 import { sceneConfirmCopy } from './scene-confirm-copy';
 import { resumeSafetyCopy } from './resume-safety-copy';
 import { useOnline } from './use-online';
+import { ActionBar, AppBar, Icon, Sheet, ShellContext, type CommonOptions } from './shell';
+import { shellCopy } from './shell-copy';
 
 const storageKey = 'le-sg-entry-preferences-v1';
 type Preferences = { language: EntryLanguage; largeText: boolean; reducedMotion: boolean };
@@ -120,9 +122,11 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
         <p className="scene-confirm-role">{confirmCopy.partner(role(draft.keywords.partnerRole))}</p>
         <p className="scene-confirm-length">{confirmCopy.length}</p>
         <p className="scene-note">{confirmCopy.wait}</p>
-        <p className="scene-note">{confirmCopy.cost}</p>
-        <button className="guide-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{confirmCopy.confirm}</button>
-        <button className="text-button" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'heading'; setConfirming(false); }}>{confirmCopy.edit}</button>
+        <ActionBar>
+          <p className="action-note">{confirmCopy.cost}</p>
+          <button className="btn btn-ghost" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'heading'; setConfirming(false); }}>{confirmCopy.edit}</button>
+          <button className="btn btn-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{confirmCopy.confirm}</button>
+        </ActionBar>
       </form>
     </section>;
   }
@@ -139,11 +143,13 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
     {requirements.saveFailed || requirements.conflict ? <p className="scene-entry-error" role="alert">{requirements.conflict ? requirementCopy.conflict : requirementCopy.saveError}</p> : null}
     {requirements.conflict ? <button className="text-button" type="button" onClick={requirements.retry}>{requirementCopy.loadSaved}</button> : null}
     {requirements.unsavedOffline ? <p className="scene-entry-error" role="alert">{resumeSafetyCopy[language].unsavedOffline}</p> : null}
-    <button className="guide-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{sceneGenerationCopy[language].generate}</button>
-    <button className="text-button" type="button" disabled={generation.preparing || requirements.saving || requirements.conflict} onClick={() => void requirements.save()}>{requirements.saving ? requirementCopy.saving : requirementCopy.save}</button>
     {requirements.saved ? <p className="scene-save-status" role="status">{requirementCopy.saved}</p> : null}
     <p className="scene-note">{requirementCopy.local}</p>
     <button className="text-button" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'input'; onChange({ ...draft, page: 'scene' }); }}>{copy.back}</button>
+    <ActionBar>
+      <button className="btn btn-ghost" type="button" disabled={generation.preparing || requirements.saving || requirements.conflict} onClick={() => void requirements.save()}>{requirements.saving ? requirementCopy.saving : requirementCopy.save}</button>
+      <button className="btn btn-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{sceneGenerationCopy[language].generate}</button>
+    </ActionBar>
   </form>;
 
   return <form className="scene-form" noValidate onSubmit={event => {
@@ -155,11 +161,11 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
   }}>
     <h1 id="scene-entry-title">{title}</h1>
     <p className="panel-copy" id="scene-entry-hint">{hint}</p>
-    <p className="scene-note" data-testid="scene-privacy">{resumeSafetyCopy[language].privacy}</p>
     <textarea ref={input} aria-labelledby="scene-entry-title" aria-describedby={`scene-entry-hint${invalid ? ' scene-entry-error' : ''}`}
       aria-invalid={invalid || undefined} maxLength={2000} value={draft.text}
       onChange={event => { setInvalid(false); setPicked(false); onChange({ ...draft, text: event.target.value }); }} />
     {invalid ? <p className="scene-entry-error" id="scene-entry-error" role="alert">{copy.empty}</p> : null}
+    <p className="scene-note" data-testid="scene-privacy">{resumeSafetyCopy[language].privacy}</p>
     <div className="scene-examples" role="group" aria-label={copy.examplesLabel}>
       {copy.examples.map(example => <button key={example.label} type="button" onClick={() => {
         setInvalid(false); setPicked(false);
@@ -173,7 +179,7 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
       }}>{example.label}</button>)}
     </div>
     <div className="scene-seeds">
-      <button className="text-button" type="button" aria-expanded={seedsOpen} aria-controls="scene-seed-panel" onClick={() => setSeedsOpen(open => !open)}>{seedCopy.open}</button>
+      <button className="btn btn-tonal" type="button" aria-expanded={seedsOpen} aria-controls="scene-seed-panel" onClick={() => setSeedsOpen(open => !open)}>{seedCopy.open}</button>
       {seedsOpen ? <div id="scene-seed-panel">
         <p className="scene-note">{seedCopy.note}</p>
         <div className="scene-seed-categories" role="group" aria-label={seedCopy.categoriesLabel}>
@@ -185,7 +191,7 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
       </div> : null}
       {picked ? <p className="scene-save-status" role="status">{seedCopy.picked}</p> : null}
     </div>
-    <button className="guide-primary" type="submit">{copy.next}</button>
+    <ActionBar><button className="btn btn-primary" type="submit">{copy.next}</button></ActionBar>
   </form>;
 }
 
@@ -217,6 +223,8 @@ export default function LearningEntry() {
   const requirementCopy = sceneRequirementCopy[language];
   const trustCopy = dataTrustCopy[language];
   const [recordsOpen, setRecordsOpen] = useState(false);
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreButton = useRef<HTMLButtonElement>(null);
   const online = useOnline();
   const extra = resumeSafetyCopy[language];
   // C8-4: after a provider call, cancelling first explains what can and cannot be undone.
@@ -293,18 +301,38 @@ export default function LearningEntry() {
       onBack={selectedScene ? library.closeCourse : generation.closeWatch} />
   </div> : null;
 
-  return <div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
+  const shell = shellCopy[language];
+  const showPlayer = !!player && verified;
+  // The brand and slogan stay only on the first pages (sign-in and the scene input); other pages get a short mark.
+  const home = !account.authenticated || (!viewing && !library.open && generation.target === null && requirements.draft?.page === 'scene');
+  const openMore = () => setMoreOpen(true);
+  const languageSelect = <select aria-label={copy.change} value={language} disabled={!ready || generation.preparing} onChange={event => changeLanguage(event.target.value)}>
+    {languageChoices.map(choice => <option key={choice.code} value={choice.code}>{choice.name}</option>)}
+  </select>;
+  // What every "more" sheet ends with: interface language, display, and the notes that used to fill each page.
+  const common = ({ meta, trial = false }: CommonOptions) => <>
+    <label className="sheet-section sheet-field"><span className="sheet-label"><Icon name="globe" size={18} />{shell.language}</span>{languageSelect}</label>
+    <fieldset className="sheet-section switch-group"><legend className="sheet-label">{extra.display}</legend>
+      <label className="switch-row"><span>{extra.largeText}</span><input className="switch" type="checkbox" checked={preferences.largeText} disabled={!ready} onChange={event => changeDisplay({ largeText: event.target.checked })} /></label>
+      <label className="switch-row"><span>{extra.reducedMotion}</span><input className="switch" type="checkbox" checked={preferences.reducedMotion} disabled={!ready} onChange={event => changeDisplay({ reducedMotion: event.target.checked })} /></label>
+    </fieldset>
+    <section className="sheet-section sheet-about"><h3 className="sheet-label">{meta ? shell.about : shell.aboutApp}</h3>
+      {meta ? <p>{meta}</p> : null}
+      <p><strong>{copy.respectTitle}</strong> {copy.respect}</p>
+      {trial ? <p>{copy.trial}</p> : null}
+    </section>
+  </>;
+  const languageName = languageChoices.find(choice => choice.code === language)?.name ?? language;
+
+  return <ShellContext.Provider value={{ language, common }}><div className="app-shell" data-large-text={preferences.largeText} data-reduced-motion={preferences.reducedMotion}>
     <title>Learning English in Singapore</title>
-    <header className="site-header">
-      <div className="brand-lockup"><p className="wordmark" lang="en">Learning English<span>in Singapore</span></p><p className="brand-slogan" lang="zh-Hans">帮你融入新加坡，相信自己可以做到。</p></div>
-      <label className="simple-language"><span>{copy.change}</span><select aria-label={copy.change} value={language} disabled={!ready || generation.preparing} onChange={event => changeLanguage(event.target.value)}>
-        {languageChoices.map(choice => <option key={choice.code} value={choice.code}>{choice.name}</option>)}
-      </select></label>
-    </header>
+    {showPlayer ? null : <AppBar moreLabel={shell.more} moreOpen={moreOpen} onMore={openMore} moreRef={moreButton}
+      center={home ? <div className="brand-lockup"><p className="wordmark" lang="en">Learning English in Singapore</p><p className="brand-slogan" lang="zh-Hans">帮你融入新加坡，相信自己可以做到。</p></div>
+        : <p className="wordmark wordmark--short" lang="en">Learning English</p>} />}
     <main className="simple-main">
       {!online ? <p className="offline-banner" data-testid="offline-banner" role="alert">{extra.offline}</p> : null}
       {player}
-      {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="guide-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
+      {checking ? null : account.failed ? <section><h1>{copy.login}</h1><button className="btn btn-primary" type="button" onClick={account.retry}>{journey.retry}</button></section>
         : account.authenticated && account.accountKey ? viewing ? null
         : library.open ? recordsOpen ? <GenerationRecords language={language} onBack={() => setRecordsOpen(false)} /> : <section>
           <h1>{libraryCopy.title}</h1><p className="panel-copy">{libraryCopy.local}</p>
@@ -329,13 +357,12 @@ export default function LearningEntry() {
           <h1>{sceneGenerationCopy[language].title}</h1>
           {generation.view ? <p className="scene-description">{generation.view.requirement.content.description}</p> : null}
           {generation.error ? <p className="scene-entry-error" role="alert">{sceneGenerationCopy[language][generation.error === 'version' ? 'version' : 'error']}</p>
-            : <p className="panel-copy" role="status" data-testid={generation.view?.phase === 'cancelled' ? 'generation-cancelled' : generation.view?.phase === 'stopped' ? 'generation-stopped' : undefined}>
+            : <p className="panel-copy generation-status" role="status" data-testid={generation.view?.phase === 'cancelled' ? 'generation-cancelled' : generation.view?.phase === 'stopped' ? 'generation-stopped' : undefined}>
               {!generation.view ? sceneGenerationCopy[language].loading : generation.view.phase === 'cancelled' ? extra.cancelled : generation.view.phase === 'stopped' ? extra.stopped : sceneGenerationCopy[language].phases[generation.view.phase]}</p>}
-          {generation.view?.phase === 'ready' ? <button className="guide-primary" type="button" onClick={generation.watch}>{sceneGenerationCopy[language].watch}</button> : null}
           {generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(generation.view.phase) ? stopAsk
-            ? <div className="scene-card" data-testid="generation-stop-explain">
+            ? <div className="notice-card" data-testid="generation-stop-explain">
               <p>{extra.stopExplain}</p>
-              <button className="guide-primary" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => { void generation.cancel(); setStopAsk(false); }}>{extra.stopConfirm}</button>
+              <button className="btn btn-tonal" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => { void generation.cancel(); setStopAsk(false); }}>{extra.stopConfirm}</button>
               <button className="text-button" type="button" onClick={() => setStopAsk(false)}>{extra.keepGoing}</button>
             </div>
             : <button className="text-button" type="button" disabled={!online || generation.cancelling === 'busy'} onClick={() => {
@@ -347,30 +374,32 @@ export default function LearningEntry() {
             if (requirements.draft) requirements.change({ ...requirements.draft, page: 'background' });
             generation.back();
           }}>{sceneGenerationCopy[language].back}</button>
+          {generation.view?.phase === 'ready' ? <ActionBar><button className="btn btn-primary" type="button" onClick={generation.watch}>{sceneGenerationCopy[language].watch}</button></ActionBar> : null}
         </section>
         : requirements.readFailed ? <section>
           <p className="scene-entry-error" role="alert">{requirementCopy.readError}</p>
-          <button className="guide-primary" type="button" onClick={requirements.retry}>{requirementCopy.retry}</button>
+          <button className="btn btn-primary" type="button" onClick={requirements.retry}>{requirementCopy.retry}</button>
         </section> : requirements.loading || !requirements.draft ? <p role="status">{requirementCopy.loading}</p>
         : <><SceneDescription key={account.accountKey} language={language} title={journey.scene} hint={journey.hint}
           draft={requirements.draft} onChange={requirements.change} focusMemory={inputFocus} requirements={requirements} generation={generation} />
-          <button className="text-button" type="button" onClick={library.show}>{libraryCopy.title}</button>
-          <SignOutButton language={language} /></>
-        : <section role="group" aria-labelledby="login-title">
+          <div className="page-links">
+            <button className="text-button" type="button" onClick={library.show}>{libraryCopy.title}</button>
+            <SignOutButton language={language} />
+          </div></>
+        : <><section role="group" aria-labelledby="login-title">
           <h1 id="login-title">{copy.login}</h1>
           <div className="account-choices">
             <button type="button" onClick={() => setNotice('wechat')}>{copy.wechat}<small>{copy.unavailable}</small></button>
             {embedded ? <button type="button" onClick={() => setNotice('webview')}>Google</button>
               : <a href={`/api/auth/google/start?language=${encodeURIComponent(language)}&returnTo=%2F`}><span className="provider-letter" aria-hidden="true">G</span>Google</a>}
           </div>
-        </section>}
+        </section>
+        <button className="text-button language-link" type="button" aria-haspopup="dialog" aria-expanded={moreOpen} onClick={openMore}><Icon name="globe" size={18} />{shell.changeLanguage(languageName)}</button></>}
       <p className="entry-status" role="status" aria-live="polite">{status}</p>
     </main>
-    <footer className="simple-footer">
-      <fieldset className="display-switches"><legend>{extra.display}</legend>
-        <label className="setting"><input type="checkbox" checked={preferences.largeText} disabled={!ready} onChange={event => changeDisplay({ largeText: event.target.checked })} />{extra.largeText}</label>
-        <label className="setting"><input type="checkbox" checked={preferences.reducedMotion} disabled={!ready} onChange={event => changeDisplay({ reducedMotion: event.target.checked })} />{extra.reducedMotion}</label>
-      </fieldset>
-      <details><summary>{copy.respectTitle}</summary><p>{copy.respect}</p></details><p>{copy.trial}</p></footer>
-  </div>;
+    {showPlayer ? null : <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={shell.more} testId="more-sheet" closeLabel={shell.close}>
+      {common({ trial: false })}
+    </Sheet>}
+    {showPlayer ? null : <footer className="simple-footer"><p>{copy.trial}</p></footer>}
+  </div></ShellContext.Provider>;
 }

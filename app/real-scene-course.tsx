@@ -15,6 +15,8 @@ import { SentenceReport, useSentenceReports } from './data-trust';
 import { resumeSafetyCopy } from './resume-safety-copy';
 import { auditGapsCopy } from './audit-gaps-copy';
 import { sceneSafetyKind } from '../lib/scene-safety';
+import { ActionBar, AppBar, Icon, Sheet, useShell } from './shell';
+import { shellCopy } from './shell-copy';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
 export const realSceneCopy: Record<EntryLanguage, Copy> = {
@@ -80,6 +82,11 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const reports = useSentenceReports(saved && course && (!guided || page === 'learn') && (step === 3 || step === 4) ? saved : null);
   const gaps = auditGapsCopy[language];
   const listSeparator = language === 'zh-Hans' || language === 'ja' ? '、' : ', ';
+  // C10: the guided pages share the thin top bar and a "more" sheet; practice puts its own items into that sheet.
+  const shellContext = useShell();
+  const shell = shellCopy[language];
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLButtonElement>(null);
   const title = guided ? page === 'watch' ? guide.watch : page === 'role' ? guide.role : step === 5 ? practiceCopy.title : copy.steps[step - 1] : copy.title;
   useLayoutEffect(() => {
     if (guided && focusNext.current) { heading.current?.focus(); focusNext.current = false; }
@@ -194,7 +201,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     position.current = { ...position.current, page: next === 'learn' ? nextStep === 2 ? 'terms' : nextStep === 3 ? 'sentences' : nextStep === 5 ? 'practice' : 'prompt' : next };
     stop(); focusNext.current = true; setPage(next); setStep(nextStep); setResumedPractice(false);
     savePosition(true);
-    if (next === 'learn' && nextStep >= 4) void playLine(lineById(course!.turns[turn].partnerLineId));
+    if (next === 'learn' && (nextStep === 4 || (nextStep === 5 && practiceMemory.current.setupAsked))) void playLine(lineById(course!.turns[turn].partnerLineId));
   }
   function changeTurn(next: number) {
     position.current = { ...position.current, turnIndex: next };
@@ -209,7 +216,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     ko: { loading: '수업 불러오는 중', invalid: '자료가 불완전하거나 버전이 다릅니다. 돌아가세요.', test: '동작 확인용 테스트 자료이며 새 상황 수업이 아닙니다.', next: '다음 대화', previous: '이전 대화' },
     hi: { loading: 'पाठ लोड हो रहा है', invalid: 'सामग्री अधूरी है या संस्करण अलग हैं। वापस जाएँ।', test: 'यह परीक्षण सामग्री है, नया दृश्य पाठ नहीं।', next: 'अगली बारी', previous: 'पिछली बारी' },
   }[language];
-  const back = <button data-testid="scene-back" className="text-button" disabled={leaving} onClick={async () => {
+  const leave = async () => {
     if (leaving) return;
     stop(); savePosition(true); setLeaving(true);
     const saved = await progress.finish();
@@ -218,21 +225,42 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     // A newly failed final save remains visible. Previously disclosed temporary
     // learning can be left deliberately without claiming it was saved.
     if (saved || !rememberProgress || ['loading', 'readFailed', 'saveFailed', 'conflict', 'offline'].includes(progress.stage)) onBack();
-  }}>{backLabel ?? copy.back}</button>;
-  if (!course) return <section data-testid="real-scene-course" className="real-scene"><h1>{title}</h1><p role={loadFailed ? 'alert' : 'status'}>{loadFailed ? notices.invalid : notices.loading}</p>{back}</section>;
+  };
+  const backText = backLabel ?? copy.back;
+  const back = <button data-testid="scene-back" className="text-button" disabled={leaving} onClick={leave}>{backText}</button>;
+  const practising = guided && page === 'learn' && step === 5;
+  const stepIndex = guided && page === 'learn' ? step : 1;
+  const failedStage = ['readFailed', 'saveFailed', 'conflict', 'offline'].includes(progress.stage);
+  // Saving is a thin line under the bar; only a failure becomes a visible one-line banner with its retry.
+  const progressLine = rememberProgress ? <>
+    <div className="progress-line" data-testid="progress-line" aria-hidden="true"><span style={{ width: `${stepIndex * 20}%` }} /></div>
+    <div className={failedStage ? 'progress-banner' : 'sr-only'} data-testid={failedStage ? 'progress-banner' : undefined}>
+      <p data-testid="scene-progress-status" role="status">{progress.stage === 'offline' ? extra.progressOffline : libraryCopy.progress[progress.stage]}</p>
+      {progress.stage === 'readFailed' && <button className="text-button" type="button" onClick={progress.retryRead}>{libraryCopy.read}</button>}
+      {progress.stage === 'saveFailed' && <button className="text-button" type="button" onClick={progress.retrySave}>{libraryCopy.save}</button>}
+      {progress.stage === 'conflict' && <button className="text-button" type="button" onClick={progress.retryRead}>{libraryCopy.reload}</button>}
+    </div>
+  </> : null;
+  const appBar = guided ? <AppBar moreLabel={shell.more} moreOpen={moreOpen} onMore={() => setMoreOpen(true)} moreRef={moreRef}
+    start={practising ? undefined : <button data-testid="scene-back" className="icon-btn" type="button" aria-label={backText} disabled={leaving} onClick={leave}><Icon name="back" /></button>}
+    center={<div className="step-dots" role="img" aria-label={shell.progress(stepIndex, 5)}>{[1, 2, 3, 4, 5].map(i => <span key={i} data-on={i <= stepIndex} />)}</div>}
+    end={practising && course ? <span className="app-bar-meta" data-testid="practice-turn">{shell.turn(turnIndex + 1, course.turns.length)}</span> : undefined}>{progressLine}</AppBar> : null;
+  const meta = guided && course ? `${guide.short(Math.max(1, Math.round(course.media.duration)))} · ${copy.notice}` : copy.notice;
+  const watchAgainRow = <button type="button" className="sheet-row" onClick={() => { setMoreOpen(false); changePage('watch'); }}><Icon name="watch" />{guide.watchAgain}</button>;
+  const sheet = guided && !practising ? <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={shell.more} testId="more-sheet" closeLabel={shell.close}>
+    {page === 'learn' ? <div className="sheet-rows">{watchAgainRow}</div> : null}
+    {shellContext?.common({ meta: course ? meta : undefined, trial: true })}
+  </Sheet> : null;
+  if (!course) return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`}>{appBar}<h1>{title}</h1><p role={loadFailed ? 'alert' : 'status'}>{loadFailed ? notices.invalid : notices.loading}</p>{guided ? null : back}{sheet}</section>;
   const caption = course.lines.find(line => time >= line.start && time < line.end)?.text ?? '';
   const turn = course.turns[turnIndex];
   const partner = lineById(turn.partnerLineId);
   const learner = lineById(turn.learnerLineId);
   const learning = !guided || page === 'learn';
-  return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`}>
-    <h1 ref={heading} tabIndex={-1}>{title}</h1><p className="trial-note">{guided ? `${guide.short(Math.max(1, Math.round(course.media.duration)))} · ${copy.notice}` : copy.notice}</p>
-    {rememberProgress && <div className="learning-position">
-      <p data-testid="scene-progress-status" role="status">{progress.stage === 'offline' ? extra.progressOffline : libraryCopy.progress[progress.stage]}</p>
-      {progress.stage === 'readFailed' && <button type="button" onClick={progress.retryRead}>{libraryCopy.read}</button>}
-      {progress.stage === 'saveFailed' && <button type="button" onClick={progress.retrySave}>{libraryCopy.save}</button>}
-      {progress.stage === 'conflict' && <button type="button" onClick={progress.retryRead}>{libraryCopy.reload}</button>}
-    </div>}
+  return <section data-testid="real-scene-course" className={`real-scene${guided ? ' guided-scene' : ''}`} data-step={guided ? page === 'learn' ? step : page : undefined}>
+    {appBar}
+    <h1 ref={heading} tabIndex={-1}>{title}</h1>{guided ? null : <p className="trial-note">{copy.notice}</p>}
+    {!guided && progressLine}
     {safety && <p data-testid="scene-safety" className="trial-note scene-safety">{extra.safety}</p>}
     {course.source === 'test-fixture' && <p role="note">{notices.test}</p>}
     {!guided && <nav className="scene-actions" aria-label={copy.title}>{copy.steps.map((label, i) => <button key={label} type="button" data-testid={`scene-step-${i + 1}`} aria-current={step === i + 1 ? 'step' : undefined} onClick={() => move(i + 1)}>{i + 1}. {label}</button>)}</nav>}
@@ -263,12 +291,12 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
       <p data-testid="scene-caption" lang="en" className="scene-caption" aria-live="off" hidden={captionsHidden}>{caption || '\u00a0'}</p>
       <div className="scene-actions"><button data-testid="scene-play" onClick={() => play(video.current?.ended ? 0 : video.current?.currentTime ?? 0, course.media.duration, true)}>{copy.play}</button><button onClick={stop}>{copy.pause}</button><button data-testid="scene-replay" onClick={() => play(0, course.media.duration, true)}>{copy.replay}</button></div>
       <div className="scene-actions"><button type="button" onClick={previousLine}>{tools.previous}</button><button type="button" aria-pressed={slow} onClick={toggleSlow}>{tools.slow}</button><button type="button" onClick={() => setCaptionsHidden(hidden => !hidden)}>{captionsHidden ? tools.showCaption : tools.hideCaption}</button></div>
-      {guided && <>{watchComplete && <p role="status">{guide.complete}</p>}<button className="guide-primary" type="button" onClick={() => changePage('role')}>{guide.enter}</button></>}
+      {guided && <>{watchComplete && <p role="status">{guide.complete}</p>}<ActionBar><button className="btn btn-primary" type="button" onClick={() => changePage('role')}>{guide.enter}</button></ActionBar></>}
     </div>}
-    {guided && page === 'role' && <div className="scene-card"><p>{contextSource === 'legacy-neutral' ? libraryCopy.neutral : guide.roleSource}</p>
-      <p data-testid="scene-learner-role">{guide.learner}：{roles?.learner || guide.learnerFallback}</p>
-      <p data-testid="scene-partner-role">{guide.partner}：{roles?.partner || guide.partnerFallback}</p>
-      <div className="scene-actions"><button type="button" className="guide-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button><button type="button" onClick={() => changePage('watch')}>{guide.watchAgain}</button></div>
+    {guided && page === 'role' && <div className="role-cards"><p className="scene-note">{contextSource === 'legacy-neutral' ? libraryCopy.neutral : guide.roleSource}</p>
+      <p className="role-card role-card--me" data-testid="scene-learner-role">{guide.learner}：{roles?.learner || guide.learnerFallback}</p>
+      <p className="role-card" data-testid="scene-partner-role">{guide.partner}：{roles?.partner || guide.partnerFallback}</p>
+      <ActionBar><button type="button" className="btn btn-ghost" onClick={() => changePage('watch')}>{guide.watchAgain}</button><button type="button" className="btn btn-primary" onClick={() => changePage('learn', 2)}>{guide.start}</button></ActionBar>
     </div>}
     {learning && step === 2 && <div data-testid="scene-panel-2">{!guided && <h2>{copy.steps[1]}</h2>}{course.phrases.map(phrase => <article key={phrase.id} data-testid="scene-term" className="scene-card"><strong lang="en">{phrase.text}</strong><p lang={language}>{phrase.translations[language]}</p><button onClick={() => playLine(lineById(phrase.lineId))}>{copy.listen}</button></article>)}</div>}
     {learning && step === 3 && <div data-testid="scene-panel-3">{!guided && <h2>{copy.steps[2]}</h2>}{course.lines.map(line => {
@@ -296,13 +324,15 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     </div>}
     {guided && saved && page === 'learn' && step === 5 && <ScenePractice key={`${saved.id}:${saved.revision}:${saved.materialsRevision ?? 0}`} course={{ ...saved, lines: course.lines, turns: course.turns }} language={language} startTurn={turnIndex} memory={practiceMemory.current} mediaBusy={segmentPlaying} resumed={resumedPractice} stopPartner={stop}
       onTurn={turn => { position.current = { ...position.current, page: 'practice', turnIndex: turn }; setTurnIndex(turn); setResumedPractice(false); savePosition(true); }}
-      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); setPartnerHelp(false); changePage('learn', 4, turn); }} onLeave={() => changePage('watch')} playPartner={(id, rate) => void playLine(lineById(id), rate)} />}
-    {guided && page === 'learn' && <div className="scene-actions">
-      {step < 5 && <button type="button" className="guide-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : step === 3 ? guide.nextPrompt : practiceCopy.enter}</button>}
-      {step < 5 && <button type="button" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>}
-      <button type="button" onClick={() => changePage('watch')}>{guide.watchAgain}</button>
-    </div>}
+      onHint={turn => { position.current = { ...position.current, turnIndex: turn }; setTurnIndex(turn); setPartnerHelp(false); changePage('learn', 4, turn); }} onLeave={() => changePage('watch')} playPartner={(id, rate) => void playLine(lineById(id), rate)}
+      more={{ open: moreOpen, close: () => setMoreOpen(false), returnFocus: moreRef }} meta={meta}
+      moreRows={<>{watchAgainRow}<button data-testid="scene-back" type="button" className="sheet-row" disabled={leaving} onClick={() => { setMoreOpen(false); void leave(); }}><Icon name="exit" />{backText}</button></>} />}
+    {guided && page === 'learn' && step < 5 && <ActionBar>
+      <button type="button" className="btn btn-ghost" onClick={() => step === 2 ? changePage('role') : changePage('learn', step - 1)}>{step === 2 ? guide.roleBack : step === 3 ? guide.previousTerm : guide.previousSentence}</button>
+      <button type="button" className="btn btn-primary" onClick={() => changePage('learn', step + 1)}>{step === 2 ? guide.nextSentence : step === 3 ? guide.nextPrompt : practiceCopy.enter}</button>
+    </ActionBar>}
     {error && <p role="alert">{copy.error}</p>}
-    {back}
+    {guided ? null : back}
+    {sheet}
   </section>;
 }

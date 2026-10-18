@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from 'react';
 import type { EntryLanguage } from './entry-copy';
 import { listenToolsCopy } from './listen-tools-copy';
 import { practiceQualityCopy } from './practice-quality-copy';
@@ -9,6 +9,8 @@ import { useOnline, isOffline } from './use-online';
 import { meaningOptions } from '../lib/practice-meanings';
 import { auditGapsCopy } from './audit-gaps-copy';
 import { classifyPracticeTurn, countOutcomes, practiceOutcomes, type PracticeOutcome, type PracticeReview } from '../lib/practice-review-outcomes';
+import { ActionBar, Icon, Sheet, useShell } from './shell';
+import { shellCopy } from './shell-copy';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
@@ -24,7 +26,11 @@ type Stats = { hints: number; autoHelp: number; translations: number; native?: n
 // Kept by the course page so a detour to the hint page does not lose the conversation so far.
 export type PracticeMemory = { turnIndex: number; history: History; reply: Reply | null; focus?: Focus; ending?: 'done' | 'ended' | null; stats?: Stats; answered?: Record<number, string>; chosen?: Record<number, string>;
   // C9: the confirmed goal (its revision counts changes in this session), per-turn help and understanding, and the review session id.
-  goal?: Goal | null; goalRevision?: number; helped?: Record<number, boolean>; understood?: Record<number, boolean>; session?: string };
+  goal?: Goal | null; goalRevision?: number; helped?: Record<number, boolean>; understood?: Record<number, boolean>; session?: string;
+  // C10-4: the first-turn settings sheet has been shown (or skipped) for this visit.
+  setupAsked?: boolean };
+// C10: the course page's "more" sheet is rendered here on the practice page, with the course's own rows.
+type MoreSheet = { open: boolean; close: () => void; returnFocus: RefObject<HTMLButtonElement | null> };
 type Copy = { start: string; done: string; hint: string; next: string; listening: string; sending: string; heard: string; silence: string; unavailable: string; budget: string; failed: string; login: string; mic: string; tooLong: string; intro: string; replay: string };
 
 export const scenePracticeCopy: Record<EntryLanguage, Copy & { title: string; enter: string; promptHint: string }> = {
@@ -79,12 +85,14 @@ async function toBase64(blob: Blob) {
 
 // One spoken exchange at a time: the microphone opens only on an explicit start, the turn is sent once when the
 // learner says they are done, and every failure waits for the learner instead of retrying.
-export default function ScenePractice({ course, language, startTurn, onHint, onLeave, playPartner, stopPartner, onTurn, resumed = false, memory, mediaBusy = false }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; onLeave?: () => void; playPartner: (lineId: string, rate?: number) => void; stopPartner?: () => void; onTurn?: (turnIndex: number) => void; resumed?: boolean; memory?: PracticeMemory; mediaBusy?: boolean }) {
+export default function ScenePractice({ course, language, startTurn, onHint, onLeave, playPartner, stopPartner, onTurn, resumed = false, memory, mediaBusy = false, more, moreRows, meta }: { course: PracticeCourse; language: EntryLanguage; startTurn: number; onHint: (turnIndex: number) => void; onLeave?: () => void; playPartner: (lineId: string, rate?: number) => void; stopPartner?: () => void; onTurn?: (turnIndex: number) => void; resumed?: boolean; memory?: PracticeMemory; mediaBusy?: boolean; more?: MoreSheet; moreRows?: ReactNode; meta?: string }) {
   const copy = scenePracticeCopy[language];
   const tools = listenToolsCopy[language];
   const quality = practiceQualityCopy[language];
   const extra = resumeSafetyCopy[language];
   const gaps = auditGapsCopy[language];
+  const shell = shellCopy[language];
+  const shellContext = useShell();
   const online = useOnline();
   const choiceId = useId();
   const [focus, setFocus] = useState<Focus>(memory?.focus ?? 'normal');
@@ -123,6 +131,11 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const [autoHelp, setAutoHelp] = useState(readAutoHelp);
   const [helpLevel, setHelpLevel] = useState(0);
   const [partnerHelp, setPartnerHelp] = useState(false);
+  // C10-3/C10-4: "more help" sheet, the once-only first-turn settings sheet, and where focus lands after them.
+  const [helpOpen, setHelpOpen] = useState(false);
+  const [setupOpen, setSetupOpen] = useState(() => !resumed && !memory?.setupAsked && !(memory?.history?.length) && startTurn === 0 && !memory?.ending);
+  const setupAsked = useRef(!!memory?.setupAsked);
+  const micButton = useRef<HTMLButtonElement>(null);
   const freshReply = useRef(false);
   const discard = useRef(false);
   const recorder = useRef<MediaRecorder | null>(null);
@@ -134,7 +147,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const partner = course.lines.find(line => line.id === turn.partnerLineId)!;
   const learner = course.lines.find(line => line.id === turn.learnerLineId)!;
   if (memory) { memory.turnIndex = turnIndex; memory.history = history; memory.reply = reply; memory.focus = focus; memory.ending = ending; memory.stats = stats.current; memory.answered = answered.current; memory.chosen = chosen.current;
-    memory.goal = goal; memory.goalRevision = goalRevision.current; memory.helped = helped.current; memory.understood = understoodBy.current; memory.session = session.current; }
+    memory.goal = goal; memory.goalRevision = goalRevision.current; memory.helped = helped.current; memory.understood = understoodBy.current; memory.session = session.current; memory.setupAsked = setupAsked.current || !setupOpen; }
 
   function release() {
     if (timer.current) clearTimeout(timer.current);
@@ -146,14 +159,23 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     mounted.current = true;
     return () => { mounted.current = false; if (recorder.current?.state === 'recording') recorder.current.stop(); release(); };
   }, []);
+  // A new bubble (reply, native-language help, a chosen meaning, a hint) is scrolled into view above the bottom bar.
+  const chat = useRef<HTMLDivElement>(null);
+  const chatShown = useRef(false);
+  const chatKey = `${reply?.text ?? ''}|${native ? 1 : 0}|${chosenLine ?? ''}|${choosing ? 1 : 0}|${helpLevel}|${thinking ? 1 : 0}`;
+  useEffect(() => {
+    if (!chatShown.current) { chatShown.current = true; return; }
+    const last = chat.current?.lastElementChild;
+    if (last && typeof last.scrollIntoView === 'function') last.scrollIntoView({ block: 'nearest' });
+  }, [chatKey]);
   useEffect(() => { if (reply && freshReply.current) { freshReply.current = false; audio.current?.play().catch(() => {}); } }, [reply]);
   // Silence after the partner has finished earns help: first how to begin, then the whole answer with a model.
   // Nothing is offered while the partner is still talking, while the learner is speaking, or once they answered.
   useEffect(() => {
-    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy || thinking || chosenLine || choosing || resumeChoice || native) return;
+    if (!autoHelp || ending || stage !== 'idle' || reply || helpLevel >= 2 || mediaBusy || thinking || chosenLine || choosing || resumeChoice || native || setupOpen) return;
     const id = setTimeout(() => { if (document.visibilityState !== 'hidden') { stats.current.autoHelp++; helped.current[turnIndex] = true; setHelpLevel(level => level + 1); } }, HELP_DELAY_MS);
     return () => clearTimeout(id);
-  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex, thinking, chosenLine, choosing, resumeChoice, native]);
+  }, [autoHelp, ending, stage, reply, helpLevel, mediaBusy, turnIndex, thinking, chosenLine, choosing, resumeChoice, native, setupOpen]);
   // C9-6: each ending saves this visit's review once (the same session id updates it) and brings back the last one.
   useEffect(() => {
     if (!ending) return;
@@ -323,96 +345,95 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const outcomeLabel: Record<PracticeOutcome, string> = { independent: gaps.outcomeIndependent, after_hint: gaps.outcomeAfterHint, needs_help: gaps.outcomeNeedsHelp, chose_meaning: gaps.outcomeChose, unobserved: gaps.outcomeUnobserved };
   const compareLine = (label: string, outcomes: PracticeOutcome[]) => { const counts = countOutcomes(outcomes); return `${label}：${outcomeOrder.map(outcome => `${outcomeLabel[outcome]} ${counts[outcome]}`).join(' · ')}`; };
   const showCoach = reply?.coachNote && !(correction === 'less' && reply.understood);
+  // Settings are native radios drawn as segmented controls; they live in the first-turn sheet, then in "more".
   const radio = <T extends string>(group: string, value: T, current: T, label: string, change: (v: T) => void) =>
-    <label key={value}><input type="radio" name={`${choiceId}-${group}`} value={value} checked={current === value} disabled={busy} onChange={() => change(value)} /> {label}</label>;
-  return <div data-testid="scene-panel-5">
-    <p>{copy.intro}</p>
-    <div className="practice-choices">
-      <fieldset className="practice-choice"><legend>{quality.focusLegend}</legend>
-        {radio('focus', 'normal', focus, quality.focusNormal, setFocus)}{radio('focus', 'refusal', focus, quality.focusRefusal, setFocus)}{radio('focus', 'rephrase', focus, quality.focusRephrase, setFocus)}{radio('focus', 'unclear', focus, gaps.focusUnclear, setFocus)}
-      </fieldset>
-      <fieldset className="practice-choice"><legend>{quality.correctionLegend}</legend>
-        {radio('correction', 'normal', correction, quality.correctionNormal, changeCorrection)}{radio('correction', 'less', correction, quality.correctionLess, changeCorrection)}
-      </fieldset>
-    </div>
-    {resumeChoice && !ending && <div data-testid="practice-resume" className="scene-card" role="group" aria-label={extra.resumeTitle}>
-      <p>{extra.resumeTitle}</p>
-      <div className="scene-actions">
-        <button type="button" className="guide-primary" onClick={() => { setResumeChoice(false); playPartner(partner.id); }}>{extra.resumeListen}</button>
-        <button type="button" onClick={() => setResumeChoice(false)}>{extra.resumeContinue}</button>
+    <label key={value} className="segment"><input type="radio" name={`${choiceId}-${group}`} value={value} checked={current === value} disabled={busy} onChange={() => change(value)} /><span>{label}</span></label>;
+  const settings = <>
+    <fieldset className="segmented"><legend>{quality.focusLegend}</legend><div className="segments">
+      {radio('focus', 'normal', focus, quality.focusNormal, setFocus)}{radio('focus', 'refusal', focus, quality.focusRefusal, setFocus)}{radio('focus', 'rephrase', focus, quality.focusRephrase, setFocus)}{radio('focus', 'unclear', focus, gaps.focusUnclear, setFocus)}
+    </div></fieldset>
+    <fieldset className="segmented"><legend>{quality.correctionLegend}</legend><div className="segments">
+      {radio('correction', 'normal', correction, quality.correctionNormal, changeCorrection)}{radio('correction', 'less', correction, quality.correctionLess, changeCorrection)}
+    </div></fieldset>
+  </>;
+  function finishSetup() {
+    if (!setupOpen) return;
+    setupAsked.current = true; setSetupOpen(false);
+    playPartner(partner.id);
+    requestAnimationFrame(() => micButton.current?.focus({ preventScroll: true }));
+  }
+  const canNext = !ending && !!(reply || chosenLine) && turnIndex < course.turns.length - 1;
+  const showTip = stage === 'idle' && !notice && online && !reply && !chosenLine && !native && !thinking && !choosing && helpLevel === 0 && history.length === 0 && turnIndex === 0 && stats.current.hints === 0;
+  const helpAction = (action: () => void) => () => { setHelpOpen(false); action(); };
+  const offlineId = `${choiceId}-offline`;
+  return <div data-testid="scene-panel-5" className="practice-panel">
+    {goal && !ending && <p data-testid="practice-goal" className="goal-chip" lang={language}>{gaps.goalLine(goal.revision, goal.summary)}</p>}
+    <div className="chat" ref={chat}>
+      <div className="bubble bubble--partner">
+        <p data-testid="practice-partner" lang="en" className="bubble-text">{partner.text}</p>
+        {partnerHelp && <p data-testid="partner-help" className="bubble-sub" lang={language}>{partner.translations?.[language]}</p>}
+        <div className="bubble-tools">
+          {mediaBusy
+            ? <button type="button" className="icon-btn icon-btn--soft" aria-label={extra.pause} onClick={pause}><Icon name="pause" /></button>
+            : <button type="button" className="icon-btn icon-btn--soft" aria-label={copy.replay} disabled={busy} onClick={() => playPartner(partner.id)}><Icon name="replay" /></button>}
+          <button type="button" className="icon-btn icon-btn--soft" aria-label={tools.slower} disabled={busy} onClick={() => playPartner(partner.id, 0.75)}><Icon name="slow" /></button>
+          <button type="button" className="chip-btn" aria-pressed={partnerHelp} onClick={() => { if (!partnerHelp) { stats.current.translations++; helped.current[turnIndex] = true; } setPartnerHelp(open => !open); }}><Icon name="translate" size={18} />{partnerHelp ? tools.helpClose : tools.help}</button>
+        </div>
       </div>
-    </div>}
-    {goal && !ending && <p data-testid="practice-goal" className="practice-goal" lang={language}>{gaps.goalLine(goal.revision, goal.summary)}</p>}
-    <article className="scene-card"><p data-testid="practice-partner" lang="en">{partner.text}</p>
-      {partnerHelp && <p data-testid="partner-help" lang={language}>{partner.translations?.[language]}</p>}
-      <div className="scene-actions"><button type="button" disabled={busy} onClick={() => playPartner(partner.id)}>{copy.replay}</button><button type="button" disabled={busy} onClick={() => playPartner(partner.id, 0.75)}>{tools.slower}</button><button type="button" onClick={() => { if (!partnerHelp) { stats.current.translations++; helped.current[turnIndex] = true; } setPartnerHelp(open => !open); }}>{partnerHelp ? tools.helpClose : tools.help}</button><button type="button" onClick={pause}>{extra.pause}</button></div>
-    </article>
-    {!ending && <div className="scene-actions">
-      {stage === 'recording'
-        ? <button type="button" className="guide-primary" onClick={() => recorder.current?.stop()}>{copy.done}</button>
-        : <><button type="button" className="guide-primary" disabled={busy || !online} aria-describedby={!online ? `${choiceId}-offline` : undefined} onClick={() => start('english')}>{copy.start}</button>
-          <button type="button" disabled={busy || !online} onClick={() => start('native')}>{gaps.nativeStart}</button></>}
-      <button type="button" disabled={busy || thinking} onClick={() => { setThinking(true); setHelpLevel(0); setResumeChoice(false); }}>{extra.think}</button>
-      <button type="button" disabled={busy} aria-expanded={choosing} onClick={() => { setChoosing(open => !open); setResumeChoice(false); }}>{extra.choose}</button>
-      <button type="button" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; helped.current[turnIndex] = true; onHint(turnIndex); }}>{copy.hint}</button>
-      <button type="button" disabled={busy} onClick={() => setEnding('ended')}>{quality.end}</button>
-    </div>}
-    {stage === 'recording' && <p role="status">{copy.listening}</p>}
-    {stage === 'sending' && <p role="status">{copy.sending}</p>}
-    {!online && !ending && <p id={`${choiceId}-offline`} data-testid="practice-offline" role="status">{extra.practiceOffline}</p>}
-    {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : notice.key === 'staleGoal' ? gaps.goalStale : copy[notice.key]}</p>}
-    {native && !ending && <article data-testid="practice-native" className="scene-card practice-native">
-      <p lang={language}>{gaps.nativeHeard} {native.transcript}</p>
-      {native.understood && native.text && native.src ? <>
-        <p>{gaps.nativeSay}<span lang="en">{native.text}</span></p>
-        <audio data-testid="practice-native-audio" ref={nativeAudio} src={native.src} preload="auto" />
-        <div className="scene-actions"><button type="button" onClick={() => { nativeAudio.current?.play().catch(() => {}); }}>{gaps.nativePlay}</button>
-          <button type="button" className="guide-primary" disabled={busy || !online} onClick={() => start('english')}>{gaps.nativeRetry}</button></div>
-        <p className="scene-note">{gaps.nativeNote}</p>
-      </> : <p role="status">{gaps.nativeUnclear}</p>}
-    </article>}
-    {thinking && !ending && !reply && stage === 'idle' && <p data-testid="practice-thinking" role="status">{extra.thinking}</p>}
-    {choosing && !ending && <fieldset className="practice-choice practice-meanings"><legend>{extra.chooseLegend}</legend>
-      {meaningOptions(course, turnIndex, language).map(option => <button key={option.lineId} type="button" lang={language} onClick={() => pickMeaning(option.lineId)}>{option.meaning}</button>)}
-    </fieldset>}
-    {chosenLine && !ending && (() => {
-      const line = course.lines.find(item => item.id === chosenLine);
-      return line ? <article data-testid="practice-chosen" className="scene-card">
-        <p>{extra.chosenSay}<span lang="en">{line.text}</span></p>
-        {line.id !== learner.id && <p>{extra.chosenScene}<span lang="en">{learner.text}</span></p>}
-        <button type="button" onClick={() => playPartner(line.id)}>{tools.demo}</button>
-      </article> : null;
-    })()}
-    {helpLevel > 0 && !reply && !ending && stage === 'idle' && <div data-testid="practice-auto-help" className="scene-card practice-help" role="status">
-      {helpLevel === 1
-        ? <p>{tools.helpStart}<span lang="en">{learner.text.split(/\s+/).slice(0, 3).join(' ')}…</span></p>
-        : <><p>{tools.helpFull}<span lang="en">{learner.text}</span></p><button type="button" onClick={() => playPartner(learner.id)}>{tools.demo}</button></>}
-    </div>}
-    <label className="practice-help"><input type="checkbox" checked={autoHelp} onChange={event => changeAutoHelp(event.target.checked)} /> {tools.autoHelp}</label>
-    {reply && <article className="scene-card">
-      <p data-testid="practice-heard">{copy.heard} <span lang="en">{reply.transcript}</span></p>
-      <p data-testid="practice-reply" lang="en">{reply.text}</p>
-      <audio data-testid="practice-reply-audio" ref={audio} src={reply.src} controls />
-      {!reply.understood && <p data-testid="practice-clarify" role="status">{quality.clarify}</p>}
-      {showCoach && <div data-testid="practice-coach" className="practice-coach" lang={language}>
-        <p>{quality.coach}{reply.coachNote}</p>
-        {feedback === 'saved'
-          ? <p role="status">{quality.wrongSaved}</p>
-          : <><button type="button" className="text-button" disabled={feedback === 'busy'} onClick={() => markWrong(reply.coachNote!)}>{quality.wrong}</button>{feedback === 'failed' && <p role="alert">{quality.wrongFailed}</p>}{feedback === 'offline' && <p role="alert">{extra.unsavedOffline}</p>}</>}
+      {native && !ending && <div data-testid="practice-native" className="bubble bubble--help practice-native">
+        <p lang={language}>{gaps.nativeHeard} {native.transcript}</p>
+        {native.understood && native.text && native.src ? <>
+          <p className="bubble-text">{gaps.nativeSay}<span lang="en">{native.text}</span></p>
+          <audio data-testid="practice-native-audio" ref={nativeAudio} src={native.src} preload="auto" />
+          <div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={() => { nativeAudio.current?.play().catch(() => {}); }}><Icon name="play" size={18} />{gaps.nativePlay}</button>
+            <button type="button" className="btn btn-tonal btn-small" disabled={busy || !online} onClick={() => start('english')}><Icon name="mic" size={18} />{gaps.nativeRetry}</button></div>
+          <p className="bubble-sub">{gaps.nativeNote}</p>
+        </> : <p role="status">{gaps.nativeUnclear}</p>}
       </div>}
-    </article>}
-    {pendingGoal && !ending && <div data-testid="practice-goal-confirm" className="scene-card" role="group" aria-label={gaps.goalAsk(pendingGoal.summary)}>
+      {thinking && !ending && !reply && stage === 'idle' && <p data-testid="practice-thinking" className="chat-note" role="status">{extra.thinking}</p>}
+      {choosing && !ending && <fieldset className="bubble bubble--help practice-meanings"><legend>{extra.chooseLegend}</legend>
+        {meaningOptions(course, turnIndex, language).map(option => <button key={option.lineId} type="button" className="choice-btn" lang={language} onClick={() => pickMeaning(option.lineId)}>{option.meaning}</button>)}
+      </fieldset>}
+      {chosenLine && !ending && (() => {
+        const line = course.lines.find(item => item.id === chosenLine);
+        return line ? <div data-testid="practice-chosen" className="bubble bubble--help">
+          <p className="bubble-text">{extra.chosenSay}<span lang="en">{line.text}</span></p>
+          {line.id !== learner.id && <p className="bubble-sub">{extra.chosenScene}<span lang="en">{learner.text}</span></p>}
+          <div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={() => playPartner(line.id)}><Icon name="play" size={18} />{tools.demo}</button></div>
+        </div> : null;
+      })()}
+      {helpLevel > 0 && !reply && !ending && stage === 'idle' && <div data-testid="practice-auto-help" className="bubble bubble--help practice-help" role="status">
+        {helpLevel === 1
+          ? <p>{tools.helpStart}<span lang="en">{learner.text.split(/\s+/).slice(0, 3).join(' ')}…</span></p>
+          : <><p>{tools.helpFull}<span lang="en">{learner.text}</span></p><div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={() => playPartner(learner.id)}><Icon name="play" size={18} />{tools.demo}</button></div></>}
+      </div>}
+      {reply && <>
+        <div className="bubble bubble--me"><p data-testid="practice-heard">{copy.heard} <span lang="en">{reply.transcript}</span></p></div>
+        <div className="bubble bubble--partner">
+          <p data-testid="practice-reply" lang="en" className="bubble-text">{reply.text}</p>
+          <audio data-testid="practice-reply-audio" ref={audio} src={reply.src} preload="auto" hidden />
+          {!reply.understood && <p data-testid="practice-clarify" className="bubble-sub" role="status">{quality.clarify}</p>}
+          <div className="bubble-tools"><button type="button" className="icon-btn icon-btn--soft" aria-label={shell.playReply} onClick={() => { audio.current?.play().catch(() => {}); }}><Icon name="play" /></button></div>
+        </div>
+        {showCoach && <div data-testid="practice-coach" className="coach-note" lang={language}>
+          <p>{quality.coach}{reply.coachNote}</p>
+          {feedback === 'saved'
+            ? <p role="status">{quality.wrongSaved}</p>
+            : <><button type="button" className="text-button" disabled={feedback === 'busy'} onClick={() => markWrong(reply.coachNote!)}>{quality.wrong}</button>{feedback === 'failed' && <p role="alert">{quality.wrongFailed}</p>}{feedback === 'offline' && <p role="alert">{extra.unsavedOffline}</p>}</>}
+        </div>}
+      </>}
+    </div>
+    {pendingGoal && !ending && <div data-testid="practice-goal-confirm" className="notice-card" role="group" aria-label={gaps.goalAsk(pendingGoal.summary)}>
       <p lang={language}>{gaps.goalAsk(pendingGoal.summary)}</p>
-      <div className="scene-actions"><button type="button" className="guide-primary" onClick={confirmGoal}>{gaps.goalConfirm}</button><button type="button" onClick={() => setPendingGoal(null)}>{gaps.goalKeep}</button></div>
+      <div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={confirmGoal}>{gaps.goalConfirm}</button><button type="button" className="btn btn-ghost btn-small" onClick={() => setPendingGoal(null)}>{gaps.goalKeep}</button></div>
     </div>}
-    {!ending && (reply || chosenLine) && turnIndex < course.turns.length - 1 && <div className="scene-actions"><button type="button" onClick={nextTurn}>{copy.next}</button></div>}
-    {ending && <section data-testid="practice-ending" className="scene-card practice-ending">
+    {ending && <section data-testid="practice-ending" className="practice-ending">
       <h3>{ending === 'done' ? quality.doneTitle : quality.endedTitle}</h3>
       <div data-testid="practice-review">
         <h4>{quality.reviewTitle}</h4>
         <ul>{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? `${quality.turnAnswered(i + 1, answered.current[i])} · ${outcomeLabel[outcomeOf(i)]}` : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
         <ul><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{gaps.nativeCount(stats.current.native ?? 0)}</li><li>{quality.unknownTransfer}</li></ul>
-        <p>{quality.reviewNote}</p>
+        <p className="scene-note">{quality.reviewNote}</p>
         {reviewSave === 'failed' && <p data-testid="practice-review-unsaved" role="status">{gaps.reviewUnsaved}</p>}
         {reviewSave === 'saved' && !previousReview && <p data-testid="practice-compare-first">{gaps.compareFirst}</p>}
         {reviewSave === 'saved' && previousReview && <div className="practice-compare">
@@ -421,11 +442,58 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
           <p className="scene-note">{gaps.compareNote}</p>
         </div>}
       </div>
-      <div className="scene-actions">
-        <button type="button" className="guide-primary" onClick={practiseAgain}>{quality.again}</button>
-        {ending === 'ended' && <button type="button" onClick={() => setEnding(null)}>{quality.keepGoing}</button>}
-        {onLeave && <button type="button" onClick={onLeave}>{quality.back}</button>}
+      <div className="ending-actions">
+        <button type="button" className="btn btn-primary" onClick={practiseAgain}>{quality.again}</button>
+        {ending === 'ended' && <button type="button" className="btn btn-ghost" onClick={() => setEnding(null)}>{quality.keepGoing}</button>}
+        {onLeave && <button type="button" className="btn btn-ghost" onClick={onLeave}>{quality.back}</button>}
       </div>
     </section>}
+    {!ending && <ActionBar className="action-bar--practice">
+      <div className="practice-messages">
+        {stage === 'recording' && <p role="status">{copy.listening}</p>}
+        {stage === 'sending' && <p role="status">{copy.sending}</p>}
+        {!online && <p id={offlineId} data-testid="practice-offline" role="status">{extra.practiceOffline}</p>}
+        {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : notice.key === 'staleGoal' ? gaps.goalStale : copy[notice.key]}</p>}
+        {showTip && <p data-testid="practice-tip" className="practice-tip">{shell.tipHint}</p>}
+      </div>
+      {canNext && stage !== 'recording' && <button type="button" className="btn btn-primary practice-next" onClick={nextTurn}>{copy.next}</button>}
+      <div className="practice-controls">
+        <button type="button" className="side-btn" disabled={stage === 'recording' || stage === 'sending'} onClick={() => { stats.current.hints++; helped.current[turnIndex] = true; onHint(turnIndex); }}><span className="side-icon"><Icon name="bulb" /></span><span className="side-label">{copy.hint}</span></button>
+        {stage === 'recording'
+          ? <button ref={micButton} type="button" className="mic-btn is-recording" onClick={() => recorder.current?.stop()}><span className="mic-circle"><span className="mic-ring" aria-hidden="true" /><Icon name="stop" size={30} /></span><span className="mic-label">{copy.done}</span></button>
+          : canNext
+            ? <button ref={micButton} type="button" className="side-btn" disabled={busy || !online} aria-describedby={!online ? offlineId : undefined} onClick={() => start('english')}><span className="side-icon"><Icon name="mic" /></span><span className="side-label">{copy.start}</span></button>
+            : <button ref={micButton} type="button" className="mic-btn" disabled={busy || !online} aria-describedby={!online ? offlineId : undefined} onClick={() => start('english')}><span className="mic-circle"><Icon name="mic" size={30} /></span><span className="mic-label">{copy.start}</span></button>}
+        <button type="button" className="side-btn" data-testid="help-open" aria-haspopup="dialog" aria-expanded={helpOpen} disabled={stage === 'recording' || stage === 'sending'} onClick={() => setHelpOpen(true)}><span className="side-icon"><Icon name="help" /></span><span className="side-label">{shell.moreHelp}</span></button>
+      </div>
+    </ActionBar>}
+    <Sheet open={helpOpen && !ending} onClose={() => setHelpOpen(false)} title={shell.moreHelp} testId="help-sheet" closeLabel={shell.close}>
+      <div className="sheet-rows">
+        <button type="button" className="sheet-row" disabled={busy || !online} onClick={helpAction(() => void start('native'))}><Icon name="translate" />{gaps.nativeStart}</button>
+        <button type="button" className="sheet-row" disabled={busy} aria-expanded={choosing} onClick={helpAction(() => { setChoosing(open => !open); setResumeChoice(false); })}><Icon name="help" />{extra.choose}</button>
+        <button type="button" className="sheet-row" disabled={busy || thinking} onClick={helpAction(() => { setThinking(true); setHelpLevel(0); setResumeChoice(false); })}><Icon name="pause" />{extra.think}</button>
+      </div>
+      <label className="switch-row sheet-section"><span>{tools.autoHelp}</span><input className="switch" type="checkbox" checked={autoHelp} onChange={event => changeAutoHelp(event.target.checked)} /></label>
+    </Sheet>
+    {more && <Sheet open={more.open} onClose={more.close} title={shellContext ? shell.more : shell.more} testId="more-sheet" closeLabel={shell.close} fallbackFocus={more.returnFocus}>
+      {!ending && !setupOpen ? <section className="sheet-section"><h3 className="sheet-label">{shell.practiceSettings}</h3>{settings}</section> : null}
+      <div className="sheet-rows">
+        {!ending && <button type="button" className="sheet-row" disabled={busy} onClick={() => { more.close(); setEnding('ended'); }}><Icon name="flag" />{quality.end}</button>}
+        {moreRows}
+      </div>
+      <section className="sheet-section sheet-about"><h3 className="sheet-label">{shell.howTo}</h3><p>{copy.intro}</p></section>
+      {shellContext?.common({ meta, trial: true })}
+    </Sheet>}
+    <Sheet open={setupOpen && !ending} onClose={finishSetup} title={shell.setupTitle} testId="practice-setup" closeLabel={shell.close} fallbackFocus={micButton}>
+      <p className="sheet-note">{shell.setupNote}</p>
+      {setupOpen ? settings : null}
+      <button type="button" className="btn btn-primary sheet-cta" data-testid="practice-setup-start" onClick={finishSetup}>{shell.setupStart}</button>
+    </Sheet>
+    <Sheet open={resumeChoice && !ending} onClose={() => setResumeChoice(false)} title={extra.resumeTitle} testId="practice-resume-sheet" closeLabel={shell.close} fallbackFocus={micButton}>
+      <div data-testid="practice-resume" className="sheet-actions" role="group" aria-label={extra.resumeTitle}>
+        <button type="button" className="btn btn-primary" onClick={() => { setResumeChoice(false); playPartner(partner.id); }}>{extra.resumeListen}</button>
+        <button type="button" className="btn btn-ghost" onClick={() => setResumeChoice(false)}>{extra.resumeContinue}</button>
+      </div>
+    </Sheet>
   </div>;
 }
