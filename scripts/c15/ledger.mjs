@@ -1,5 +1,5 @@
 // C15 paid-check ledger (user 2026-10-18 11:53 UTC: C15 kept on its own books; C15-1 <= USD0.5, C15-2 reserve <= USD0.9,
-// C15-3 < USD0.1). Before each paid request the worst-case cost is reserved; reserved-in-flight plus settled may never
+// C15-3 < USD0.1, C15-4 <= USD25; all of C15 <= USD26.5). Before each paid request the worst-case cost is reserved; reserved-in-flight plus settled may never
 // pass the item's cap. A failed or unknown request keeps its whole reservation as spent and is never retried.
 // The ledger file lives outside the repo (default /mnt/project-files/les-c15/ledger.json) and holds no keys or content.
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -13,7 +13,9 @@ export const PRICES = {
   // The page lists 1.25 / 5 per 1M tokens and about USD0.003 a minute; audio input is booked at the older, higher 3.00.
   'gpt-4o-mini-transcribe': { audioInput: 3.00, textInput: 1.25, output: 5.00, perMinute: 0.003 },
 };
-export const CAPS = { 'C15-1': 0.5, 'C15-2': 0.9, 'C15-3': 0.1 };
+export const CAPS = { 'C15-1': 0.5, 'C15-2': 0.9, 'C15-3': 0.1, 'C15-4': 25 };
+// LTX v2/audio-to-video, 720x1280, USD per second of input audio (https://docs.ltx.io/pricing.md, read 2026-10-18).
+export const LTX_PRICES = { 'ltx-2-3-pro': 0.06, 'ltx-2-5-fast': 0.09 };
 
 export function openLedger(path = process.env.LES_C15_LEDGER ?? '/mnt/project-files/les-c15/ledger.json') {
   mkdirSync(dirname(path), { recursive: true });

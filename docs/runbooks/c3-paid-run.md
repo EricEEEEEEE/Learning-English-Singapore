@@ -51,6 +51,11 @@ node --experimental-strip-types -e "import('./lib/google-auth.ts').then(async m 
 - `quality_failed` 的段先过预算守卫再重做一次；仍不过则整课停在 `quality_failed`，不组装、不进“我的场景”。原因和关键帧时间点记在任务的 `videoQuality` / `videoRedos` 里。重做也计入本批上限。
 - 预演（`LES_VIDEO_PREVIEW=1`）按预演路径通过质检，并用本地占位图做对方定妆照（第 1 段首帧），真实图像调用为 0；末帧模糊或过暗时退回定妆照。
 
+### 1.2 C15-4 视频小样（2026-10-18 增补）
+
+- C15-4 不走上面的服务和 `tmp/generation-tasks`（那里存着 C3 的预算范围），改用 `scripts/c15/video-sample.mjs`：独立目录 `tmp/c15-4-tasks`、预算范围 `C15-4-20261018`（上限 USD25），每笔付费请求先在 C15 账本预留。
+- LTX 余额不足时可能先回 202，再在任务状态里报 `insufficient_funds_error`。产品端只看得到 `failed`；驱动脚本会识别这个错误并停下整轮。LTX 没有免费的余额查询接口。
+
 ## 2. 生成两节不同场景的短课（约 60 秒默认）
 
 每节：`PUT /api/scene-requirements`（`expectedRevision` 按当前修订号）保存需求，再 `POST /api/scene-generation` `{requirementRevision}` 提交，然后每 15–30 秒 `GET /api/scene-generation?revision=N` 读状态（读状态会自动续跑）。
