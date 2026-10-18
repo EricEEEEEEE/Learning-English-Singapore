@@ -101,11 +101,12 @@ test('C12-3 / F14.1: past the daily limit nothing is transcribed or reserved; th
   await expect(turn({ now: now + 4 * MINUTE })).rejects.toThrow('Practice daily limit');
   expect(calls.transcribe).toBe(3);
   expect(reservations()).toBe(3);
-  // 23:59 in Singapore is still the same day; 00:01 is the next one.
+  // 23:59 in Singapore is still the same day; 00:01 is the next one. Sessions last 8 hours, so sign in again near midnight.
   const sgMidnight = Date.UTC(2031, 0, 3, 16);
-  await expect(turn({ now: sgMidnight - MINUTE })).rejects.toThrow('Practice daily limit');
-  expect(await turn({ now: sgMidnight + MINUTE })).toMatchObject({ kind: 'reply' });
-  expect(await service.quota({ cookie, now: sgMidnight + 2 * MINUTE })).toEqual({ remainingToday: 2 });
+  const late = await sealGoogleSession(identity('c12-owner'), secret, sgMidnight - 10 * MINUTE);
+  await expect(turn({ cookie: late, now: sgMidnight - MINUTE })).rejects.toThrow('Practice daily limit');
+  expect(await turn({ cookie: late, now: sgMidnight + MINUTE })).toMatchObject({ kind: 'reply' });
+  expect(await service.quota({ cookie: late, now: sgMidnight + 2 * MINUTE })).toEqual({ remainingToday: 2 });
 });
 
 test('C12-3 / F14.1: silence does not use up the day either, and one account\'s limit does not touch another', async () => {
