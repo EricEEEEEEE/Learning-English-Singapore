@@ -236,6 +236,7 @@ test('C9-6: with no earlier review the page says this is the first saved review'
 test('C9-6 / F14.4: "what we store" lists the saved practice reviews', async ({ page, context, baseURL }) => {
   const { main } = await setupData(page, context, baseURL);
   await openLibrary(page, main);
+  await openMore(page);
   const details = main.locator('details').filter({ hasText: '我们保存了什么' });
   await details.getByText('我们保存了什么', { exact: true }).click();
   await expect(details).toContainText('练习回顾');
@@ -249,6 +250,7 @@ test('C9 (C8 leftover) / F14.1: generation records show a cancelled task and a s
     { id: 'c9-cancelled', revision: 5, description: '我想在学校问校车时间。', status: 'cancelled', reservedMicros: 0, providerCalls: 0 },
     { id: 'c9-stopped', revision: 6, description: '我想在诊所改约时间。', status: 'stopped', reservedMicros: 90_000, providerCalls: 1 });
   await openLibrary(page, main);
+  await openMore(page);
   await main.getByRole('button', { name: '生成记录', exact: true }).click();
   const rows = main.getByTestId('generation-record');
   await expect(rows).toHaveCount(6);

@@ -197,13 +197,13 @@ test('C11-2 / K5.2, F12.3: each sentence is a card with play and loop icons at i
 
 test('C11-2 / K5.2: the prompt page is a chat: partner left, "you could say" right after one tap, help as a chip, and a "1/2 ‹ ›" pager', async ({ page, context, baseURL }) => {
   const { main } = await openPrompt(page, context, baseURL, { changeCourse: twoTurns });
-  const partner = main.locator('.bubble--partner').filter({ has: main.getByTestId('scene-partner') });
+  const partner = main.locator('.bubble--partner').filter({ has: page.getByTestId('scene-partner') });
   await expect(partner).toBeVisible();
   await expect(partner.getByRole('button', { name: '帮我理解', exact: true })).toHaveClass(/chip-btn/);
   await expect(main.getByTestId('scene-answer')).toBeHidden();
   await expect(main.getByTestId('answer-reveal')).toBeVisible();
   await revealAnswer(main);
-  const answer = main.locator('.bubble--me').filter({ has: main.getByTestId('scene-answer') });
+  const answer = main.locator('.bubble--me').filter({ has: page.getByTestId('scene-answer') });
   await expect(answer).toBeVisible();
   const partnerBox = await partner.boundingBox(), answerBox = await answer.boundingBox();
   expect(answerBox.x + answerBox.width).toBeGreaterThan(partnerBox.x + partnerBox.width);
