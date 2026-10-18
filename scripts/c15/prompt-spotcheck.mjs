@@ -2,7 +2,7 @@
 // 2026-10-18, ledger reserve <= USD0.9). Learner speech is replaced by a written transcript fed straight to the reply
 // model; no audio is transcribed and no reply is voiced. Each request is reserved first, made once, never retried.
 // Run: OPENAI_API_KEY="$OPEN_API_KEY" NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings \
-//        --import ./scripts/c15/ts-loader.mjs scripts/c15/prompt-spotcheck.mjs [--script] [--turns] [--out dir]
+//        --import ./scripts/c15/ts-loader.mjs scripts/c15/prompt-spotcheck.mjs [--script] [--turns] [--recheck [--round 2]] [--out dir]
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { respondInScene, suggestInEnglish } from '../../lib/practice-providers.ts';
@@ -14,7 +14,7 @@ import { openLedger, responseCost, responseReserve, capturingFetch } from './led
 const apiKey = process.env.OPENAI_API_KEY;
 if (!apiKey) throw new Error('OPENAI_API_KEY missing');
 const args = process.argv.slice(2);
-const outDir = args.includes('--out') ? args[args.indexOf('--out') + 1] : '/mnt/project-files/les-c15/prompt-spotcheck';
+const outDir = args.includes('--out') ? args[args.indexOf('--out') + 1] : `/mnt/project-files/les-c15/${args.includes('--recheck') ? (args.includes('--round') ? `prompt-recheck-${args[args.indexOf('--round') + 1]}` : 'prompt-recheck') : 'prompt-spotcheck'}`;
 mkdirSync(outDir, { recursive: true });
 const ledger = openLedger();
 const ITEM = 'C15-2';
@@ -77,7 +77,7 @@ if (args.includes('--script')) {
   record({ id: 'S1', rule: 'C13-3 script contract', error: r.error ?? null, call: { ...r.call, outputText: undefined }, issues, script: parsed });
   writeFileSync(join(outDir, 'script-clinic.json'), JSON.stringify(parsed, null, 2));
 }
-const scriptFile = join(outDir, 'script-clinic.json');
+const scriptFile = existsSync(join(outDir, 'script-clinic.json')) ? join(outDir, 'script-clinic.json') : '/mnt/project-files/les-c15/prompt-spotcheck/script-clinic.json';
 if (existsSync(scriptFile)) {
   try { const s = JSON.parse(readFileSync(scriptFile, 'utf8')); if (Array.isArray(s?.lines)) clinic = s.lines.map(l => ({ role: l.role, text: l.text })); } catch { /* fallback */ }
 }
@@ -135,6 +135,30 @@ const cases = [
   { id: 'R11b', rule: 'R11 自然结束', expect: 'done true, short polite close, no new question', ctx: base(office, lastPair(office), 'Okay, thank you very much.', { history: historyUpTo(office, lastPair(office)) }) },
 ];
 
+// C15-2 re-check (user-approved 2026-10-18 under the same C15-2 cap; this run reserves at most USD0.05): the five rules
+// fixed in C15-2a (afec873 -> 45c85d5) plus the quoted-suggestion loss (R4b), 2 turns each, labels prefixed "RC-".
+const RECHECK_BUDGET = 0.05;
+const recheckCases = [
+  { id: 'RC-R7a', rule: 'R7 改目标 goalChange', expect: 'goalChange object, reply is the confirm yes/no question, done false', ctx: base(hawker, 0, 'Can I order three packets to take home for my family instead?') },
+  { id: 'RC-R7b', rule: 'R7 改目标 goalChange', expect: 'goalChange object (another time), done false', ctx: base(office, 1, 'Sorry, can I come back tomorrow afternoon instead? I forgot my passport.', { history: historyUpTo(office, 1) }) },
+  { id: 'RC-R3b', rule: 'R3 偏题拉回', expect: 'understood false, one short question back to the order', ctx: base(hawker, 0, 'My son goes to school near here.') },
+  { id: 'RC-R3d', rule: 'R3 偏题拉回', expect: 'understood false, one short question back to the appointment', ctx: base(office, 1, 'The weather is so hot today. Do you like durian?', { history: historyUpTo(office, 1) }) },
+  { id: 'RC-R8c', rule: 'R8 母语模式只有语气词', native: true, expect: 'understood false, suggestion null', ctx: base(hawker, 0, '嗯……那个……') },
+  { id: 'RC-R8d', rule: 'R8 母语模式只有语气词', native: true, expect: 'understood false, suggestion null', ctx: base(office, 1, '呃……就是……那个……', { history: historyUpTo(office, 1) }) },
+  { id: 'RC-R11b', rule: 'R11 最后一句即结束', expect: 'done true, short polite close, no new question', ctx: base(office, lastPair(office), 'Okay, thank you very much.', { history: historyUpTo(office, lastPair(office)) }) },
+  { id: 'RC-R11c', rule: 'R11 最后一句即结束', expect: 'done true, short polite close, no new question', ctx: () => base(clinic, lastPair(clinic), 'Okay, I will tell you if I feel worse. Thank you.', { history: historyUpTo(clinic, lastPair(clinic)) }) },
+  { id: 'RC-R1a', rule: '能懂时 coachNote 为空', expect: 'understood true, coachNote null', ctx: base(hawker, 0, 'One chicken rice, please.') },
+  { id: 'RC-R2b', rule: '能懂时 coachNote 为空', expect: 'understood true, coachNote null', ctx: base(hawker, 0, 'Is the chicken rice spicy?') },
+  { id: 'RC-R4b', rule: 'coachNote 建议说法不加引号（C12-2）', expect: 'one tip in Chinese; suggested wording unquoted so C12-2 keeps it', ctx: base(hawker, 1, 'Chili no want, chicken the steam.', { history: historyUpTo(hawker, 1) }) },
+  { id: 'RC-R6b', rule: 'coachNote 建议说法不加引号（C12-2）', expect: 'one tip in Chinese; suggested wording unquoted so C12-2 keeps it', ctx: base(office, 1, 'Yes I have bring the passport and letter.', { history: historyUpTo(office, 1) }) },
+];
+// --round 2 re-runs the partner cases after the C15-2b fix (labels "RC2-"); the native suggest prompt was not changed.
+// Both rounds share the one USD0.05 re-check budget.
+const recheckOnly = args.includes('--recheck');
+const round = args.includes('--round') ? Number(args[args.indexOf('--round') + 1]) : 1;
+if (recheckOnly) { cases.length = 0; cases.push(...(round > 1 ? recheckCases.filter(c => !c.native).map(c => ({ ...c, id: c.id.replace('RC-', `RC${round}-`) })) : recheckCases)); }
+const recheckSpent = () => ledger.entries(ITEM).filter(e => /^RC\d*-/.test(e.label)).reduce((sum, e) => sum + (e.status === 'settled' ? e.actual : e.reserved), 0);
+
 const SOUND = /pronunc|accent|发音|發音|口音|発音|なまり|訛り|발음|억양|उच्चारण|लहजा|pelafalan|pengucapan|aksen|logat/i;
 if (args.includes('--turns')) {
   const done = new Set(results.map(r => r.id));
@@ -142,6 +166,7 @@ if (args.includes('--turns')) {
     if (done.has(c.id)) continue;
     const ctx = typeof c.ctx === 'function' ? c.ctx() : c.ctx;
     const estimate = JSON.stringify(ctx).length + 4500; // system prompt + schema overhead
+    if (recheckOnly && recheckSpent() + responseReserve('gpt-4.1-mini', estimate, c.native ? 200 : 300) > RECHECK_BUDGET) { console.error('re-check budget reached'); break; }
     let r;
     try {
       r = c.native
