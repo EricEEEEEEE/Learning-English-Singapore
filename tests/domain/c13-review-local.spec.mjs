@@ -35,8 +35,9 @@ const pointerOf = course => ({ id: course.id, revision: course.revision, ...(cou
 async function setup({ disabled } = {}) {
   const { createReviewQueueStore } = await import('../../lib/review-queue.ts');
   const directory = await mkdtemp(join(tmpdir(), 'les-c13-queue-'));
-  const a = { cookie: await sealGoogleSession(identity('c13-owner-a'), secret, now) }, b = { cookie: await sealGoogleSession(identity('c13-owner-b'), secret, now) };
-  const ownerA = await ownerIdFromSessionCookie(a.cookie, secret, now), ownerB = await ownerIdFromSessionCookie(b.cookie, secret, now);
+  // A signed-in session lasts 8 hours, so each call is made with a session signed at that call's own time.
+  const a = { subject: 'c13-owner-a' }, b = { subject: 'c13-owner-b' };
+  const ownerA = await ownerIdFromSessionCookie(await sealGoogleSession(identity(a.subject), secret, now), secret, now), ownerB = await ownerIdFromSessionCookie(await sealGoogleSession(identity(b.subject), secret, now), secret, now);
   const owned = { [ownerA]: new Map(), [ownerB]: new Map() };
   const reads = [];
   const allow = (owner, course) => owned[owner].set(`${course.id}:${course.revision}:${course.materialsRevision ?? 0}`, course);
@@ -48,10 +49,17 @@ async function setup({ disabled } = {}) {
     if (!course) throw new Error('Course unavailable');
     return structuredClone(course);
   }
-  const open = () => createReviewQueueStore({ directory, sessionSecret: secret, getCourse, ...(disabled ? { disabledLines: disabled } : {}) });
+  const signed = store => Object.fromEntries(Object.entries(store).map(([name, method]) => [name, async input => {
+    if (!input?.subject) return method(input);
+    const { subject, ...rest } = input;
+    return method({ ...rest, cookie: await sealGoogleSession(identity(subject), secret, rest.now ?? now) });
+  }]));
+  const open = () => signed(createReviewQueueStore({ directory, sessionSecret: secret, getCourse, ...(disabled ? { disabledLines: disabled } : {}) }));
   return { open, store: open(), a, b, ownerA, ownerB, allow, reads, directory };
 }
 const at = (session, t) => ({ ...session, now: t });
+// The C5 data fixture signs its sessions once; a call days later needs a session signed at that time.
+const signedAt = async (f, subject, t) => ({ cookie: await sealGoogleSession(identity(subject), f.options.sessionSecret, t), now: t });
 
 // ---- C13-1: the schedule ----
 
@@ -185,10 +193,10 @@ test('C13-1 / F12.5: a sentence whose report is set to "disabled" leaves the que
   await reports.report({ ...session, now: f.a.now, course: pointerOf(course), lineId: 'c13-disabled-l3', reason: 'not_local' });
   await reports.setStatus({ ...session, now: f.a.now, course: pointerOf(course), lineId: 'c13-disabled-l3', status: 'disabled' });
   const due = f.a.now + 2 * DAY;
-  expect((await queue.today({ ...session, now: due })).items.map(item => item.lineId)).toEqual(['c13-disabled-l1']);
+  expect((await queue.today(await signedAt(f, 'c5-owner-a', due))).items.map(item => item.lineId)).toEqual(['c13-disabled-l1']);
   // Removed, not just hidden: turning the report back does not restore the old schedule.
-  await reports.setStatus({ ...session, now: due, course: pointerOf(course), lineId: 'c13-disabled-l3', status: 'corrected' });
-  expect((await queue.today({ ...session, now: due + DAY })).items.map(item => item.lineId)).toEqual(['c13-disabled-l1']);
+  await reports.setStatus({ ...(await signedAt(f, 'c5-owner-a', due)), course: pointerOf(course), lineId: 'c13-disabled-l3', status: 'corrected' });
+  expect((await queue.today(await signedAt(f, 'c5-owner-a', due + DAY))).items.map(item => item.lineId)).toEqual(['c13-disabled-l1']);
 });
 
 test('C13-1 / F14.5: deleting one scene removes its queue; deleting all removes every queue item and "heard" starts again at 0 with the time it was reset', async () => {
@@ -204,17 +212,18 @@ test('C13-1 / F14.5: deleting one scene removes its queue; deleting all removes 
     const course = courses.get(task.id);
     await queue.listen({ ...session, course: pointerOf(course), heard: course.lines.slice(0, 4).map(line => line.id), learned: [course.lines[1].id] });
   }
-  expect((await queue.today({ ...f.a, now: f.a.now + 2 * DAY })).heard).toBe(8);
+  const aLater = await signedAt(f, 'c5-owner-a', f.a.now + 2 * DAY), bLater = await signedAt(f, 'c5-owner-b', f.b.now + 2 * DAY);
+  expect((await queue.today(aLater)).heard).toBe(8);
   const data = createMyDataStore(f.options);
   await data.deleteScene({ ...f.a, ...mine.pointer });
-  const afterOne = await queue.today({ ...f.a, now: f.a.now + 2 * DAY });
+  const afterOne = await queue.today(aLater);
   expect(afterOne.items.map(item => item.course.id)).toEqual([other.task.id]);
   // "Heard" only grows: deleting one scene does not take sentences away from it.
   expect(afterOne.heard).toBe(8);
   await data.deleteAll({ ...f.a, now: f.a.now + HOUR });
-  const afterAll = await queue.today({ ...f.a, now: f.a.now + 2 * DAY });
+  const afterAll = await queue.today(aLater);
   expect(afterAll).toEqual({ items: [], limit: 5, heard: 0, resetAt: f.a.now + HOUR });
-  const theirsToday = await queue.today({ ...f.b, now: f.b.now + 2 * DAY });
+  const theirsToday = await queue.today(bLater);
   expect(theirsToday.items.map(item => item.course.id)).toEqual([theirs.task.id]);
   expect(theirsToday.heard).toBe(4);
   expect(theirsToday.resetAt).toBeNull();
@@ -251,14 +260,14 @@ test('C13-2: the latest learning position across courses becomes "continue": pag
   for (const page of ['watch', 'role', 'terms']) expect(lastPlace(course, { page, time: 3, turnIndex: 0 })).toEqual({ page, index: null });
   const first = await f.generated(f.a, '我想在酒店办理入住，确认预订。', 100_000);
   const second = await f.generated(f.a, '我想在诊所改约时间。', 100_000);
-  await f.progress.save({ ...f.a, now: f.a.now + 5 * HOUR, course: first.course, expectedVersion: 1, position: { page: 'prompt', time: 1, turnIndex: 0 } });
-  const latest = await f.progress.mostRecent({ ...f.a, now: f.a.now + 6 * HOUR });
+  await f.progress.save({ ...f.a, now: f.a.now + 1 * HOUR, course: first.course, expectedVersion: 1, position: { page: 'prompt', time: 1, turnIndex: 0 } });
+  const latest = await f.progress.mostRecent({ ...f.a, now: f.a.now + 2 * HOUR });
   expect(latest).toMatchObject({ course: { id: first.task.id, revision: first.task.revision }, position: { page: 'prompt', time: 1, turnIndex: 0 } });
-  await f.progress.save({ ...f.a, now: f.a.now + 7 * HOUR, course: second.course, expectedVersion: 1, position: { page: 'sentences', time: 2, turnIndex: 0 } });
-  expect((await f.progress.mostRecent({ ...f.a, now: f.a.now + 8 * HOUR })).course.id).toBe(second.task.id);
+  await f.progress.save({ ...f.a, now: f.a.now + 3 * HOUR, course: second.course, expectedVersion: 1, position: { page: 'sentences', time: 2, turnIndex: 0 } });
+  expect((await f.progress.mostRecent({ ...f.a, now: f.a.now + 4 * HOUR })).course.id).toBe(second.task.id);
   expect(await f.progress.mostRecent({ ...f.b, now: f.b.now })).toBeNull();
   await f.progress.removeAll(f.a);
-  expect(await f.progress.mostRecent({ ...f.a, now: f.a.now + 9 * HOUR })).toBeNull();
+  expect(await f.progress.mostRecent({ ...f.a, now: f.a.now + 5 * HOUR })).toBeNull();
 });
 
 // ---- C13-1 HTTP ----
