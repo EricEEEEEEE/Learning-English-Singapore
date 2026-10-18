@@ -831,6 +831,18 @@ dialog .data-explain p { margin-bottom: 12px; }
 .practice-review .practice-compare { padding: 10px 14px; border-radius: var(--radius); background: var(--surface-2); font-size: calc(14px * var(--text-scale)); }
 .keep-going { justify-self: center; }
 
+/* ---- C12: hear myself / the model, and "you said / model" side by side ---- */
+.bubble--me .bubble-tools { gap: 6px; }
+.bubble--me .chip-btn { padding: 8px 12px; background: rgb(255 255 255 / .16); color: var(--on-primary); }
+.bubble--me .chip-btn:hover:not(:disabled) { background: rgb(255 255 255 / .26); }
+.bubble--me .bubble-sub { color: var(--on-primary); opacity: .9; }
+.review-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.review-compare-turn { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: calc(12px * var(--text-scale)); font-weight: 650; }
+.review-compare-cell { display: grid; align-content: start; gap: 2px; min-width: 0; padding: 8px 10px; border-radius: var(--radius); background: var(--surface-2); overflow-wrap: anywhere; }
+.review-compare-label { display: block; color: var(--muted); font-size: calc(12px * var(--text-scale)); font-weight: 650; line-height: 1.4; }
+.review-compare-cell p { margin: 0; color: var(--ink); font-size: calc(14px * var(--text-scale)); font-weight: 600; line-height: 1.5; }
+.review-compare-play { justify-self: start; margin-top: 4px; padding: 6px 10px; background: var(--surface); }
+
 /* ---- Bottom bar: long labels wrap inside their button ---- */
 .action-bar-inner > .btn-primary { flex-grow: 1.3; }
 .action-bar-inner > .btn-ghost { padding-left: 14px; padding-right: 14px; }

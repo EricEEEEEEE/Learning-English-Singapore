@@ -43,14 +43,22 @@ export function lineVoice(role: 'partner' | 'learner', partnerGender?: 'female' 
   return role === 'partner' ? partner : partner === 'marin' ? 'cedar' : 'marin';
 }
 
-export async function generateLineAudio(line: AudioLine, options: { enabled?: boolean; apiKey?: string; fetch?: typeof fetch; partnerGender?: 'female' | 'male' } = {}): Promise<AudioAsset> {
+type SpeechOptions = { enabled?: boolean; apiKey?: string; fetch?: typeof fetch; partnerGender?: 'female' | 'male' };
+export async function generateLineAudio(line: AudioLine, options: SpeechOptions = {}): Promise<AudioAsset> {
+  // Course audio stays uncompressed WAV: the video assembly needs it.
+  const bytes = await requestSpeech(line, options, 'wav');
+  return { lineId: line.id, role: line.role, bytes, duration: wavDuration(bytes), sha256: createHash('sha256').update(bytes).digest('hex') };
+}
+
+// C12-4: one speech request in the given format; exactly one request, never retried.
+export async function requestSpeech(line: AudioLine, options: SpeechOptions, format: 'wav' | 'mp3'): Promise<Uint8Array> {
   if (options.enabled !== true || !options.apiKey) throw new Error('Audio provider disabled');
   if (!line || typeof line.id !== 'string' || !line.id.trim() || line.id.length > 500 || (line.role !== 'partner' && line.role !== 'learner') || typeof line.text !== 'string' || !line.text.trim() || line.text.length > 500) throw new Error('Invalid audio line');
   let bytes: Uint8Array;
   try {
     const response = await (options.fetch ?? fetch)('https://api.openai.com/v1/audio/speech', {
       method: 'POST', headers: { Authorization: `Bearer ${options.apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'gpt-4o-mini-tts-2025-12-15', voice: lineVoice(line.role, options.partnerGender), input: line.text, response_format: 'wav', instructions: 'Speak slowly and clearly for an adult English beginner, with a natural Singapore English accent. Be respectful and conversational, never exaggerated. Read only the supplied line.' }),
+      body: JSON.stringify({ model: 'gpt-4o-mini-tts-2025-12-15', voice: lineVoice(line.role, options.partnerGender), input: line.text, response_format: format, instructions: 'Speak slowly and clearly for an adult English beginner, with a natural Singapore English accent. Be respectful and conversational, never exaggerated. Read only the supplied line.' }),
       redirect: 'error', signal: AbortSignal.timeout(30_000),
     });
     if (!response.ok || !response.body) throw new Error('Audio response failed');
@@ -66,7 +74,12 @@ export async function generateLineAudio(line: AudioLine, options: { enabled?: bo
     } finally { reader.releaseLock(); }
     bytes = Buffer.concat(chunks, size);
   } catch { throw new Error('Audio request failed; do not automatically retry'); }
-  return { lineId: line.id, role: line.role, bytes, duration: wavDuration(bytes), sha256: createHash('sha256').update(bytes).digest('hex') };
+  return bytes;
+}
+
+// An MP3 stream starts with an ID3 tag or an MPEG audio frame sync.
+export function looksLikeMp3(bytes: Uint8Array) {
+  return bytes.length >= 4 && ((bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0));
 }
 
 export function planAudioSegments(assets: { lineId: string; duration: number }[]): { lineIds: string[]; duration: number }[] {

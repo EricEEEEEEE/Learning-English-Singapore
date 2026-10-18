@@ -12,6 +12,7 @@ import { classifyPracticeTurn, countOutcomes, practiceOutcomes, type PracticeOut
 import { ActionBar, Icon, Sheet, useShell } from './shell';
 import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
+import { c12Copy } from './c12-copy';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>> };
 type PracticeCourse = { id: string; revision: number; materialsRevision?: number; lines: Line[]; turns: { partnerLineId: string; learnerLineId: string }[] };
@@ -61,6 +62,23 @@ const AUDIO_TYPES = ['audio/webm', 'audio/ogg', 'audio/mp4', 'audio/wav'];
 const MAX_AUDIO_BYTES = 1_000_000;
 const MAX_RECORDING_MS = 30_000;
 const errorKey: Record<number, keyof Copy> = { 401: 'login', 429: 'budget', 502: 'failed', 503: 'unavailable' };
+// C12-1: a recording needs about 300 ms of sound above a quiet-room level before it is sent at all.
+const VOICE_RMS = 0.02, MIN_VOICED_MS = 300, METER_TICK_MS = 50;
+// C12-4: the microphone asks for the phone's own cleanup, and a request that never answers is explained after 8 s.
+const MIC_CONSTRAINTS = { audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } };
+const MIC_TIMEOUT_MS = 8000;
+// A few samples of silence, used once to unlock the reply audio element inside the learner's tap.
+const SILENT_WAV = 'data:audio/wav;base64,UklGRjQAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA';
+type Meter = { ctx: AudioContext; analyser: AnalyserNode | null; timer: number; samples: number; voicedMs: number; last: number };
+function openAudioContext(): AudioContext | null {
+  try {
+    const Context = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Context) return null;
+    const ctx = new Context();
+    ctx.resume?.()?.catch?.(() => undefined);
+    return ctx;
+  } catch { return null; /* no Web Audio: the recording is sent without a sound check */ }
+}
 const HELP_DELAY_MS = 6000;
 const AUTO_HELP_KEY = 'les.practice.autoHelp';
 function readAutoHelp() { try { return window.localStorage.getItem(AUTO_HELP_KEY) !== 'off'; } catch { return true; } }
@@ -94,6 +112,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const gaps = auditGapsCopy[language];
   const shell = shellCopy[language];
   const c11 = c11Copy[language];
+  const c12 = c12Copy[language];
   const shellContext = useShell();
   const online = useOnline();
   const choiceId = useId();
@@ -123,7 +142,19 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   const nativeAudio = useRef<HTMLAudioElement>(null);
   const [turnIndex, setTurnIndex] = useState(startTurn);
   const [stage, setStage] = useState<'idle' | 'opening' | 'recording' | 'sending'>('idle');
-  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' | 'offline' | 'staleGoal' } | null>(null);
+  const [notice, setNotice] = useState<{ kind: 'status' | 'alert'; key: keyof Copy | 'paused' | 'offline' | 'staleGoal' | 'quiet' | 'micStuck' | 'rateLimit' } | null>(null);
+  // C12-3: turns left today (from the last answer) and whether today's turns are used up.
+  const [remaining, setRemaining] = useState<number | null>(null);
+  const [limitReached, setLimitReached] = useState(false);
+  // C12-4: the phone refused to autoplay the reply; one tap in the bubble plays it.
+  const [blocked, setBlocked] = useState(false);
+  // C12-5: this turn's own recording, only in this page's memory, released when the turn changes.
+  const [selfUrl, setSelfUrl] = useState<string | null>(null);
+  const selfUrlRef = useRef<string | null>(null);
+  const selfAudio = useRef<HTMLAudioElement>(null);
+  const [showModel, setShowModel] = useState(false);
+  const meter = useRef<Meter | null>(null);
+  const unlocked = useRef(false);
   const [thinking, setThinking] = useState(false);
   const [choosing, setChoosing] = useState(false);
   const [chosenLine, setChosenLine] = useState<string | null>(memory && memory.turnIndex === startTurn ? memory.chosen?.[startTurn] ?? null : null);
@@ -156,10 +187,58 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     timer.current = null;
     stream.current?.getTracks().forEach(track => track.stop());
     stream.current = null;
+    closeMeter();
+  }
+  // C12-1: how much of the recording had sound. Unknown (null) when Web Audio could not listen, so nothing is held back.
+  function closeMeter(): number | null {
+    const m = meter.current;
+    meter.current = null;
+    if (!m) return null;
+    window.clearInterval(m.timer);
+    m.ctx.close?.()?.catch?.(() => undefined);
+    return m.analyser && m.samples >= 2 ? m.voicedMs : null;
+  }
+  function startMeter(ctx: AudioContext | null, media: MediaStream) {
+    if (!ctx) return;
+    let analyser: AnalyserNode;
+    try {
+      const source = ctx.createMediaStreamSource(media);
+      analyser = ctx.createAnalyser();
+      analyser.fftSize = 1024;
+      source.connect(analyser);
+    } catch { ctx.close?.()?.catch?.(() => undefined); return; /* not a stream Web Audio can read: send without a sound check */ }
+    const samples = new Float32Array(analyser.fftSize);
+    const m: Meter = { ctx, analyser, timer: 0, samples: 0, voicedMs: 0, last: performance.now() };
+    m.timer = window.setInterval(() => {
+      const now = performance.now(), elapsed = Math.min(200, now - m.last);
+      m.last = now;
+      if (m.ctx.state !== 'running') return;
+      analyser.getFloatTimeDomainData(samples);
+      let sum = 0;
+      for (let i = 0; i < samples.length; i++) sum += samples[i] * samples[i];
+      m.samples++;
+      if (Math.sqrt(sum / samples.length) >= VOICE_RMS) m.voicedMs += elapsed;
+    }, METER_TICK_MS);
+    meter.current = m;
+  }
+  function releaseSelf() {
+    if (selfUrlRef.current) URL.revokeObjectURL(selfUrlRef.current);
+    selfUrlRef.current = null;
+    setSelfUrl(null); setShowModel(false);
+  }
+  // C12-4: inside the learner's tap, play the reused reply element once, muted, so a later reply may play on phones.
+  function unlockReplyAudio() {
+    const element = audio.current;
+    if (!element || unlocked.current) return;
+    unlocked.current = true;
+    if (!element.getAttribute('src')) element.src = SILENT_WAV;
+    element.muted = true;
+    const done = () => { element.pause(); element.muted = false; };
+    try { element.play()?.then(done, () => { element.muted = false; }); } catch { element.muted = false; }
   }
   useEffect(() => {
     mounted.current = true;
-    return () => { mounted.current = false; if (recorder.current?.state === 'recording') recorder.current.stop(); release(); };
+    return () => { mounted.current = false; if (recorder.current?.state === 'recording') recorder.current.stop(); release(); if (selfUrlRef.current) URL.revokeObjectURL(selfUrlRef.current); selfUrlRef.current = null; };
   }, []);
   // A new bubble (reply, native-language help, a chosen meaning, a hint) is scrolled into view above the bottom bar.
   const chat = useRef<HTMLDivElement>(null);
@@ -170,7 +249,21 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     const last = chat.current?.lastElementChild;
     if (last && typeof last.scrollIntoView === 'function') last.scrollIntoView({ block: 'nearest' });
   }, [chatKey]);
-  useEffect(() => { if (reply && freshReply.current) { freshReply.current = false; audio.current?.play().catch(() => {}); } }, [reply]);
+  useEffect(() => {
+    if (!reply || !freshReply.current) return;
+    freshReply.current = false;
+    const element = audio.current;
+    if (!element) return;
+    element.muted = false;
+    // C12-4: a refused autoplay is said out loud as a button in the reply bubble instead of failing silently.
+    element.play().then(() => { if (mounted.current) setBlocked(false); }, (error: unknown) => { if (mounted.current && (error as DOMException)?.name === 'NotAllowedError') setBlocked(true); });
+  }, [reply]);
+  function playReply() {
+    const element = audio.current;
+    if (!element) return;
+    element.muted = false;
+    element.play().then(() => { if (mounted.current) setBlocked(false); }, () => undefined);
+  }
   // Silence after the partner has finished earns help: first how to begin, then the whole answer with a model.
   // Nothing is offered while the partner is still talking, while the learner is speaking, or once they answered.
   useEffect(() => {
@@ -226,19 +319,33 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     if (isOffline()) { setNotice({ kind: 'alert', key: 'offline' }); return; }
     mode.current = kind;
     if (kind === 'native') setNative(null);
-    setResumeChoice(false); setChoosing(false);
+    unlockReplyAudio();
+    const ctx = openAudioContext();
+    setResumeChoice(false); setChoosing(false); releaseSelf(); setBlocked(false);
     setNotice(null); setReply(null); setFeedback('idle'); setHelpLevel(0); discard.current = false; setStage('opening');
+    let timedOut = false;
     try {
-      const media = await navigator.mediaDevices.getUserMedia({ audio: true });
-      if (!mounted.current) { media.getTracks().forEach(track => track.stop()); return; }
+      const media = await new Promise<MediaStream>((resolve, reject) => {
+        const deadline = window.setTimeout(() => { timedOut = true; reject(new Error('Microphone request timed out')); }, MIC_TIMEOUT_MS);
+        Promise.resolve().then(() => navigator.mediaDevices.getUserMedia(MIC_CONSTRAINTS)).then(media => {
+          window.clearTimeout(deadline);
+          // An answer after the deadline gives the microphone straight back.
+          if (timedOut) media.getTracks().forEach(track => track.stop()); else resolve(media);
+        }, error => { window.clearTimeout(deadline); reject(error); });
+      });
+      if (!mounted.current) { media.getTracks().forEach(track => track.stop()); ctx?.close?.()?.catch?.(() => undefined); return; }
       stream.current = media;
+      startMeter(ctx, media);
       const type = AUDIO_TYPES.find(t => MediaRecorder.isTypeSupported?.(t));
       const rec = new MediaRecorder(media, type ? { mimeType: type } : undefined);
       const chunks: Blob[] = [];
       rec.ondataavailable = event => { if (event.data?.size) chunks.push(event.data); };
       rec.onstop = () => {
+        const voiced = closeMeter();
         release();
         if (discard.current) { discard.current = false; if (mounted.current) { setStage('idle'); setNotice({ kind: 'status', key: 'paused' }); } return; }
+        // C12-1: no real sound, nothing sent: no request, no reservation, no turn used.
+        if (voiced !== null && voiced < MIN_VOICED_MS) { if (mounted.current) { setStage('idle'); setNotice({ kind: 'status', key: 'quiet' }); } return; }
         void send(new Blob(chunks, { type: rec.mimeType || type || '' }));
       };
       recorder.current = rec;
@@ -246,7 +353,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
       timer.current = setTimeout(() => { if (rec.state === 'recording') rec.stop(); }, MAX_RECORDING_MS);
       setStage('recording');
     } catch {
-      release(); setStage('idle'); setNotice({ kind: 'alert', key: 'mic' });
+      release(); ctx?.close?.()?.catch?.(() => undefined);
+      if (mounted.current) { setStage('idle'); setNotice({ kind: 'alert', key: timedOut ? 'micStuck' : 'mic' }); }
     }
   }
 
@@ -268,7 +376,11 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
       });
       const data = await response.json().catch(() => null);
       if (!mounted.current) return;
+      // C12-3: past today's turns the page says so once and keeps listening, replay and hints open.
+      if (response.status === 429 && data?.error === 'daily_limit') { setLimitReached(true); setRemaining(0); return; }
+      if (response.status === 429 && data?.error === 'rate_limit') { setNotice({ kind: 'status', key: 'rateLimit' }); return; }
       if (!response.ok) { setNotice({ kind: 'alert', key: errorKey[response.status] ?? 'failed' }); return; }
+      if (Number.isSafeInteger(data?.remainingToday) && data.remainingToday >= 0) setRemaining(data.remainingToday);
       if (data?.kind === 'silence') { setNotice({ kind: 'status', key: 'silence' }); return; }
       // C9-1: the goal changed while this reply was on its way: it belongs to the old goal and must not overwrite the new one.
       if (goalRevision.current !== sentRevision || (data?.goalRevision !== undefined && data.goalRevision !== sentRevision)) { setNotice({ kind: 'status', key: 'staleGoal' }); return; }
@@ -287,6 +399,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         || (data.done !== undefined && typeof data.done !== 'boolean') || (data.understood !== undefined && typeof data.understood !== 'boolean')
         || !(note === undefined || note === null || typeof note === 'string' && note.length <= MAX_COACH_NOTE)) { setNotice({ kind: 'alert', key: 'failed' }); return; }
       freshReply.current = true;
+      // C12-5: keep this turn's recording in the page so the learner can hear it next to the model.
+      try { const url = URL.createObjectURL(blob); selfUrlRef.current = url; setSelfUrl(url); } catch { setSelfUrl(null); /* no object URLs: only the model can be played */ }
       answered.current[turnIndex] = data.transcript;
       understoodBy.current[turnIndex] = data.understood !== false;
       setNative(null);
@@ -301,7 +415,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     }
   }
 
-  function resetTurn() { setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); setNative(null); setPendingGoal(null); }
+  function resetTurn() { releaseSelf(); setBlocked(false); setReply(null); setNotice(null); setHelpLevel(0); setPartnerHelp(false); setFeedback('idle'); setThinking(false); setChoosing(false); setChosenLine(null); setResumeChoice(false); setNative(null); setPendingGoal(null); }
   function confirmGoal() {
     if (!pendingGoal) return;
     goalRevision.current += 1;
@@ -365,7 +479,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     requestAnimationFrame(() => micButton.current?.focus({ preventScroll: true }));
   }
   const canNext = !ending && !!(reply || chosenLine) && turnIndex < course.turns.length - 1;
-  const showTip = stage === 'idle' && !notice && online && !reply && !chosenLine && !native && !thinking && !choosing && helpLevel === 0 && history.length === 0 && turnIndex === 0 && stats.current.hints === 0;
+  const showTip = stage === 'idle' && !notice && online && !limitReached && !reply && !chosenLine && !native && !thinking && !choosing && helpLevel === 0 && history.length === 0 && turnIndex === 0 && stats.current.hints === 0;
   const helpAction = (action: () => void) => () => { setHelpOpen(false); action(); };
   const offlineId = `${choiceId}-offline`;
   return <div data-testid="scene-panel-5" className="practice-panel">
@@ -410,12 +524,20 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
           : <><p>{tools.helpFull}<span lang="en">{learner.text}</span></p><div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={() => playPartner(learner.id)}><Icon name="play" size={18} />{tools.demo}</button></div></>}
       </div>}
       {reply && <>
-        <div className="bubble bubble--me"><p data-testid="practice-heard">{copy.heard} <span lang="en">{reply.transcript}</span></p></div>
+        <div className="bubble bubble--me"><p data-testid="practice-heard">{copy.heard} <span lang="en">{reply.transcript}</span></p>
+          {showModel && <p data-testid="practice-model-line" className="bubble-sub">{c12.modelLine}<span lang="en">{learner.text}</span></p>}
+          <div data-testid="practice-self" className="bubble-tools">
+            {selfUrl && <><audio data-testid="practice-self-audio" ref={selfAudio} src={selfUrl} preload="auto" hidden />
+              <button type="button" className="chip-btn" disabled={busy} onClick={() => { audio.current?.pause(); stopPartner?.(); selfAudio.current?.play().catch(() => undefined); }}><Icon name="voice" size={18} />{c12.hearMe}</button></>}
+            <button type="button" className="chip-btn" disabled={busy} onClick={() => { selfAudio.current?.pause(); audio.current?.pause(); setShowModel(true); playPartner(learner.id); }}><Icon name="play" size={18} />{c12.hearModel}</button>
+          </div>
+        </div>
         <div className="bubble bubble--partner">
           <p data-testid="practice-reply" lang="en" className="bubble-text">{reply.text}</p>
-          <audio data-testid="practice-reply-audio" ref={audio} src={reply.src} preload="auto" hidden />
           {!reply.understood && <p data-testid="practice-clarify" className="bubble-sub" role="status">{quality.clarify}</p>}
-          <div className="bubble-tools"><button type="button" className="icon-btn icon-btn--soft" aria-label={shell.playReply} onClick={() => { audio.current?.play().catch(() => {}); }}><Icon name="play" /></button></div>
+          <div className="bubble-tools">{blocked
+            ? <button type="button" className="btn btn-tonal btn-small" onClick={playReply}><Icon name="speaker" size={18} />{c12.tapToHear}</button>
+            : <button type="button" className="icon-btn icon-btn--soft" aria-label={shell.playReply} onClick={playReply}><Icon name="play" /></button>}</div>
         </div>
         {showCoach && <div data-testid="practice-coach" className="coach-note" lang={language}>
           <p>{quality.coach}{reply.coachNote}</p>
@@ -425,6 +547,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         </div>}
       </>}
     </div>
+    {/* C12-4: one reply element for the whole visit, so the tap on "start" can unlock it for later replies. */}
+    <audio data-testid="practice-reply-audio" ref={audio} src={reply?.src} preload="auto" hidden />
     {pendingGoal && !ending && <div data-testid="practice-goal-confirm" className="notice-card" role="group" aria-label={gaps.goalAsk(pendingGoal.summary)}>
       <p lang={language}>{gaps.goalAsk(pendingGoal.summary)}</p>
       <div className="bubble-actions"><button type="button" className="btn btn-tonal btn-small" onClick={confirmGoal}>{gaps.goalConfirm}</button><button type="button" className="btn btn-ghost btn-small" onClick={() => setPendingGoal(null)}>{gaps.goalKeep}</button></div>
@@ -443,6 +567,16 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         <details data-testid="review-turns" className="review-turns">
           <summary><h4>{quality.reviewTitle}</h4><Icon name="chevron" size={18} /></summary>
           <ul className="review-turn-list">{course.turns.map((_, i) => <li key={i}>{answered.current[i] !== undefined ? `${quality.turnAnswered(i + 1, answered.current[i])} · ${outcomeLabel[outcomeOf(i)]}` : chosen.current[i] !== undefined ? extra.turnChosen(i + 1) : quality.turnSilent(i + 1)}</li>)}</ul>
+          {/* C12-5: what the learner said next to the model line, side by side; nothing compares or judges them. */}
+          {course.turns.map((item, i) => {
+            const said = answered.current[i], model = course.lines.find(line => line.id === item.learnerLineId);
+            return said !== undefined && model ? <div key={i} data-testid="review-compare" className="review-compare" role="group" aria-label={c12.turn(i + 1)}>
+              <p className="review-compare-turn">{c12.turn(i + 1)}</p>
+              <div className="review-compare-cell"><span className="review-compare-label">{c12.youSaid}</span><p data-testid="review-compare-said" lang="en">{said}</p></div>
+              <div className="review-compare-cell"><span className="review-compare-label">{c12.model}</span><p data-testid="review-compare-model" lang="en">{model.text}</p>
+                <button type="button" className="chip-btn review-compare-play" onClick={() => playPartner(model.id)}><Icon name="play" size={18} />{c12.hearModel}</button></div>
+            </div> : null;
+          })}
           <ul className="review-stat-list"><li>{quality.hints(stats.current.hints)}</li><li>{quality.autoHelp(stats.current.autoHelp)}</li><li>{quality.translations(stats.current.translations)}</li><li>{gaps.nativeCount(stats.current.native ?? 0)}</li><li>{quality.unknownTransfer}</li></ul>
           <p className="scene-note">{quality.reviewNote}</p>
         </details>
@@ -465,7 +599,9 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         {stage === 'recording' && <p role="status">{copy.listening}</p>}
         {stage === 'sending' && <p role="status">{copy.sending}</p>}
         {!online && <p id={offlineId} data-testid="practice-offline" role="status">{extra.practiceOffline}</p>}
-        {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : notice.key === 'staleGoal' ? gaps.goalStale : copy[notice.key]}</p>}
+        {limitReached && <p data-testid="practice-limit" role="status">{c12.dailyLimit}</p>}
+        {notice && <p role={notice.kind}>{notice.key === 'paused' ? tools.paused : notice.key === 'offline' ? extra.practiceOffline : notice.key === 'staleGoal' ? gaps.goalStale
+          : notice.key === 'quiet' || notice.key === 'micStuck' || notice.key === 'rateLimit' ? c12[notice.key] : copy[notice.key]}</p>}
         {showTip && <p data-testid="practice-tip" className="practice-tip">{shell.tipHint}</p>}
       </div>
       {canNext && stage !== 'recording' && <button type="button" className="btn btn-primary practice-next" onClick={nextTurn}>{copy.next}</button>}
@@ -474,17 +610,18 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         {stage === 'recording'
           ? <button ref={micButton} type="button" className="mic-btn is-recording" onClick={() => recorder.current?.stop()}><span className="mic-circle"><span className="mic-ring" aria-hidden="true" /><Icon name="stop" size={30} /></span><span className="mic-label">{copy.done}</span></button>
           : canNext
-            ? <button ref={micButton} type="button" className="side-btn" disabled={busy || !online} aria-describedby={!online ? offlineId : undefined} onClick={() => start('english')}><span className="side-icon"><Icon name="mic" /></span><span className="side-label">{copy.start}</span></button>
-            : <button ref={micButton} type="button" className="mic-btn" disabled={busy || !online} aria-describedby={!online ? offlineId : undefined} onClick={() => start('english')}><span className="mic-circle"><Icon name="mic" size={30} /></span><span className="mic-label">{copy.start}</span></button>}
+            ? <button ref={micButton} type="button" className="side-btn" disabled={busy || !online || limitReached} aria-describedby={!online ? offlineId : undefined} onClick={() => start('english')}><span className="side-icon"><Icon name="mic" /></span><span className="side-label">{copy.start}</span></button>
+            : <button ref={micButton} type="button" className="mic-btn" disabled={busy || !online || limitReached} aria-describedby={!online ? offlineId : undefined} onClick={() => start('english')}><span className="mic-circle"><Icon name="mic" size={30} /></span><span className="mic-label">{copy.start}</span></button>}
         <button type="button" className="side-btn" data-testid="help-open" aria-haspopup="dialog" aria-expanded={helpOpen} disabled={stage === 'recording' || stage === 'sending'} onClick={() => setHelpOpen(true)}><span className="side-icon"><Icon name="help" /></span><span className="side-label">{shell.moreHelp}</span></button>
       </div>
     </ActionBar>}
     <Sheet open={helpOpen && !ending} onClose={() => setHelpOpen(false)} title={shell.moreHelp} testId="help-sheet" closeLabel={shell.close}>
       <div className="sheet-rows">
-        <button type="button" className="sheet-row" disabled={busy || !online} onClick={helpAction(() => void start('native'))}><Icon name="translate" />{gaps.nativeStart}</button>
+        <button type="button" className="sheet-row" disabled={busy || !online || limitReached} onClick={helpAction(() => void start('native'))}><Icon name="translate" />{gaps.nativeStart}</button>
         <button type="button" className="sheet-row" disabled={busy} aria-expanded={choosing} onClick={helpAction(() => { setChoosing(open => !open); setResumeChoice(false); })}><Icon name="help" />{extra.choose}</button>
         <button type="button" className="sheet-row" disabled={busy || thinking} onClick={helpAction(() => { setThinking(true); setHelpLevel(0); setResumeChoice(false); })}><Icon name="pause" />{extra.think}</button>
       </div>
+      {remaining !== null && <p data-testid="practice-quota" className="sheet-note sheet-section">{c12.remaining(remaining)}</p>}
       <label className="switch-row sheet-section"><span>{tools.autoHelp}</span><input className="switch" type="checkbox" checked={autoHelp} onChange={event => changeAutoHelp(event.target.checked)} /></label>
     </Sheet>
     {more && <Sheet open={more.open} onClose={more.close} title={shellContext ? shell.more : shell.more} testId="more-sheet" closeLabel={shell.close} fallbackFocus={more.returnFocus}>

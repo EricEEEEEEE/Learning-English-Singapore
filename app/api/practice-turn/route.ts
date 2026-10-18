@@ -5,7 +5,7 @@ import { createLivePracticeService } from '../../../lib/live-practice';
 
 export const runtime = 'nodejs';
 const reply = (body: object, status = 200) => Response.json(body, { status, headers: { 'cache-control': 'private, no-store, max-age=0' } });
-type Service = { turn: (input: Record<string, unknown>) => Promise<unknown> };
+type Service = { turn: (input: Record<string, unknown>) => Promise<unknown>; quota?: (input: { cookie?: string; now: number }) => Promise<{ remainingToday: number }> };
 const KEYS = ['courseId', 'revision', 'materialsRevision', 'turnIndex', 'language', 'history', 'focus', 'correction', 'mode', 'goal', 'mimeType', 'audioBase64'];
 const MAX_BODY = 1_500_000;
 
@@ -34,11 +34,16 @@ export async function handlePracticeTurn(request: Request, { service, now }: { s
   if (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).some(key => !KEYS.includes(key)) || typeof body.audioBase64 !== 'string' || typeof body.mimeType !== 'string') return reply({ error: 'invalid' }, 400);
   const { audioBase64, mimeType, ...rest } = body;
   try {
-    return reply(await service.turn({ ...rest, cookie, now, audio: { bytes: new Uint8Array(Buffer.from(audioBase64 as string, 'base64')), mimeType } }) as object);
+    const result = await service.turn({ ...rest, cookie, now, audio: { bytes: new Uint8Array(Buffer.from(audioBase64 as string, 'base64')), mimeType } }) as object;
+    // C12-3: the page shows how many turns are left today; a failed count never fails the turn itself.
+    const quota = service.quota ? await service.quota({ cookie, now }).catch(() => null) : null;
+    return reply(quota && Number.isSafeInteger(quota.remainingToday) ? { ...result, remainingToday: quota.remainingToday } : result);
   } catch (error) {
     const message = error instanceof Error ? error.message : '';
     if (message === 'Authenticated session required') return reply({ error: 'unauthenticated' }, 401);
     if (message === 'Practice budget exceeded') return reply({ error: 'budget' }, 429);
+    if (message === 'Practice daily limit') return reply({ error: 'daily_limit' }, 429);
+    if (message === 'Practice rate limit') return reply({ error: 'rate_limit' }, 429);
     if (message === 'Practice turn failed') return reply({ error: 'failed' }, 502);
     return reply({ error: 'invalid' }, 400);
   }
