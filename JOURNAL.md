@@ -724,3 +724,4 @@
 - [audit] phase → implementing @ 2026-10-18T08:59:04+00:00
 - [audit] phase → test-writing @ 2026-10-18T09:32:07+00:00
 - C14 视频出片前质检（预演）绿：红2fcb0b9 绿95be6c1；verify 2442/2442 exit0；C14-1..3 勾选；未装新依赖，人脸两项 not_checked 只能 needs_review；零付费调用；截图 /mnt/project-files/les-plan/c14-*.png；阈值待 C15-4 标定
+- 2026-10-18 11:52 用户卡片选「可以装」（PySceneDetect、MediaPipe，仅离线质检脚本）；11:53 用户「全部通过，全部开始吧」：批准说明收进「更多」与 C15 四项按计划上限（C15-1≤USD0.5、C15-2 预留≤USD0.9、C15-3<USD0.1、C15-4≤USD25），C15 单独记账，合计上限 USD26.5，不与 C3 USD30 或历史 USD26 合算
