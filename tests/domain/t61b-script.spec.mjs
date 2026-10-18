@@ -45,7 +45,7 @@ test('T61B script: one bounded Responses request carries goal as data and return
   expect(calls[0].options.method).toBe('POST');
   const body = JSON.parse(calls[0].options.body);
   expect(body.model).toBe('gpt-4.1-2025-04-14'); // user chose the stronger script model on 2026-10-17 (scripts were too short)
-  expect(body.max_output_tokens).toBe(4000);
+  expect(body.max_output_tokens).toBe(6000); // C15-2 2026-10-18: a real script used 3,889 of 4,000 tokens
   expect(body.store).toBe(false);
   expect(body.tools ?? []).toEqual([]);
   expect(body.text.format.type).toBe('json_schema');
