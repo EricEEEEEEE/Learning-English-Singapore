@@ -722,3 +722,5 @@
 - [audit] phase → test-writing @ 2026-10-18T08:47:52+00:00
 - C13 复听与本地英语 绿：红6af7f61 纠错9ed5e6f,cd822a2 绿517995f；verify 2401/2401 exit0；C13-1..5 勾选；表达库与剧本卡全部 unreviewed；截图 /mnt/project-files/les-plan/c13-*.png；真机与真实模型未验证
 - [audit] phase → implementing @ 2026-10-18T08:59:04+00:00
+- [audit] phase → test-writing @ 2026-10-18T09:32:07+00:00
+- C14 视频出片前质检（预演）绿：红2fcb0b9 绿95be6c1；verify 2442/2442 exit0；C14-1..3 勾选；未装新依赖，人脸两项 not_checked 只能 needs_review；零付费调用；截图 /mnt/project-files/les-plan/c14-*.png；阈值待 C15-4 标定
