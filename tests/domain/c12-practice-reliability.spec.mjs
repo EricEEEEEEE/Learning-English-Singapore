@@ -63,8 +63,10 @@ for (const [name, note, kept] of [
   ['a correct quote of what the learner said', '“change to Friday” 很清楚。', true],
   ['a correct quote in other letter case', '“friday” 说得很清楚，也可以说 Could we move it to Friday?', true],
   ['a correct corner-bracket quote', '「Can we change」はていねいです。', true],
-  ['no quotation marks at all', '可以说 Could we move it to Friday? 也很自然。', true],
-  ['quotes around Chinese words only', '“改到星期五” 的意思很清楚。', true],
+  // C15-2c: an understood answer now keeps a note only with a quote of the learner or suggested wording; the same two notes
+  // are still kept when the meaning was unclear (tests/domain/c15-prompt-fixes.spec.mjs).
+  ['no quotation marks at all', '可以说 Could we move it to Friday? 也很自然。', false],
+  ['quotes around Chinese words only', '“改到星期五” 的意思很清楚。', false],
 ]) test(`C12-2 / F8.3: ${name} ${kept ? 'keeps' : 'drops'} the coach note; the reply and its voice stay`, async () => {
   const { turn, calls } = await setup({ transcript: transcriptWords, respond: async () => answer({ coachNote: note }) });
   const result = await turn();

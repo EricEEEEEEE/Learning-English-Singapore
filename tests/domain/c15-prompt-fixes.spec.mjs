@@ -75,16 +75,17 @@ async function setup(note) {
   });
   return language => service.turn({ cookie, now: now + 1, courseId: course.id, revision: 1, turnIndex: 0, language, history: [], audio: { bytes: Buffer.from('synthetic learner speech'), mimeType: 'audio/webm' } });
 }
+// C15-2c: each note quotes the learner, so only the help-language rule decides (understood notes need a quote or wording).
 for (const [language, note, kept] of [
-  ['zh-Hans', 'Is it allowed? can be simplified to Can I do this?', false],
-  ['zh-Hans', '可以更简单地说 Can I do this?', true],
-  ['ja', 'You can also say Can I do this?', false],
-  ['ja', 'Can I do this? と言ってもいいです。', true],
-  ['ko', 'Try saying Can I do this?', false],
-  ['ko', 'Can I do this? 라고 해도 돼요.', true],
-  ['hi', 'Say Can I do this? instead.', false],
-  ['hi', 'आप Can I do this? भी कह सकते हैं।', true],
-  ['id', 'Bisa juga bilang Can I do this?', true],
+  ['zh-Hans', '"Is it allowed" can be simplified to Can I do this?', false],
+  ['zh-Hans', '"Is it allowed" 可以更简单地说 Can I do this?', true],
+  ['ja', 'Instead of "Is it allowed" you can also say Can I do this?', false],
+  ['ja', '"Is it allowed" は Can I do this? と言ってもいいです。', true],
+  ['ko', 'Try saying Can I do this? for "Is it allowed"', false],
+  ['ko', '"Is it allowed" 는 Can I do this? 라고 해도 돼요.', true],
+  ['hi', 'Say Can I do this? instead of "Is it allowed".', false],
+  ['hi', '"Is it allowed" की जगह आप Can I do this? भी कह सकते हैं।', true],
+  ['id', 'Selain "Is it allowed", bisa juga bilang Can I do this?', true],
 ]) test(`C15-2 R10d / F8.3: a ${language} coach note ${kept ? 'in the help language is kept' : 'written only in English is dropped'}; the reply stays`, async () => {
   const turn = await setup(note);
   expect(await turn(language)).toMatchObject({ kind: 'reply', coachNote: kept ? note : null, reply: { text: answer().reply } });
@@ -156,4 +157,105 @@ test('C15-2b C12-2: the provider joins the suggested wording to the note without
   const long = '可以更简单地说。'.repeat(13);
   expect((await partnerTurn({}, answer({ coachNote: long, suggestedWording: 'I have brought my passport and my appointment letter.' }))).result.coachNote).toBe(long);
   expect((await partnerTurn({}, answer({ coachNote: '可以更简单。' }))).result.coachNote).toBe('可以更简单。');
+});
+
+// C15-2c (2026-10-18 real re-check, round 2 after C15-2b, see docs/evidence/c15-prompt-spotcheck.md "修复后复查"): the prompt
+// alone still let through RC-R7a (goalChange set, reply already accepts "three packets"), RC-R3d / RC2-R3b (understood false,
+// the reply still follows the small talk) and RC2-R2b / RC-R7b / RC2-R3d (praise or instructions as a coach note on an
+// understandable answer). These tests pin the zero-cost deterministic fallbacks in the turn service; every provider is a fake.
+const hawker = () => ({
+  id: 'c15-2c-hawker', lines: [
+    { id: 'p1', role: 'partner', text: 'Hi auntie, what would you like today?' }, { id: 'l1', role: 'learner', text: 'One chicken rice, please.' },
+    { id: 'p2', role: 'partner', text: 'Okay. Steamed or roasted chicken? Eat here or take away?' }, { id: 'l2', role: 'learner', text: 'Steamed, eat here.' },
+    { id: 'p3', role: 'partner', text: 'Please take this number and wait for your food.' }, { id: 'l3', role: 'learner', text: 'Okay, thank you.' },
+  ],
+  turns: [{ partnerLineId: 'p1', learnerLineId: 'l1' }, { partnerLineId: 'p2', learnerLineId: 'l2' }, { partnerLineId: 'p3', learnerLineId: 'l3' }],
+});
+async function fallbackSetup({ transcript = 'One chicken rice, please.', value = answer() } = {}) {
+  const { createPracticeTurnService } = await import('../../lib/practice-turn.ts');
+  const cookie = await sealGoogleSession(identity('c15-2c-owner'), secret, now);
+  const course = hawker(), calls = { respond: 0, speak: [] };
+  const service = createPracticeTurnService({
+    directory: await mkdtemp(join(tmpdir(), 'les-c15-2c-turn-')), sessionSecret: secret, maxReservedMicros: 10_000_000, turnMicros: 100_000,
+    getCourse: async () => course,
+    transcribe: async () => ({ text: transcript }),
+    respond: async () => { calls.respond++; return typeof value === 'function' ? value() : value; },
+    speak: async input => { calls.speak.push(input); return { bytes: Buffer.from('ID3 partner mp3'), mimeType: 'audio/mpeg' }; },
+  });
+  const turn = (over = {}) => service.turn({ cookie, now: now + 1, courseId: course.id, revision: 1, turnIndex: 0, language: 'zh-Hans', history: [], audio: { bytes: Buffer.from('synthetic learner speech'), mimeType: 'audio/webm' }, ...over });
+  return { turn, calls };
+}
+
+// ---- 1. a proposed goal change is only ever confirmed, never accepted, in the spoken reply ----
+
+test('C15-2c R7 / F9.3: with a goalChange the spoken reply is its confirm question, not the model reply that already accepts the new task', async () => {
+  const goalChange = { summary: '打包三份鸡饭带回家', confirm: 'You want three packets to take home, right?' };
+  const { turn, calls } = await fallbackSetup({ transcript: 'Can I order three packets to take home for my family instead?', value: answer({ reply: 'Sure, three packets to take away. Will you want steamed or roasted chicken?', goalChange }) });
+  const result = await turn();
+  expect(result).toMatchObject({ kind: 'reply', goalChange, done: false, reply: { text: goalChange.confirm } });
+  expect(calls.speak).toEqual([{ text: goalChange.confirm }]);
+});
+
+test('C15-2c R7: a confirm question that is not one English question is replaced by a fixed English check, never the accepting reply', async () => {
+  for (const confirm of ['你想改成明天下午来，对吗？', 'Okay, tomorrow afternoon is fine.']) {
+    const goalChange = { summary: '改到明天下午来', confirm };
+    const { turn, calls } = await fallbackSetup({ transcript: 'Sorry, can I come back tomorrow afternoon instead?', value: answer({ reply: 'Okay, no problem. Tomorrow afternoon is fine.', goalChange }) });
+    const result = await turn();
+    expect(result.goalChange).toEqual(goalChange);
+    expect(result.reply.text).toBe('Just to check, you want to change the plan, right?');
+    expect(calls.speak).toEqual([{ text: 'Just to check, you want to change the plan, right?' }]);
+  }
+});
+
+// ---- 2. when the partner did not understand, the reply is one short question about the scene ----
+
+for (const [name, transcript, reply, turnIndex, expected] of [
+  ['answers the small talk first, then asks (RC-R3d)', 'The weather is so hot today. Do you like durian?', 'Yes, I like durian very much. What would you like to eat?', 0, 'Hi auntie, what would you like today?'],
+  ['follows the new topic in one question (RC2-R3b)', 'My son goes to school near here.', 'Oh, where is his school?', 0, 'Hi auntie, what would you like today?'],
+  ['is not a question', 'Uh... the... rice... ah...', 'Sorry, I do not understand.', 1, 'Eat here or take away?'],
+  ['is two questions', 'Uh... the... rice... ah...', 'Sorry? What do you want?', 1, 'Eat here or take away?'],
+  ['has no question in the partner line, so the line becomes one', 'Uh... number... ah...', 'Sorry, I do not understand you.', 2, 'Please take this number and wait for your food, okay?'],
+]) test(`C15-2c R3 / F9.2: a not-understood reply that ${name} is replaced by the current partner line from the stored course`, async () => {
+  const { turn, calls } = await fallbackSetup({ transcript, value: answer({ understood: false, reply }) });
+  const result = await turn({ turnIndex });
+  expect(result).toMatchObject({ kind: 'reply', understood: false, reply: { text: expected } });
+  expect(calls.speak).toEqual([{ text: expected }]);
+  expect(calls.respond).toBe(1);
+});
+
+test('C15-2c R3: a not-understood reply that is one short question about the scene is kept; an understood reply is never touched', async () => {
+  const clarify = 'Do you want chicken rice or some other rice?';
+  let { turn } = await fallbackSetup({ transcript: 'Uh... the... rice... ah...', value: answer({ understood: false, reply: clarify }) });
+  expect((await turn()).reply.text).toBe(clarify);
+  const followed = 'Okay, roasted chicken, no chili. For your child, white rice or chicken only?';
+  ({ turn } = await fallbackSetup({ transcript: 'Roasted one, no chili. My child eats also.', value: answer({ reply: followed }) }));
+  expect((await turn()).reply.text).toBe(followed);
+});
+
+// ---- 3. an understandable answer gets a coach note only when it quotes the learner or suggests wording ----
+
+const learnerSaid = 'Chili no want, chicken the steam.';
+for (const [name, note, kept] of [
+  ['praise without a quote (RC-R7b)', '问句表示确认，适合初学者。', false],
+  ['an instruction about what to do next (RC2-R3d)', '不要换话题，回答对方的问题。', false],
+  ['an explanation of the partner\'s words', 'steamed 是白切鸡的意思。', false],
+  ['a quote in Chinese that the learner did not say (formerly kept by C12-2)', '“不要辣” 的意思很清楚。', false],
+  ['a quote of the learner\'s own words', '“Chili no want” 可以说得更自然。', true],
+  ['suggested wording joined by the provider', '可以说得更自然 → No chili, please.', true],
+]) test(`C15-2c R4 / F8.3: on an understood answer, ${name} ${kept ? 'keeps' : 'drops'} the coach note; the reply stays`, async () => {
+  const { turn } = await fallbackSetup({ transcript: learnerSaid, value: answer({ coachNote: note }) });
+  expect(await turn()).toMatchObject({ kind: 'reply', understood: true, coachNote: kept ? note : null, reply: { text: answer().reply } });
+});
+
+test('C15-2c R4 / C12-2: when the meaning was unclear, a note without a quote is still kept (C12-2 rows formerly kept on understood answers)', async () => {
+  for (const note of ['可以说 Could we move it to Friday? 也很自然。', '“改到星期五” 的意思很清楚。', '可以说 Friday morning。']) {
+    const { turn } = await fallbackSetup({ transcript: 'Can we change to Friday instead?', value: answer({ understood: false, reply: 'Do you want chicken rice today?', coachNote: note }) });
+    expect(await turn()).toMatchObject({ understood: false, coachNote: note });
+  }
+});
+
+test('C15-2c R4: the provider\'s suggested-wording join is what the turn service recognises, so a real note with wording is kept', async () => {
+  const { result } = await partnerTurn({ transcript: learnerSaid }, answer({ coachNote: '这样说有点不自然。', suggestedWording: 'No chili, please.' }));
+  const { turn } = await fallbackSetup({ transcript: learnerSaid, value: result });
+  expect((await turn()).coachNote).toBe('这样说有点不自然。 → No chili, please.');
 });
