@@ -12,7 +12,7 @@ test('T61B video: explicit fixed parameters submit once and return pending, neve
   const { submitVideoSegment } = await load(); let calls = 0;
   const result = await submitVideoSegment(input(), { enabled: true, apiKey: 'synthetic', fetch: async (url, options) => {
     calls++; expect(url).toBe('https://api.ltx.io/v2/audio-to-video'); expect(options.method).toBe('POST');
-    expect(JSON.parse(options.body)).toEqual({ audio_uri: input().audioUri, prompt: input().prompt, model: 'ltx-2-5-fast', resolution: '720x1280', fps: 24 });
+    expect(JSON.parse(options.body)).toEqual({ audio_uri: input().audioUri, prompt: input().prompt, model: 'ltx-2-5-fast', resolution: '720x1280', fps: 24, camera_motion: 'static' }); // C14-3: fixed camera
     expect(options.redirect).toBe('error'); expect(options.signal).toBeTruthy();
     return Response.json({ id: 'job-a', created_at: '2026-09-26T00:00:00Z' }, { status: 202 });
   } });
