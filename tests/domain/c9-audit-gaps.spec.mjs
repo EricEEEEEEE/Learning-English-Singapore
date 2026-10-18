@@ -146,8 +146,8 @@ async function ask(over, value = answer()) {
 test('C9-1 adapter: the strict schema adds a nullable goal change with exactly a summary and a confirming question', async () => {
   const { body, result } = await ask({}, answer({ reply: goalChange.confirm, goalChange }));
   const schema = body.text.format.schema;
-  expect(Object.keys(schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
-  expect([...schema.required].sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
+  expect(Object.keys(schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'suggestedWording', 'understood']);
+  expect([...schema.required].sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'suggestedWording', 'understood']);
   const variants = schema.properties.goalChange.anyOf;
   expect(variants.map(v => v.type).sort()).toEqual(['null', 'object']);
   const shape = variants.find(v => v.type === 'object');

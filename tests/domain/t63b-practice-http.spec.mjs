@@ -51,8 +51,8 @@ test('T63B adapters: the partner reply keeps the learner transcript as data and 
   expect(body.max_output_tokens).toBeLessThanOrEqual(300);
   expect(body.text.format.strict).toBe(true);
   // C6 widened the strict reply contract with done and an optional coach note (see tests/domain/c6-practice-quality.spec.mjs);
-  // C9 added a nullable goal change (see tests/domain/c9-audit-gaps.spec.mjs).
-  expect(Object.keys(body.text.format.schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
+  // C9 added a nullable goal change (see tests/domain/c9-audit-gaps.spec.mjs); C15-2b a nullable suggested wording (c15-prompt-fixes).
+  expect(Object.keys(body.text.format.schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'suggestedWording', 'understood']);
   const system = body.input.find(x => x.role === 'system').content, user = body.input.find(x => x.role === 'user').content;
   expect(system).toContain('Good morning. Are you ready?');
   expect(system).not.toContain('write a poem');

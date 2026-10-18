@@ -118,8 +118,8 @@ test('T19A adapter: the strict schema asks for reply, understood, done and an op
   const { body, result } = await ask({}, answer({ done: true, coachNote: '可以说 Friday works better.' }));
   const schema = body.text.format.schema;
   expect(body.text.format.strict).toBe(true);
-  expect(Object.keys(schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
-  expect([...schema.required].sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
+  expect(Object.keys(schema.properties).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'suggestedWording', 'understood']);
+  expect([...schema.required].sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'suggestedWording', 'understood']);
   expect(schema.additionalProperties).toBe(false);
   expect(schema.properties.done.type).toBe('boolean');
   expect([...schema.properties.coachNote.type].sort()).toEqual(['null', 'string']);

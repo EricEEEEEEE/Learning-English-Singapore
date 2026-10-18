@@ -109,3 +109,51 @@ test('C15-2 C13-3: the script prompt asks for hear-only or casual-ok on every sg
   const system = bodies[0].input.find(x => x.role === 'system').content;
   expect(system).toMatch(/every sg-colloquial item takes useAdvice hear-only or casual-ok, never say/i);
 });
+
+// C15-2b (2026-10-18 real re-check, 12 gpt-4.1-mini turns after C15-2a, see docs/evidence/c15-prompt-spotcheck.md "修复后复查"):
+// RC-R3b still followed "My son goes to school near here." (understood true), RC-R11b still went on after the last partner
+// line (done false), RC-R7a accepted the new quantity in the reply while setting goalChange, and RC-R4b / RC-R6b still put the
+// suggested wording in quotation marks ("have brought"), so C12-2 drops the note. The fixes below are pinned with fakes only.
+const partnerTurn = async (over = {}, value = answer()) => {
+  const { respondInScene } = await import('../../lib/practice-providers.ts'); const bodies = [];
+  const result = await respondInScene(context(over), { enabled: true, apiKey: 'synthetic', fetch: async (_u, o) => { bodies.push(JSON.parse(o.body)); return Response.json(completed(value)); } });
+  return { result, schema: bodies[0].text.format.schema, system: bodies[0].input.find(x => x.role === 'system').content };
+};
+const twoTurns = [{ role: 'partner', text: 'Hi, what would you like today?' }, { role: 'learner', text: 'One chicken rice, please.' }, { role: 'partner', text: 'Eat here or take away?' }, { role: 'learner', text: 'Eat here, please.' }];
+
+test('C15-2b R3 / R7 / R11: the model decides understood, done and goalChange before it writes the reply, and the reply must match them', async () => {
+  const { schema, system } = await partnerTurn();
+  expect(Object.keys(schema.properties).slice(0, 4)).toEqual(['understood', 'done', 'goalChange', 'reply']);
+  expect([...schema.required].sort()).toEqual(Object.keys(schema.properties).sort());
+  expect(system).toMatch(/decide understood, done and goalChange first/i);
+  expect(system).toMatch(/when goalChange is set, the reply is its confirm question/i);
+  expect(system).toMatch(/when understood is false, the reply does not answer or follow the unrelated topic/i);
+});
+
+test('C15-2b R11: on the script\'s last turn the prompt says so and asks for done; earlier turns do not get that line', async () => {
+  const last = await partnerTurn({ sceneLines: twoTurns, partnerLine: twoTurns[2].text, expectedLearnerLine: twoTurns[3].text });
+  expect(last.system).toMatch(/this is the last turn of the script/i);
+  const first = await partnerTurn({ sceneLines: twoTurns, partnerLine: twoTurns[0].text, expectedLearnerLine: twoTurns[1].text });
+  expect(first.system).not.toMatch(/this is the last turn of the script/i);
+});
+
+test('C15-2b C12-2: suggested English wording has its own field, so the coach note only quotes the learner', async () => {
+  const { schema, system } = await partnerTurn();
+  expect([...schema.properties.suggestedWording.type].sort()).toEqual(['null', 'string']);
+  expect(schema.required).toContain('suggestedWording');
+  expect(system).toMatch(/put the suggested English wording only in suggestedWording, never in coachNote/i);
+});
+
+test('C15-2b C12-2: the provider joins the suggested wording to the note without quotation marks, and the turn service keeps it', async () => {
+  const { quotesOnlyLearnerWords } = await import('../../lib/practice-turn.ts');
+  const transcript = 'Yes I have bring the passport and letter.';
+  const { result } = await partnerTurn({ transcript }, answer({ coachNote: '"have bring" 要用过去分词。', suggestedWording: '"I have brought my passport and letter."' }));
+  expect(result.coachNote).toBe('"have bring" 要用过去分词。 → I have brought my passport and letter.');
+  expect(quotesOnlyLearnerWords(result.coachNote, transcript)).toBe(true);
+  expect(Object.keys(result).sort()).toEqual(['coachNote', 'done', 'goalChange', 'reply', 'understood']);
+  // No note, no wording on its own; a join longer than the note limit keeps the note only; an older answer without the field still parses.
+  expect((await partnerTurn({}, answer({ coachNote: null, suggestedWording: 'No chili, please.' }))).result.coachNote).toBeNull();
+  const long = '可以更简单地说。'.repeat(13);
+  expect((await partnerTurn({}, answer({ coachNote: long, suggestedWording: 'I have brought my passport and my appointment letter.' }))).result.coachNote).toBe(long);
+  expect((await partnerTurn({}, answer({ coachNote: '可以更简单。' }))).result.coachNote).toBe('可以更简单。');
+});
