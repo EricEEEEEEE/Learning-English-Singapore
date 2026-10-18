@@ -80,6 +80,7 @@ const notCopy = {
   'profile-copy.ts': { choiceText: 'key lookup, covered by T04/T05 tests', bandText: 'key lookup, covered by T04/T05 tests' },
   'practice-quality-copy.ts': { practiceQualityReviewed: 'review flag' },
   'scene-seed-copy.ts': {}, 'scene-confirm-copy.ts': {},
+  'c13-copy.ts': { localTag: 'key lookup over c13Copy by register and use advice, covered by C13 tests', reviewNote: 'key lookup over c13Copy by review status, covered by C13 tests' },
 };
 
 test('C7 T31A: every *-copy.ts export is a five-language record, a per-language function or an explained exception', async () => {
