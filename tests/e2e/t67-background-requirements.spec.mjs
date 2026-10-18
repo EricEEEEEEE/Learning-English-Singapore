@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 
 const title = '你想在哪个场景下学习英语？';
 const description = '我想在社区花园和邻居聊种菜，问清周末活动的时间。';
@@ -223,10 +224,10 @@ test('T67 / K3.3: saved confirmation is withdrawn when keywords, language or des
   await main.getByRole('textbox', { name: labels[0], exact: true }).fill('新的地点');
   await expect(saved).toHaveCount(0);
   await save(); await expect(saved).toBeVisible();
-  await page.getByRole('combobox').selectOption('id');
+  await openMore(page); await page.getByRole('combobox').selectOption('id'); await closeMore(page);
   await expect(saved).toHaveCount(0);
   await expect(main.getByText('Kebutuhan tersimpan.', { exact: true })).toHaveCount(0);
-  await page.getByRole('combobox').selectOption('zh-Hans');
+  await openMore(page); await page.getByRole('combobox').selectOption('zh-Hans'); await closeMore(page);
   await save(); await expect(saved).toBeVisible();
   await main.getByRole('button', { name: '返回', exact: true }).click();
   await main.getByRole('textbox', { name: title, exact: true }).fill('修改后的场景');
@@ -311,14 +312,14 @@ for (const language of languages) test(`T67 / K3: ${language.code} labels and sa
   const state = await api(page, context); await page.goto('/');
   const main = page.getByRole('main');
   await main.getByRole('textbox', { name: title, exact: true }).fill(description);
-  await page.getByRole('combobox').selectOption(language.code);
+  await openMore(page); await page.getByRole('combobox').selectOption(language.code); await closeMore(page);
   await main.getByRole('button', { name: language.next, exact: true }).click();
   for (const label of language.labels) await expect(main.getByRole('textbox', { name: label, exact: true })).toBeVisible();
   await main.getByRole('textbox', { name: language.labels[0], exact: true }).fill('Community garden');
   await main.getByRole('button', { name: language.save, exact: true }).click();
   await expect(main.getByText(language.saved, { exact: true })).toBeVisible(); expect(state.records[state.owner].content.language).toBe(language.code);
   await page.reload();
-  await expect(page.getByRole('combobox')).toHaveValue(language.code);
+  await openMore(page); await expect(page.getByRole('combobox')).toHaveValue(language.code); await closeMore(page);
   await expect(main.getByRole('textbox')).toHaveValue(description);
   await main.getByRole('button', { name: language.next, exact: true }).click();
   await expect(main.getByRole('textbox', { name: language.labels[0], exact: true })).toHaveValue('Community garden');

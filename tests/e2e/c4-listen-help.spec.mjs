@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupGuided, hotelSample, assertSameMedia } from '../fixtures/t69-guided-browser.mjs';
 import { installMic, routePractice, openSentences, openPrompt, openPractice, panel, twoTurns, reply, mediaReady, trackTimes } from '../fixtures/c4-practice-browser.mjs';
+import { openHelp, closeHelp } from '../fixtures/c10-shell.mjs';
 
 // C4 (user 2026-10-17: finish the product before real video): listening controls, native-language help,
 // proactive help after silence, and practice that survives a detour. Everything replays the same saved media;
@@ -140,13 +141,16 @@ test('T18A / F8.4: proactive help can be switched off, stays off, and manual hin
   test.setTimeout(45_000);
   const { main } = await openPractice(page, context, baseURL);
   const toggle = panel(main).getByRole('checkbox', { name: '我没开口时主动给提示', exact: true });
+  await openHelp(main);
   await expect(toggle).toBeChecked();
   await toggle.uncheck();
+  await closeHelp(main);
   await page.waitForTimeout(9000);
   await expect(panel(main).getByTestId('practice-auto-help')).toHaveCount(0);
   await panel(main).getByRole('button', { name: '需要提示', exact: true }).click();
   await expect(main.getByTestId('scene-answer')).toHaveText(second.text);
   await main.getByRole('button', { name: '下一步：开口对练', exact: true }).click();
+  await openHelp(main);
   await expect(panel(main).getByRole('checkbox', { name: '我没开口时主动给提示', exact: true })).not.toBeChecked();
 });
 

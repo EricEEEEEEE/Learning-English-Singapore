@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { emptyRequirements } from '../fixtures/empty-requirements.mjs';
 
 const sceneTitle = '你想在哪个场景下学习英语？';
@@ -135,7 +136,7 @@ const languages = [
 for (const language of languages) {
   test(`T66 / K1.3,K2: ${language.code} has localized choices, feedback and reversible free input`, async ({ page }) => {
     await openScene(page);
-    await page.getByRole('combobox').selectOption(language.code);
+    await openMore(page); await page.getByRole('combobox').selectOption(language.code); await closeMore(page);
     await expect(page.locator('html')).toHaveAttribute('lang', language.code);
     const input = page.getByRole('textbox', { name: language.title, exact: true });
     for (const name of language.examples) await expect(page.getByRole('button', { name, exact: true })).toBeVisible();
@@ -147,7 +148,7 @@ for (const language of languages) {
     await expect(page.getByText(language.sample, { exact: true })).toBeVisible();
     await page.getByRole('button', { name: language.back, exact: true }).click();
     await expect(input).toHaveValue(language.sample);
-    await page.getByRole('combobox').selectOption(language.code === 'zh-Hans' ? 'ko' : 'zh-Hans');
+    await openMore(page); await page.getByRole('combobox').selectOption(language.code === 'zh-Hans' ? 'ko' : 'zh-Hans'); await closeMore(page);
     await expect(page.getByRole('textbox')).toHaveValue(language.sample);
   });
 }

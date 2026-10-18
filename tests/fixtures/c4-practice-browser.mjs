@@ -1,5 +1,6 @@
 import { expect } from '@playwright/test';
 import { setupGuided, enterTerms } from './t69-guided-browser.mjs';
+import { startPracticeSetup } from './c10-shell.mjs';
 
 // Shared helpers for the C4 listening/help pages. Same synthetic microphone and practice route as T63B:
 // no real microphone, no network beyond the page's own routes, no model calls.
@@ -55,6 +56,8 @@ export async function openPractice(page, context, baseURL, options) {
   const guided = await openPrompt(page, context, baseURL, options);
   await guided.main.getByRole('button', { name: '下一步：开口对练', exact: true }).click();
   await expect(guided.main.getByRole('heading', { name: '开口对练', exact: true })).toBeVisible();
+  // C10-4: the first-turn settings sheet; `keepSetup` leaves it open for tests about the settings themselves.
+  if (!options?.keepSetup) await startPracticeSetup(guided.main);
   return guided;
 }
 export const panel = main => main.getByTestId('scene-panel-5');

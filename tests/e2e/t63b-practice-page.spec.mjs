@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupGuided, enterTerms, assertSameMedia, hotelSample, guidedId, guidedRevision, guidedMaterials } from '../fixtures/t69-guided-browser.mjs';
+import { startPracticeSetup } from '../fixtures/c10-shell.mjs';
 
 // T63B / K5.3, J5: the fifth page lets the learner answer the partner out loud. The microphone is only requested
 // after an explicit start, the turn is sent once after the learner says they are done, silence never advances,
@@ -53,6 +54,7 @@ async function openPractice(page, context, baseURL, options) {
   await guided.main.getByRole('button', { name: '下一步：提示接话', exact: true }).click();
   await guided.main.getByRole('button', { name: '下一步：开口对练', exact: true }).click();
   await expect(guided.main.getByRole('heading', { name: '开口对练', exact: true })).toBeVisible();
+  await startPracticeSetup(guided.main);
   return guided;
 }
 const panel = main => main.getByTestId('scene-panel-5');

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { emptyRequirements } from '../fixtures/empty-requirements.mjs';
 
 const sceneTitle = '你想在哪个场景下学习英语？';
@@ -108,7 +109,7 @@ test('T66 / K1.3,K2: unavailable browser storage cannot block a verified user fr
   await page.route('**/api/auth/session', route => route.fulfill({ json: ownerA }));
   await page.goto('/');
   await page.getByRole('textbox', { name: sceneTitle, exact: true }).fill('我想和邻居聊一聊。');
-  await page.getByRole('combobox').selectOption('ko');
+  await openMore(page); await page.getByRole('combobox').selectOption('ko'); await closeMore(page);
   await expect(page.getByRole('textbox', { name: '어떤 상황에서 영어를 배우고 싶으세요?', exact: true })).toHaveValue('我想和邻居聊一聊。');
   await expect(page.getByRole('status')).not.toBeEmpty();
   await expect(page.getByRole('link', { name: /Google/ })).toHaveCount(0);

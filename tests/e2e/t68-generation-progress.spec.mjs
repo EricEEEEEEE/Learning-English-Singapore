@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { setupBrowser, openBackground, requirement, generationView, observeGenerationRequest, ownerA, ownerB, scenario, sceneTitle, progressTitle, keywordKeys, keywordLabels, keywordValues } from '../fixtures/t68-generation-browser.mjs';
 
 test.use({ locale: 'zh-CN' });
@@ -314,7 +315,7 @@ for (const language of languages) test(`T68 / K4: ${language.code} can submit an
   const state = await setupBrowser(page, context, baseURL);
   await page.goto('/'); const main = page.getByRole('main');
   await main.getByRole('textbox', { name: sceneTitle, exact: true }).fill(scenario);
-  await page.getByRole('combobox').selectOption(language.code);
+  await openMore(page); await page.getByRole('combobox').selectOption(language.code); await closeMore(page);
   await main.getByRole('button', { name: language.next, exact: true }).click();
   await main.getByRole('button', { name: language.generate, exact: true }).click();
   await main.getByRole('button', { name: language.confirm, exact: true }).click();

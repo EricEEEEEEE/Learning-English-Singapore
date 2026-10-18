@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { setupBrowser, openBackground, scenario, sceneTitle, progressTitle, keywordKeys, keywordLabels, keywordValues } from '../fixtures/t68-generation-browser.mjs';
 
 // C7 (user 2026-10-17: finish the product before real video). T30A: browse 36 local example scenes by category;
@@ -114,7 +115,7 @@ for (const language of languages) test(`T30A / T31A: ${language} seed browser sh
   const { entryCopy } = await import('../../app/entry-copy.ts');
   const copy = sceneSeedCopy[language], seed = (await seeds()).find(item => item.id === 'S21').text[language];
   await page.goto('/'); const main = page.getByRole('main');
-  await page.getByRole('combobox').selectOption(language);
+  await openMore(page); await page.getByRole('combobox').selectOption(language); await closeMore(page);
   await openSeeds(main, copy.open);
   const group = main.getByRole('group', { name: copy.categoriesLabel, exact: true });
   await expect(group.getByRole('button')).toHaveCount(6);
@@ -211,7 +212,7 @@ for (const language of languages) test(`T14A / T31A: ${language} confirmation ca
   const copy = sceneConfirmCopy[language];
   await page.goto('/'); const main = page.getByRole('main');
   await main.getByRole('textbox', { name: sceneTitle, exact: true }).fill(scenario);
-  await page.getByRole('combobox').selectOption(language);
+  await openMore(page); await page.getByRole('combobox').selectOption(language); await closeMore(page);
   await main.getByRole('button', { name: sceneEntryCopy[language].next, exact: true }).click();
   await main.getByRole('button', { name: sceneGenerationCopy[language].generate, exact: true }).click();
   const card = main.getByRole('region', { name: copy.title, exact: true });

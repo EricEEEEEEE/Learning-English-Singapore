@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { setupLearning, openLibrary, openCourse, waitVideo, seek, progressRecord, coursePointer, key, ownerA, ownerB, sceneTitle, savedStatus, noPreviousProgress, noGeneration, stallBody, observeApi } from '../fixtures/t70-learning-browser.mjs';
 
 test.use({ locale: 'zh-CN' });
@@ -39,7 +40,7 @@ test('T70 / K6: all five helper languages can list open and leave and report cat
   await page.goto('/'); await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible();
   for (const [language, library, learn, back, input, retry, listError, progressError] of copies) {
     state.catalogueStatus = 503; state.progressReadStatus = 503;
-    await page.getByRole('combobox').selectOption(language); await main.getByRole('button', { name: library, exact: true }).click();
+    await openMore(page); await page.getByRole('combobox').selectOption(language); await closeMore(page); await main.getByRole('button', { name: library, exact: true }).click();
     await expect(main.getByRole('heading', { name: library, exact: true })).toBeVisible(); await expect(main.getByRole('alert')).toHaveText(listError);
     state.catalogueStatus = 200; await main.getByRole('button', { name: retry, exact: true }).click(); await main.getByRole('button', { name: learn, exact: true }).click();
     await expect(main.getByTestId('scene-play')).toBeVisible(); await expect(savedStatus(main)).toHaveText(progressError); await main.getByRole('button', { name: back, exact: true }).click();
@@ -88,7 +89,7 @@ test('T70 / K6: explicit role learning saves each page and only explicit prompte
     await main.getByRole('button', { name: button, exact: true }).click(); await expect.poll(() => state.progress[key(ownerA)]?.position.page).toBe(positionPage);
   }
   await expect.poll(() => page.evaluate(() => window.t70PlayCalls)).toBe(1);
-  await page.getByRole('combobox').selectOption('ko'); await expect(main.getByTestId('scene-panel-4')).toBeVisible();
+  await openMore(page); await page.getByRole('combobox').selectOption('ko'); await closeMore(page); await expect(main.getByTestId('scene-panel-4')).toBeVisible();
   await expect(main.getByTestId('scene-answer')).toHaveText('Yes. I booked a room.');
   await expect.poll(() => state.progress[key(ownerA)]?.position.page).toBe('prompt');
   for (const write of state.progressWrites) {

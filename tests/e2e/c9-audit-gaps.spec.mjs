@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { installMic, routePractice, routeHeldPractice, routeReviews, routeReportStatuses, openPractice, openPrompt, openSentences, panel, twoTurns, reply, replyWav, speak, guidedId, guidedRevision, guidedMaterials, hotelSample } from '../fixtures/c9-practice-browser.mjs';
 import { setupData, openLibrary, ownerA } from '../fixtures/c5-data-browser.mjs';
+import { openMore, closeMore, openHelp, closeHelp } from '../fixtures/c10-shell.mjs';
 
 // C9 (user 2026-10-17: finish the product before real video; self-audit gaps 5, 6, 9, 10 and the rest of 7 and 8).
 // A confirmed goal change, "say it in my language", the "hard to hear" focus, sentence report statuses and the
@@ -76,6 +77,7 @@ test('C9-2 / F5.3: "say it in my language" sends native mode, shows a short Engl
   const bodies = await routePractice(page, [{ json: nativeAnswer() }, { json: reply() }]);
   const { main } = await openPractice(page, context, baseURL, { changeCourse: twoTurns });
   await installMic(page);
+  await openHelp(main);
   await panel(main).getByRole('button', { name: '用母语说', exact: true }).click();
   await panel(main).getByRole('button', { name: '说完了', exact: true }).click();
   const card = panel(main).getByTestId('practice-native');
@@ -103,6 +105,7 @@ test('C9-2 / F5.3: when the meaning was not clear, the page says so and offers n
   await routePractice(page, [{ json: nativeAnswer({ understood: false, suggestion: null }) }]);
   const { main } = await openPractice(page, context, baseURL);
   await installMic(page);
+  await openHelp(main);
   await panel(main).getByRole('button', { name: '用母语说', exact: true }).click();
   await panel(main).getByRole('button', { name: '说完了', exact: true }).click();
   const card = panel(main).getByTestId('practice-native');
@@ -117,8 +120,10 @@ test('C9-3 / F9.4: "hard to hear" is a practice focus and is sent with the turn'
   const bodies = await routePractice(page, [{ json: reply() }]);
   const { main } = await openPractice(page, context, baseURL);
   const focus = panel(main).getByRole('group', { name: '这次想多练什么', exact: true });
+  await openMore(main);
   await expect(focus.getByRole('radio')).toHaveCount(4);
   await focus.getByRole('radio', { name: '多练听不清', exact: true }).check();
+  await closeMore(main);
   await installMic(page);
   await speak(panel(main));
   await expect(panel(main).getByTestId('practice-reply')).toBeVisible();
@@ -174,7 +179,9 @@ test('C9-6 / F10.1, F10.4: ending practice saves one review with each turn class
   await routePractice(page, [{ json: reply() }]);
   const reviews = await routeReviews(page, baseURL, { previous: { session: 'older-session-1', turns: [{ turnIndex: 0, outcome: 'after_hint' }, { turnIndex: 1, outcome: 'unobserved' }], help: { hints: 1, autoHelp: 0, translations: 0, native: 0 }, at: 1 } });
   const { main } = await openPractice(page, context, baseURL, { changeCourse: twoTurns });
+  await openHelp(main);
   await panel(main).getByRole('checkbox', { name: '我没开口时主动给提示', exact: true }).uncheck();
+  await closeHelp(main);
   await installMic(page);
   await speak(panel(main));
   await expect(panel(main).getByTestId('practice-reply')).toHaveText('Great. May I see your passport?');
@@ -182,6 +189,7 @@ test('C9-6 / F10.1, F10.4: ending practice saves one review with each turn class
   await panel(main).getByRole('button', { name: '帮我理解', exact: true }).click();
   await speak(panel(main));
   await expect(panel(main).getByTestId('practice-reply')).toBeVisible();
+  await openMore(main);
   await panel(main).getByRole('button', { name: '结束练习', exact: true }).click();
   const review = panel(main).getByTestId('practice-review');
   await expect(review).toContainText('第 1 回合：你开口说了“Yes, I booked a room.” · 独立完成');
@@ -204,6 +212,7 @@ test('C9-6 / F10.1, F10.4: ending practice saves one review with each turn class
 test('C9-6: a first review has nothing to compare with, and a failed save says the review was not kept', async ({ page, context, baseURL }) => {
   const reviews = await routeReviews(page, baseURL, { status: 503 });
   const { main } = await openPractice(page, context, baseURL);
+  await openMore(main);
   await panel(main).getByRole('button', { name: '结束练习', exact: true }).click();
   const review = panel(main).getByTestId('practice-review');
   await expect(review).toContainText('第 1 回合：没有开口，尚不能判断');
@@ -216,6 +225,7 @@ test('C9-6: a first review has nothing to compare with, and a failed save says t
 test('C9-6: with no earlier review the page says this is the first saved review', async ({ page, context, baseURL }) => {
   await routeReviews(page, baseURL);
   const { main } = await openPractice(page, context, baseURL);
+  await openMore(main);
   await panel(main).getByRole('button', { name: '结束练习', exact: true }).click();
   const review = panel(main).getByTestId('practice-review');
   await expect(review.getByTestId('practice-compare-first')).toBeVisible();

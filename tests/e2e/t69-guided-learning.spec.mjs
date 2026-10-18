@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { setupGuided, enterRole, enterTerms, assertSameMedia, hotelRequirement, hotelSample } from '../fixtures/t69-guided-browser.mjs';
 
 test.use({ locale: 'zh-CN' });
@@ -111,7 +112,7 @@ test('T69 / K5.2: actual prompted playback starts the partner first and stops be
   await expect(main.getByText('场景看完了。可以重播，或进入角色学习。', { exact: true })).toHaveCount(0);
   await main.getByTestId('scene-answer-play').click(); await expect.poll(() => video.evaluate(v => !v.paused)).toBe(true);
   expect(await video.evaluate(v => v.currentTime)).toBeGreaterThanOrEqual(hotelSample.lines[1].start);
-  await main.getByRole('button', { name: '重看场景', exact: true }).click(); await expect(video).toHaveJSProperty('paused', true);
+  await openMore(main); await main.getByRole('button', { name: '重看场景', exact: true }).click(); await expect(video).toHaveJSProperty('paused', true);
   expect(await page.evaluate(() => window.t69MicCalls)).toBe(0);
   assertSameMedia(state);
 });
@@ -155,7 +156,7 @@ test('T69 / K4.3: play rejection remains a watching error and cannot pretend the
 
 test('T69 / K5.2: changing helper language keeps the current learning step and exact course material revision', async ({ page, context, baseURL }) => {
   const { main, state } = await setupGuided(page, context, baseURL); await enterTerms(main);
-  await page.getByRole('combobox').selectOption('ko');
+  await openMore(page); await page.getByRole('combobox').selectOption('ko'); await closeMore(page);
   await expect(main.getByTestId('scene-panel-2')).toBeVisible();
   await expect(main.getByTestId('scene-term').first()).toContainText(hotelSample.phrases[0].translations.ko);
   expect(state.courseReads).toHaveLength(1); assertSameMedia(state);

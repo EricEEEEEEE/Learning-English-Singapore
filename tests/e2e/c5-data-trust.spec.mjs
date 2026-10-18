@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
 import { setupData, openLibrary, routeReports, coursePointer, ownerA } from '../fixtures/c5-data-browser.mjs';
 import { noGeneration } from '../fixtures/t70-learning-browser.mjs';
 import { hotelRequirement, hotelSample, assertSameMedia } from '../fixtures/t69-guided-browser.mjs';
@@ -126,7 +127,7 @@ test('T13A / C5 copy: sign-out and the data explanation exist in all five help l
   await page.goto('/');
   const main = page.getByRole('main');
   for (const [language, [signOut, library, stored]] of Object.entries(labels)) {
-    await page.getByRole('combobox').selectOption(language);
+    await openMore(page); await page.getByRole('combobox').selectOption(language); await closeMore(page);
     await expect(main.getByRole('button', { name: signOut, exact: true })).toBeVisible();
     await main.getByRole('button', { name: library, exact: true }).click();
     await expect(main.locator('details summary').filter({ hasText: stored })).toBeVisible();

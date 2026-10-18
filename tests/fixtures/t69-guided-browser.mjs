@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { expect } from '@playwright/test';
 import { setupBrowser, requirement, generationView, ownerA } from './t68-generation-browser.mjs';
 import { handleGeneratedMedia } from '../../app/api/generated-course-media/route.ts';
+import { openMore, closeMore } from './c10-shell.mjs';
 
 export const hotelSample = JSON.parse(await readFile(new URL('../../public/media/hotel-course.json', import.meta.url), 'utf8'));
 const hotelBytes = await readFile(new URL('../../public/media/hotel-pov-12s.mp4', import.meta.url));
@@ -51,7 +52,9 @@ export async function setupGuided(page, context, baseURL, { record = hotelRequir
     return route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
   });
   await page.goto(`/?generation=${record.revision}`);
+  await openMore(page);
   await expect(page.getByRole('combobox')).toHaveValue(latest.content.language);
+  await closeMore(page);
   await page.getByRole('main').getByRole('button', { name: watchNames[latest.content.language], exact: true }).click();
   return { state, course, main: page.getByRole('main'), record };
 }

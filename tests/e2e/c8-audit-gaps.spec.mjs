@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { openMore, closeMore, openHelp, startPracticeSetup } from '../fixtures/c10-shell.mjs';
 import { setupBrowser, openBackground, requirement, generationView, ownerA, sceneTitle, progressTitle } from '../fixtures/t68-generation-browser.mjs';
 import { setupGuided, hotelRequirement, hotelSample } from '../fixtures/t69-guided-browser.mjs';
 import { setupLearning, openLibrary, openCourse, waitVideo, seek, progressRecord, key, savedStatus, noPreviousProgress, noGeneration } from '../fixtures/t70-learning-browser.mjs';
@@ -120,6 +121,7 @@ test('C8-2 / F13.2: "large text" and "reduce motion" are on the signed-in scene 
   const shell = page.locator('.app-shell');
   const large = page.getByRole('checkbox', { name: '大字号', exact: true });
   const motion = page.getByRole('checkbox', { name: '减少动画', exact: true });
+  await openMore(page);
   await expect(large).not.toBeChecked(); await expect(motion).not.toBeChecked();
   const size = () => main.getByRole('heading', { name: sceneTitle, exact: true }).evaluate(h => parseFloat(getComputedStyle(h).fontSize));
   const before = await size();
@@ -131,6 +133,7 @@ test('C8-2 / F13.2: "large text" and "reduce motion" are on the signed-in scene 
   expect(JSON.parse(await page.evaluate(() => localStorage.getItem('le-sg-entry-preferences-v1')))).toMatchObject({ largeText: true, reducedMotion: true, language: 'zh-Hans' });
   await page.reload();
   await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible();
+  await openMore(page);
   await expect(large).toBeChecked(); await expect(motion).toBeChecked();
   await expect(shell).toHaveAttribute('data-large-text', 'true'); await expect(shell).toHaveAttribute('data-reduced-motion', 'true');
   await large.uncheck();
@@ -143,6 +146,7 @@ test('C8-2 / F13.2: the same switches stay reachable while watching and learning
   const { main } = await setupGuided(page, context, baseURL);
   await expect(main.getByTestId('scene-play')).toBeVisible();
   const large = page.getByRole('checkbox', { name: '大字号', exact: true });
+  await openMore(page);
   await large.check();
   await expect(page.locator('.app-shell')).toHaveAttribute('data-large-text', 'true');
   await expect(main.getByTestId('scene-play')).toBeVisible();
@@ -156,6 +160,7 @@ test('C8-3 / F11.1: entering practice and moving to the next turn are saved as t
   await openLibrary(page); await openCourse(main); await waitVideo(main);
   for (const button of ['进入角色学习', '开始学词组', '下一步：句子', '下一步：提示接话', '下一步：开口对练']) await main.getByRole('button', { name: button, exact: true }).click();
   await expect(panel(main)).toBeVisible();
+  await startPracticeSetup(main);
   await expect.poll(() => state.progress[key(ownerA)]?.position).toMatchObject({ page: 'practice', turnIndex: 0 });
   await installMic(page);
   await panel(main).getByRole('button', { name: '开始说', exact: true }).click();
@@ -265,6 +270,7 @@ test('C8-5 / F8.1: "let me think" holds automatic help for this turn', async ({ 
   test.setTimeout(40_000);
   const bodies = await routePractice(page, [{ json: reply() }]);
   const { main } = await openPractice(page, context, baseURL);
+  await openHelp(main);
   await panel(main).getByRole('button', { name: '我想一想', exact: true }).click();
   await expect(panel(main).getByTestId('practice-thinking')).toBeVisible();
   await page.waitForTimeout(9000);
@@ -298,6 +304,7 @@ test('C8-5 / F7.5: without speaking, the learner picks a meaning, sees and hears
   const bodies = await routePractice(page, [{ json: reply() }]);
   const { main } = await openPractice(page, context, baseURL, { changeCourse: distinctTwoTurns });
   const video = main.locator('video');
+  await openHelp(main);
   await panel(main).getByRole('button', { name: '选意思', exact: true }).click();
   const meanings = panel(main).getByRole('group', { name: '你想说的是哪个意思？', exact: true });
   await expect(meanings.getByRole('button')).toHaveCount(2);
@@ -310,6 +317,7 @@ test('C8-5 / F7.5: without speaking, the learner picks a meaning, sees and hears
   await expect.poll(() => video.evaluate(v => v.currentTime)).toBeGreaterThanOrEqual(second.start - 0.05);
   await panel(main).getByRole('button', { name: '下一回合', exact: true }).click();
   await expect(panel(main).getByTestId('practice-partner')).toHaveText('May I see your passport?');
+  await openMore(main);
   await panel(main).getByRole('button', { name: '结束练习', exact: true }).click();
   const review = panel(main).getByTestId('practice-review');
   await expect(review).toContainText('第 1 回合：选了意思，未开口');
@@ -321,6 +329,7 @@ test('C8-5 / F7.5: without speaking, the learner picks a meaning, sees and hears
 
 test('C8-5 / F7.5: picking another meaning shows its English and what this turn\'s answer in the scene was', async ({ page, context, baseURL }) => {
   const { main } = await openPractice(page, context, baseURL, { changeCourse: distinctTwoTurns });
+  await openHelp(main);
   await panel(main).getByRole('button', { name: '选意思', exact: true }).click();
   await panel(main).getByRole('group', { name: '你想说的是哪个意思？', exact: true }).getByRole('button', { name: '给你。', exact: true }).click();
   const chosen = panel(main).getByTestId('practice-chosen');
@@ -357,7 +366,7 @@ test('C8-6 / F3.5: the scene input page says real names, schools and ID numbers 
   const main = page.getByRole('main');
   await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible();
   await expect(main.getByText('不必写真实姓名、学校或证件号。', { exact: true })).toBeVisible();
-  await page.getByRole('combobox').selectOption('id');
+  await openMore(page); await page.getByRole('combobox').selectOption('id'); await closeMore(page);
   await expect(main.getByTestId('scene-privacy')).not.toHaveText('不必写真实姓名、学校或证件号。');
   await expect(main.getByTestId('scene-privacy')).not.toBeEmpty();
 });
