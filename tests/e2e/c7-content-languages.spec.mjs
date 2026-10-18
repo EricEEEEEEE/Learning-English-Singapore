@@ -98,6 +98,8 @@ test('T30A / F12.1: picking another seed replaces the earlier pick; the plain ex
   await openSeeds(main);
   await main.getByRole('button', { name: '交通', exact: true }).click();
   await main.getByRole('button', { name: first.label, exact: true }).click();
+  // C11-3: picking closes the seed sheet; the second pick opens it again.
+  await openSeeds(main);
   await main.getByRole('button', { name: '居家邻里', exact: true }).click();
   await main.getByRole('button', { name: second.label, exact: true }).click();
   await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toHaveValue(second.description);
@@ -122,7 +124,10 @@ for (const language of languages) test(`T30A / T31A: ${language} seed browser sh
   await group.getByRole('button', { name: copy.categories.clinic, exact: true }).click();
   await main.getByRole('list', { name: copy.listLabel, exact: true }).getByRole('button', { name: seed.label, exact: true }).click();
   await expect(main.locator('textarea')).toHaveValue(seed.description);
+  // C11-3: picking closes the seed sheet; the note is read inside it again.
+  await openSeeds(main, copy.open);
   await expect(main.getByText(copy.note, { exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(page.locator('footer').getByText(entryCopy[language].trial, { exact: true })).toBeVisible();
   expect(await noOverflow(page)).toBe(true);
   expect(state.writes).toEqual([]); expect(state.posts).toEqual([]);

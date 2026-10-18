@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupGuided, hotelSample, assertSameMedia } from '../fixtures/t69-guided-browser.mjs';
 import { installMic, routePractice, openSentences, openPrompt, openPractice, panel, twoTurns, reply, mediaReady, trackTimes } from '../fixtures/c4-practice-browser.mjs';
-import { openHelp, closeHelp } from '../fixtures/c10-shell.mjs';
+import { openHelp, closeHelp, openMore } from '../fixtures/c10-shell.mjs';
 
 // C4 (user 2026-10-17: finish the product before real video): listening controls, native-language help,
 // proactive help after silence, and practice that survives a detour. Everything replays the same saved media;
@@ -66,6 +66,8 @@ test('T16A / F6.5: an A-B loop plays from the start of sentence A to the end of 
   test.setTimeout(40_000);
   const { main, state } = await openSentences(page, context, baseURL);
   const video = main.locator('video'); await mediaReady(video); await trackTimes(video);
+  // C11-1: the A-B loop lives in "more → practice tools" on the sentences page.
+  await openMore(main);
   const a = main.getByLabel('A：从这句开始', { exact: true }), b = main.getByLabel('B：到这句结束', { exact: true });
   const ab = main.getByRole('button', { name: 'A-B 循环', exact: true });
   await a.selectOption({ label: second.text }); await b.selectOption({ label: first.text });

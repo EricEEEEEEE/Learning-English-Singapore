@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
+import { revealAnswer } from '../fixtures/c11-shell.mjs';
 import { setupGuided, enterRole, enterTerms, assertSameMedia, hotelRequirement, hotelSample } from '../fixtures/t69-guided-browser.mjs';
 
 test.use({ locale: 'zh-CN' });
@@ -110,6 +111,8 @@ test('T69 / K5.2: actual prompted playback starts the partner first and stops be
   expect(await video.evaluate(v => v.currentTime)).toBeLessThan(hotelSample.lines[1].start);
   await expect(main.getByTestId('scene-answer')).toHaveText(hotelSample.lines[1].text);
   await expect(main.getByText('场景看完了。可以重播，或进入角色学习。', { exact: true })).toHaveCount(0);
+  // C11-2: "you could say" opens with one tap.
+  await revealAnswer(main);
   await main.getByTestId('scene-answer-play').click(); await expect.poll(() => video.evaluate(v => !v.paused)).toBe(true);
   expect(await video.evaluate(v => v.currentTime)).toBeGreaterThanOrEqual(hotelSample.lines[1].start);
   await openMore(main); await main.getByRole('button', { name: '重看场景', exact: true }).click(); await expect(video).toHaveJSProperty('paused', true);

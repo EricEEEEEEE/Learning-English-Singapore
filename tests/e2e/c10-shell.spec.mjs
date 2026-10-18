@@ -233,6 +233,7 @@ test('C10-1: login, library and generation pages each show at most one primary b
   await oneView(page, { exactlyOne: true });
   await touchTargets(page);
   await page.goto('/');
+  await openMore(page);
   await main.getByRole('button', { name: '我的场景', exact: true }).click();
   await expect(main.getByRole('heading', { name: '我的场景', exact: true })).toBeVisible();
   await oneView(page);
@@ -276,7 +277,8 @@ test('C10-2: learning pages keep one primary and one text button in the bottom b
   await enterTerms(main);
   const bar = page.getByTestId('action-bar');
   await expect(bar.getByRole('button', { name: '下一步：句子', exact: true })).toHaveClass(/btn-primary/);
-  await expect(bar.getByRole('button', { name: '返回角色说明', exact: true })).toBeVisible();
+  // C11-2: the way back moved from the bottom bar to the ‹ in the top bar.
+  await expect(page.getByTestId('app-bar').getByRole('button', { name: '返回角色说明', exact: true })).toBeVisible();
   expect(await bar.getByRole('button').count()).toBeLessThanOrEqual(2);
   await expect(main.getByRole('button', { name: '重看场景', exact: true })).toHaveCount(0);
   await oneView(page, { exactlyOne: true });

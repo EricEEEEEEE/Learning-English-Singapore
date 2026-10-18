@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { openMore, closeMore } from '../fixtures/c10-shell.mjs';
+import { openMoreKeywords } from '../fixtures/c11-shell.mjs';
 
 const title = '你想在哪个场景下学习英语？';
 const description = '我想在社区花园和邻居聊种菜，问清周末活动的时间。';
@@ -54,6 +55,8 @@ async function background(page, text = description) {
   await input.fill(text);
   await main.getByRole('button', { name: '下一步', exact: true }).click();
   await expect(main.getByRole('textbox', { name: labels[0], exact: true })).toBeVisible();
+  // C11-3: the last three keywords are folded into "add a little more (optional)".
+  await openMoreKeywords(main);
   return main;
 }
 
@@ -314,6 +317,7 @@ for (const language of languages) test(`T67 / K3: ${language.code} labels and sa
   await main.getByRole('textbox', { name: title, exact: true }).fill(description);
   await openMore(page); await page.getByRole('combobox').selectOption(language.code); await closeMore(page);
   await main.getByRole('button', { name: language.next, exact: true }).click();
+  await openMoreKeywords(main);
   for (const label of language.labels) await expect(main.getByRole('textbox', { name: label, exact: true })).toBeVisible();
   await main.getByRole('textbox', { name: language.labels[0], exact: true }).fill('Community garden');
   await main.getByRole('button', { name: language.save, exact: true }).click();

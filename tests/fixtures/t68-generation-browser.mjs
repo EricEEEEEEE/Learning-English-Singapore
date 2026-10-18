@@ -1,6 +1,7 @@
 import { expect } from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 import { courseFixture } from './t60-course.mjs';
+import { openMoreKeywords } from './c11-shell.mjs';
 
 export const ownerA = 't68-browser-owner-a', ownerB = 't68-browser-owner-b';
 export const scenario = '我想在孩子的家长会上，和老师聊聊孩子如何适应新学校。';
@@ -94,7 +95,11 @@ export async function openBackground(page, text = scenario) {
   const main = page.getByRole('main');
   await main.getByRole('textbox', { name: sceneTitle, exact: true }).fill(text);
   await main.getByRole('button', { name: '下一步', exact: true }).click();
-  for (let index = 0; index < keywordKeys.length; index++) await main.getByRole('textbox', { name: keywordLabels[index], exact: true }).fill(keywordValues[index]);
+  for (let index = 0; index < keywordKeys.length; index++) {
+    // C11-3: the last three keywords are folded into "add a little more (optional)".
+    if (index === 3) await openMoreKeywords(main);
+    await main.getByRole('textbox', { name: keywordLabels[index], exact: true }).fill(keywordValues[index]);
+  }
   return main;
 }
 

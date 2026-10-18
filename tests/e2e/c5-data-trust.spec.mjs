@@ -4,6 +4,7 @@ import { setupData, openLibrary, routeReports, coursePointer, ownerA } from '../
 import { noGeneration } from '../fixtures/t70-learning-browser.mjs';
 import { hotelRequirement, hotelSample, assertSameMedia } from '../fixtures/t69-guided-browser.mjs';
 import { openSentences } from '../fixtures/c4-practice-browser.mjs';
+import { openRowMenu } from '../fixtures/c11-shell.mjs';
 
 // C5 (user 2026-10-17: finish the product before real video, zero cost): deleting my data, signing out,
 // reporting a sentence and reading my generation records. All answers come from protocol fixtures; nothing
@@ -19,6 +20,7 @@ function nothingElse(state) { noGeneration(state); expect(state.foreignWrites).t
 test('T24A / F14.4: deleting a scene asks first; cancelling sends nothing and keeps the scene', async ({ page, context, baseURL }) => {
   const { state, main } = await setupData(page, context, baseURL);
   await openLibrary(page, main);
+  await openRowMenu(main, description);
   await main.getByRole('button', { name: `删除这个场景：${description}`, exact: true }).click();
   await expect(main.getByText('删除后，这个场景的课程、视频、学习位置和句子反馈都会从本机删除，不能恢复。')).toBeVisible();
   await main.getByRole('button', { name: '取消', exact: true }).click();
@@ -30,6 +32,7 @@ test('T24A / F14.4: deleting a scene asks first; cancelling sends nothing and ke
 test('T24A / F14.4: confirming deletes exactly that course for this account and removes it from my scenes', async ({ page, context, baseURL }) => {
   const { state, main } = await setupData(page, context, baseURL);
   await openLibrary(page, main);
+  await openRowMenu(main, description);
   await main.getByRole('button', { name: `删除这个场景：${description}`, exact: true }).click();
   await main.getByRole('button', { name: '确认删除', exact: true }).click();
   await expect(main.getByRole('status').filter({ hasText: '已删除这个场景。' })).toBeVisible();
@@ -43,6 +46,7 @@ test('T24A / F14.4: a failed delete says so and the scene stays usable', async (
   const { state, main } = await setupData(page, context, baseURL);
   state.deleteStatus = 503;
   await openLibrary(page, main);
+  await openRowMenu(main, description);
   await main.getByRole('button', { name: `删除这个场景：${description}`, exact: true }).click();
   await main.getByRole('button', { name: '确认删除', exact: true }).click();
   await expect(main.getByRole('alert').filter({ hasText: '删除没有完成，场景还在。请重试。' })).toBeVisible();
@@ -56,6 +60,7 @@ test('T24A / F14.4: a failed delete says so and the scene stays usable', async (
 test('T24A / F14.4: deleting all my learning data needs its own confirmation and tells me the Google account is kept', async ({ page, context, baseURL }) => {
   const { state, main } = await setupData(page, context, baseURL);
   await openLibrary(page, main);
+  await openMore(page);
   await main.getByRole('button', { name: '删除我的全部学习数据', exact: true }).click();
   await expect(main.getByText('会删除你在本机保存的全部场景、课程、视频、学习位置和句子反馈，不能恢复。你的 Google 账号不会被删除。')).toBeVisible();
   expect(state.dataDeletes).toEqual([]);
@@ -70,6 +75,7 @@ test('T24A / F14.4: a failed delete-all keeps my scenes and asks me to retry', a
   const { state, main } = await setupData(page, context, baseURL);
   state.dataDeleteStatus = 503;
   await openLibrary(page, main);
+  await openMore(page);
   await main.getByRole('button', { name: '删除我的全部学习数据', exact: true }).click();
   await main.getByRole('button', { name: '确认全部删除', exact: true }).click();
   await expect(main.getByRole('alert').filter({ hasText: '删除没有完成，数据还在。请重试。' })).toBeVisible();
@@ -81,6 +87,7 @@ test('T24A / F14.4: a failed delete-all keeps my scenes and asks me to retry', a
 test('T24A / F14.5: "what we store" explains local data, that practice audio is not kept and that deleting does not delete the Google account', async ({ page, context, baseURL }) => {
   const { state, main } = await setupData(page, context, baseURL);
   await openLibrary(page, main);
+  await openMore(page);
   const details = main.locator('details').filter({ hasText: '我们保存了什么' });
   await details.getByText('我们保存了什么', { exact: true }).click();
   await expect(details).toContainText('你描述的场景和六项背景');
@@ -96,10 +103,13 @@ test('T13A / F1.2: signing out clears the session on the server, returns to the 
   const { state, main } = await setupData(page, context, baseURL);
   await page.goto('/');
   await expect(main.getByRole('heading', { name: '你想在哪个场景下学习英语？', exact: true })).toBeVisible();
+  await openMore(page);
   await main.getByRole('button', { name: '退出登录', exact: true }).click();
   await expect(main.getByRole('group', { name: '选择登录方式', exact: true })).toBeVisible();
+  await openMore(page);
   await expect(main.getByRole('button', { name: '退出登录', exact: true })).toHaveCount(0);
   await expect(main.getByRole('button', { name: '我的场景', exact: true })).toHaveCount(0);
+  await closeMore(page);
   expect(state.signOuts).toEqual([ownerA]); expect(state.deletes).toEqual([]); expect(state.dataDeletes).toEqual([]);
   // Signing in again finds the same scene: signing out removed no data.
   state.authenticated = true; await page.reload();
@@ -112,8 +122,10 @@ test('T13A / F1.2: a failed sign-out is reported and the learner stays signed in
   const { state, main } = await setupData(page, context, baseURL);
   state.signOutStatus = 503;
   await page.goto('/');
+  await openMore(page);
   await main.getByRole('button', { name: '退出登录', exact: true }).click();
   await expect(main.getByRole('alert').filter({ hasText: '退出没有完成，请重试。' })).toBeVisible();
+  await openMore(page);
   await expect(main.getByRole('button', { name: '我的场景', exact: true })).toBeVisible();
   expect(state.signOuts).toHaveLength(1); nothingElse(state);
 });
@@ -128,8 +140,10 @@ test('T13A / C5 copy: sign-out and the data explanation exist in all five help l
   const main = page.getByRole('main');
   for (const [language, [signOut, library, stored]] of Object.entries(labels)) {
     await openMore(page); await page.getByRole('combobox').selectOption(language); await closeMore(page);
+    await openMore(page);
     await expect(main.getByRole('button', { name: signOut, exact: true })).toBeVisible();
     await main.getByRole('button', { name: library, exact: true }).click();
+    await openMore(page);
     await expect(main.locator('details summary').filter({ hasText: stored })).toBeVisible();
     await page.reload();
   }
@@ -197,6 +211,7 @@ test('T25A / F12.3: a failed report says so and does not claim it was received',
 test('T34A / F14.1, F14.3: generation records show each task status, reserved cost upper bound and deletions, read-only', async ({ page, context, baseURL }) => {
   const { state, main } = await setupData(page, context, baseURL);
   await openLibrary(page, main);
+  await openMore(page);
   await main.getByRole('button', { name: '生成记录', exact: true }).click();
   await expect(main.getByRole('heading', { name: '生成记录', exact: true })).toBeVisible();
   const rows = main.getByTestId('generation-record');
@@ -219,6 +234,7 @@ test('T34A / F14.1: when records cannot be read the page says so instead of show
   const { state, main } = await setupData(page, context, baseURL);
   state.recordStatus = 503;
   await openLibrary(page, main);
+  await openMore(page);
   await main.getByRole('button', { name: '生成记录', exact: true }).click();
   await expect(main.getByRole('alert').filter({ hasText: '暂时无法读取生成记录，请重试。' })).toBeVisible();
   await expect(main.getByText('还没有生成记录。')).toHaveCount(0);

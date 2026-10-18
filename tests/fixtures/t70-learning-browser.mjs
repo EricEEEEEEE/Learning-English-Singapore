@@ -4,6 +4,7 @@ import { isDeepStrictEqual } from 'node:util';
 import { setupBrowser, generationView, ownerA, ownerB, sceneTitle } from './t68-generation-browser.mjs';
 import { hotelRequirement, hotelSample } from './t69-guided-browser.mjs';
 import { handleGeneratedMedia } from '../../app/api/generated-course-media/route.ts';
+import { openMore } from './c10-shell.mjs';
 
 export { ownerA, ownerB, sceneTitle };
 export const coursePointer = { id: 't70-synthetic-hotel', revision: 2, materialsRevision: 3 };
@@ -88,7 +89,8 @@ export async function setupLearning(page, context, baseURL, { progress = null, e
   return { state, course, record, main: page.getByRole('main') };
 }
 export async function openLibrary(page, main = page.getByRole('main')) {
-  await page.goto('/'); await main.getByRole('button', { name: '我的场景', exact: true }).click();
+  // C11-3: "my scenes" lives in the scene input page's "more" sheet.
+  await page.goto('/'); await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click();
   await expect(main.getByRole('heading', { name: '我的场景', exact: true })).toBeVisible();
 }
 export async function openCourse(main) {

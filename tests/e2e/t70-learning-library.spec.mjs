@@ -8,7 +8,7 @@ test('T70 / K6: my scenes is a secondary action and visiting it preserves the un
   const { state, main, record } = await setupLearning(page, context, baseURL);
   await page.goto('/'); const input = main.getByRole('textbox', { name: sceneTitle, exact: true });
   await input.fill('我自己的未保存生日聚会草稿'); expect(state.catalogueReads).toEqual([]);
-  await main.getByRole('button', { name: '我的场景', exact: true }).click();
+  await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click();
   await expect(main.getByRole('heading', { name: '我的场景', exact: true })).toBeVisible();
   await expect(main.getByRole('listitem')).toHaveCount(1); await expect(main.getByRole('listitem')).toContainText(record.content.description);
   await expect(main).toContainText('本机'); await expect(main.getByRole('link', { name: 'Google', exact: true })).toHaveCount(0);
@@ -24,7 +24,7 @@ test('T70 / K6: catalogue errors and unreadable entries are visible rather than 
   await main.getByRole('button', { name: '重试加载', exact: true }).click();
   await expect(main.getByRole('listitem')).toHaveCount(1); await expect(main).toContainText('有 1 个场景暂时无法读取');
   state.scenes[ownerA] = []; state.unavailable = 0;
-  await main.getByRole('button', { name: '返回场景输入', exact: true }).click(); await main.getByRole('button', { name: '我的场景', exact: true }).click();
+  await main.getByRole('button', { name: '返回场景输入', exact: true }).click(); await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click();
   await expect(main.getByText('这里还没有可学习的场景。', { exact: true })).toBeVisible(); noGeneration(state);
 });
 
@@ -40,7 +40,7 @@ test('T70 / K6: all five helper languages can list open and leave and report cat
   await page.goto('/'); await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible();
   for (const [language, library, learn, back, input, retry, listError, progressError] of copies) {
     state.catalogueStatus = 503; state.progressReadStatus = 503;
-    await openMore(page); await page.getByRole('combobox').selectOption(language); await closeMore(page); await main.getByRole('button', { name: library, exact: true }).click();
+    await openMore(page); await page.getByRole('combobox').selectOption(language); await openMore(page); await main.getByRole('button', { name: library, exact: true }).click();
     await expect(main.getByRole('heading', { name: library, exact: true })).toBeVisible(); await expect(main.getByRole('alert')).toHaveText(listError);
     state.catalogueStatus = 200; await main.getByRole('button', { name: retry, exact: true }).click(); await main.getByRole('button', { name: learn, exact: true }).click();
     await expect(main.getByTestId('scene-play')).toBeVisible(); await expect(savedStatus(main)).toHaveText(progressError); await main.getByRole('button', { name: back, exact: true }).click();
@@ -59,7 +59,7 @@ test('T70 / K6: watch position restores from the exact course and materials paus
   await expect(savedStatus(main)).toContainText('暂停'); expect(state.progressWrites).toEqual([]);
   await seek(video, 6.4); await expect.poll(() => state.progress[key(ownerA)]?.position.time).toBeCloseTo(6.4, 1);
   await expect(savedStatus(main)).toContainText('已保存在本机');
-  await page.reload(); await main.getByRole('button', { name: '我的场景', exact: true }).click(); await openCourse(main); video = await waitVideo(main);
+  await page.reload(); await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click(); await openCourse(main); video = await waitVideo(main);
   await expect.poll(() => video.evaluate(v => v.currentTime)).toBeCloseTo(6.4, 1); await expect(video).toHaveJSProperty('paused', true);
   expect(await page.evaluate(() => window.t70PlayCalls)).toBe(0); expect(await page.evaluate(() => window.t70MicCalls)).toBe(0);
   for (const pointer of state.courseReads) expect(pointer).toEqual(coursePointer);
@@ -206,7 +206,7 @@ test('T70 / K6: library and course and progress JSON bodies each have a recovera
   // Install once; set the current target after navigation so script order cannot select another endpoint.
   for (const pathname of ['/api/learning-library', '/api/generated-courses', '/api/scene-progress']) {
     await page.goto('/'); await page.evaluate(pathname => { window.t70BodyTarget = { pathname, method: 'GET' }; }, pathname);
-    await main.getByRole('button', { name: '我的场景', exact: true }).click();
+    await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click();
     if (pathname !== '/api/learning-library') await main.getByRole('button', { name: '继续学习', exact: true }).click();
     await expect.poll(() => page.evaluate(() => window.t70BodyStalls)).toBe(1); await page.clock.runFor(5100);
     await expect.poll(() => page.evaluate(() => window.t70BodyAborts)).toBe(1);
@@ -240,9 +240,9 @@ test('T70 / K6: an old-owner catalogue reply cannot reveal the previous account 
   const observed = observeApi(page, '/api/learning-library');
   state.catalogueGates[ownerA] = new Promise(resolve => { release = resolve; });
   try {
-    await page.goto('/'); await main.getByRole('button', { name: '我的场景', exact: true }).click(); await expect.poll(() => state.catalogueReads.length).toBe(1);
+    await page.goto('/'); await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click(); await expect.poll(() => state.catalogueReads.length).toBe(1);
     state.owner = ownerB; await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
-    await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible(); await main.getByRole('button', { name: '我的场景', exact: true }).click();
+    await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible(); await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click();
     await expect(main.getByText('这里还没有可学习的场景。', { exact: true })).toBeVisible(); release(); await observed.done();
     await expect(main.getByRole('listitem')).toHaveCount(0); await expect(main).not.toContainText(record.content.description); expect(state.progressWrites).toEqual([]);
   } finally { release(); observed.dispose(); }
@@ -262,7 +262,7 @@ test('T70 / K6: late old-owner progress reads and save acknowledgements cannot r
       await expect.poll(() => (mode === 'read' ? state.progressReads.length : state.progressWrites.length)).toBe(before + 1);
       state.owner = ownerB; await page.evaluate(() => window.dispatchEvent(new Event('le-sg-auth-invalid')));
       await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible(); release(); await observed.done();
-      await main.getByRole('button', { name: '我的场景', exact: true }).click(); await expect(main.getByRole('listitem')).toHaveCount(0);
+      await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click(); await expect(main.getByRole('listitem')).toHaveCount(0);
       await expect(main.locator('video')).toHaveCount(0); expect(state.progressWrites.filter(write => write.owner === ownerB)).toEqual([]);
     } finally { release(); observed.dispose(); delete gates[ownerA]; }
   }
@@ -283,7 +283,7 @@ test('T70 / K6: uncertain session checks hide and pause private media and logout
     await page.route('**/api/auth/session', route => route.fulfill({ json: { authenticated: state.authenticated, accountKey: state.authenticated ? state.owner : null } }));
     state.authenticated = false; await main.getByRole('button', { name: '重新检查登录', exact: true }).click();
     await expect(main.getByRole('group', { name: '选择登录方式', exact: true })).toBeVisible();
-    await expect(main.getByRole('button', { name: '我的场景', exact: true })).toHaveCount(0); await expect(main.locator('video')).toHaveCount(0);
+    await openMore(page); await expect(main.getByRole('button', { name: '我的场景', exact: true })).toHaveCount(0); await closeMore(page); await expect(main.locator('video')).toHaveCount(0);
   } finally { release(); }
   noGeneration(state);
 });
@@ -306,7 +306,7 @@ test('T70 / K6: missing background remains explicitly neutral and broken private
   const { state, main } = await setupLearning(page, context, baseURL, { legacy: true, progress: progressRecord({ page: 'role', time: 0, turnIndex: 0 }) });
   await openLibrary(page); await openCourse(main); await expect(main).toContainText('角色背景未记录');
   await expect(main.getByTestId('scene-learner-role')).toContainText('场景中回答的一方'); await expect(main).not.toContainText('新草稿中的导游');
-  await main.getByRole('button', { name: '返回我的场景', exact: true }).click(); state.mediaStatus = 404; await openCourse(main);
+  await openMore(main); await main.getByRole('button', { name: '返回我的场景', exact: true }).click(); state.mediaStatus = 404; await openCourse(main);
   await expect(main.getByRole('alert')).toBeVisible(); expect(state.progressWrites).toEqual([]); noGeneration(state);
 });
 
@@ -317,9 +317,9 @@ test('T70 / K6: a 401 from catalogue or progress GET or PUT rechecks the session
     await page.goto('/'); await expect(main.getByRole('textbox', { name: sceneTitle, exact: true })).toBeVisible();
     let checked;
     try {
-      if (mode === 'catalogue') { checked = observeApi(page, '/api/auth/session'); state.authenticated = false; await main.getByRole('button', { name: '我的场景', exact: true }).click(); }
+      if (mode === 'catalogue') { checked = observeApi(page, '/api/auth/session'); state.authenticated = false; await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click(); }
       else {
-        await main.getByRole('button', { name: '我的场景', exact: true }).click();
+        await openMore(page); await main.getByRole('button', { name: '我的场景', exact: true }).click();
         await expect(main.getByRole('button', { name: '继续学习', exact: true })).toBeVisible();
         if (mode === 'read') {
           // Course GET intentionally stays 200 to isolate a session expiry at progress GET.
