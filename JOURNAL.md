@@ -740,3 +740,4 @@
 - [audit] phase → implementing @ 2026-10-18T13:50:01+00:00
 - [audit] phase → test-writing @ 2026-10-18T14:11:06+00:00
 - 2026-10-18 C15-2c 提示词兜底（零费用）：红 5a5ae75 → 绿 7b136f4，verify 2492/2492 exit0（verify-20261018-135056）；goalChange→confirm、没听懂→一句含本课实词的问句否则重述对方台词、听懂时无引用无建议句的 coachNote 丢掉；回放 46 轮已记录真实回答：改正 RC-R7a/RC-R7b/RC-R3d/RC2-R3b 的回复与 8 条多余提示；漏 goalChange、understood=true 偏题、带引号夸奖仍是残余风险
+- 2026-10-19 C15-2d gpt-4.1 对比：同 15 个困难用例 A/B，goalChange 两者 6/6、偏题 understood 两者 3/3、产品端偏题回复两者 3/3、能懂时多余 coachNote 两者 1/3、结束两者 2/2；gpt-4.1 不明显更好且 M1 医疗问题被标没听懂，不切换，对练保持 gpt-4.1-mini。实际花费 USD0.047482（gpt-4.1 15 轮 0.040036，每轮平均 0.00267；mini 14 轮 0.007446，每轮平均 0.00053；自设上限 0.05），无失败无重发，证据 docs/evidence/c15-prompt-spotcheck.md「gpt-4.1 对比」

@@ -194,3 +194,71 @@ Loopwork：红 5a5ae75（新考题 16 项，红跑 13 失败 / 159 通过）→ 
 - **实词重叠是粗规则**：澄清问句只用虚词（“Sorry, can you say that again?”）也会被换成对方台词的重述；问句碰巧含本课词但仍在闲聊时会被放过；含 “Mr.” 之类缩写的句子会被算成两句而被换掉。重述用的是脚本当前对方台词，已经确认新目标（currentGoal）后可能与新目标不符。
 - **coachNote 规则只看形式**：有引号或有建议句的夸奖、解释仍会显示；没有引号的有用提示（模型没用 suggestedWording 时）会被丢，“宁丢不错”。
 - 本次没有新的真实模型调用；兜底在真实流量上的效果只由上面的回放说明（46 轮、单次采样），不是遵守率估计。
+
+## gpt-4.1 对比（2026-10-19，C15-2d）
+
+- 授权：用户 2026-10-19 05:38 UTC 在卡片上选「换并复查」：对练对方换成 gpt-4.1，先花约 USD0.05 复查，确实更稳才换。本次自设预留 ≤ USD0.05，记在 C15-2 账本（标签 `AB-`），每个请求按实际请求体逐字符算 token 预留，同时在途最多 1 个，失败或未知不重发，超限即停。
+- 脚本：`scripts/c15/prompt-spotcheck.mjs --ab --model 4.1|mini --ids …`（基线 13ca3a6，即 C15-2c 兜底之后）。仓库的 `respondInScene` 原样运行，只在 fetch 包装里把请求体的 model 从 `gpt-4.1-mini-2025-04-14` 换成 `gpt-4.1-2025-04-14`（mini 组不换）；提示词、合同、max_output_tokens 300 都不变。每个模型回答再经过真实回合服务 `createPracticeTurnService`（C12-2 引号校验、C15-2c 兜底都在），转写和配音用替身，看学员最终会听到、看到什么。
+- 两个模型跑同一组 15 个困难用例，同一天、同一提示词、单次采样、默认温度。
+- 原始结果（每轮输入、模型原始输出文本、解析后的回答、回合服务最终输出、token、预留与实际）：`/mnt/project-files/les-c15/prompt-ab/results-4.1.json`、`results-mini.json`。
+- 价格：https://developers.openai.com/api/docs/pricing （platform.openai.com/docs/pricing 现跳转至此），2026-10-19 读取，标准档 gpt-4.1 输入 2.00 / 缓存输入 0.50 / 输出 8.00，gpt-4.1-mini 输入 0.40 / 0.10 / 1.60（USD / 1M token），与 2026-10-18 的账本价格一致。实际费用按全价输入计（不扣缓存）。
+
+### 费用
+
+| 模型 | 请求 | 预留合计（逐个，最坏情况） | 实际 | token（输入 / 输出） | 每轮对方回应实际 |
+| --- | --- | --- | --- | --- | --- |
+| gpt-4.1-2025-04-14 | 15 | USD0.197258 | USD0.040036 | 16,218 / 950 | 平均 USD0.00267，最高 0.00323 |
+| gpt-4.1-mini-2025-04-14 | 14 | USD0.036745 | USD0.007446 | 15,102 / 878 | 平均 USD0.00053，最高 0.00061 |
+| **合计** | 29 | — | **USD0.047482**（自设上限 0.05） | — | gpt-4.1 约为 mini 的 5 倍 |
+
+mini 的第 15 个用例 E1 因下一次预留会超过 0.05 而停下，没发出；E1 用同一输入、同一提示词的已有记录 RC2-R11b（2026-10-18，C15-2b 之后提示词未再改）代替，回合服务回放结果相同（done=true）。C15-2 账本累计 USD0.101281（上限 0.9）。29 个请求全部结算，无失败、无未知、无重发。
+
+### 逐条
+
+“原始”指模型自己的输出，“产品端”指回合服务处理后学员听到的回复和看到的 coachNote。
+
+| 用例 | 期望 | gpt-4.1 原始 → 产品端 | gpt-4.1-mini 原始 → 产品端 |
+| --- | --- | --- | --- |
+| GQ1 鸡饭：改打包三份 | goalChange | 有，“Three packets to take away, right?” | 有，“You want to order three packets to take home for your family, right?” |
+| GQ2 鸡饭：一份改两份 | goalChange | 有，“You want two chicken rice, is it?” | 有，确认问句对；summary 写成英文（应为中文，界面会显示英文） |
+| GQ3 领证：多领兄弟一张 | goalChange | 有 | 有 |
+| GT1 领证：改明天下午 | goalChange | 有，reply 就是确认问句 | 有；原始 reply 多了 “Okay, ” 前缀，兜底换成 confirm |
+| GT2 诊所：改四点再来 | goalChange | 有；另带一条 coachNote（学员说得没错，多余，产品端保留，因为带 “ → ” 建议句） | 有；summary 写成英文；confirm “Can you come back at 4 PM instead?” 像是对方提出要求而不是确认 |
+| GT3 鸡饭：改晚上七点来取 | goalChange | 有 | 有；confirm 同样是 “Can you … instead?” 的说法 |
+| OT1 鸡饭：说儿子的学校 | understood=false，不跟聊 | false；原始 “Oh, I see. Would you like to order some food today?”（没跟聊，但两句）→ 兜底重述 “Hi, what would you like today?”；coachNote 被 C12-2 丢掉 | false；原始 **“Where is your son's school?”（跟着聊）** → 兜底重述同上；coachNote 保留了建议句 “→ Where is your son's school?”（建议学员继续闲聊） |
+| OT2 领证：天气、榴莲 | 同上 | false；原始先答 “Yes, Singapore is very hot!” 再拉回 → 兜底重述；coachNote“把话题拉回…”保留 | false；原始先答 “Oh, the weather is hot, yes.” 再拉回 → 兜底重述；coachNote 同类保留 |
+| OT3 诊所：问哪里买手机 | 同上 | false；原始 “Sorry, I am not sure. For now, do you have your IC…” → 兜底重述；coachNote 保留 | false；原始 “Sorry, focus on doctor visit first. Do you have…” → 兜底重述；coachNote “偏题，要回到…”保留 |
+| CN1 “One chicken rice, please.” | coachNote null | null | null |
+| CN2 “Is the chicken rice spicy?” | coachNote null | **有**：““spicy”用法正确。 → Is the chicken rice spicy?”（夸奖，产品端保留） | **有**：“了解了用“spicy”询问辣度。”（夸奖，产品端保留） |
+| CN3 “Yes, here they are.” | coachNote null | null | null |
+| E1 领证最后一句 | done=true | true | true（RC2-R11b 记录） |
+| E2 诊所最后一句 | done=true | true | true |
+| M1 诊所：严重吗、吃什么药 | 不下结论 | 原始不下结论（“The doctor will check you and tell you what medicine to take…”），但把能懂的问题标成 understood=false，兜底把回复换成 “Do you have your IC or passport with you?”，学员的问题没被回应；coachNote 的建议句是对方的话 | 不下结论，understood=true，回复保留（“The doctor will check you first and then tell you the medicine, okay? …”）；coachNote **把系统规则说给学员**（“不要直接回答病情或用药，告诉患者医生会诊断。”） |
+
+### 汇总
+
+| 项目 | gpt-4.1 | gpt-4.1-mini |
+| --- | --- | --- |
+| 改目标 goalChange 给出率（数量 3 + 时间 3） | 6/6 | 6/6 |
+| 改目标：原始 reply 已是确认问句 | 6/6 | 5/6（GT1 前缀，兜底改正） |
+| 改目标：summary 用辅助语言（中文） | 6/6 | 4/6 |
+| 偏题：understood=false | 3/3 | 3/3 |
+| 偏题：原始 reply 完全不跟聊 | 2/3（OT2 先答一句） | 1/3（OT1 跟着聊，OT2 先答一句） |
+| 偏题：产品端最终回复拉回场景 | 3/3 | 3/3（都靠兜底重述） |
+| 能懂时 coachNote 为空（原始 / 产品端） | 2/3 / 2/3 | 2/3 / 2/3 |
+| 最后一句结束 done=true | 2/2 | 2/2 |
+| 医疗不下结论 | 1/1（但 understood 标错，学员问题被兜底盖掉） | 1/1（但 coachNote 泄露规则） |
+
+### 判定：不切换
+
+- 用户条件是“gpt-4.1 在改目标（goalChange 给出率）和偏题上明显好于 mini，且其他项不更差才换”。这次 **goalChange 给出率两者都是 6/6**，不是“明显更好”；偏题的 understood 两者都是 3/3，产品端最终回复两者都是 3/3（C15-2c 兜底已经把 mini 的跟聊回复全部换掉）。gpt-4.1 只在“原始回复不跟聊”（2/3 对 1/3）和 summary 语言（6/6 对 4/6）上好一些，样本太少，不算明显。
+- 其他项不更差这一条也不成立：M1 里 gpt-4.1 把能懂的医疗问题标成 understood=false，经兜底后学员听到的是“带证件了吗”，问题没被回应；mini 这一轮产品端回复更好（但 coachNote 有泄露问题，两者各有毛病）。能懂时多余 coachNote 两者一样（2/3）。
+- 费用：对方回应每轮实际平均 gpt-4.1 USD0.00267、mini USD0.00053，约 5 倍；按每课 20 轮算一课约 USD0.053 对 0.011（只算对方回应，不含转写和配音）。
+- 所以**对练对方保持 gpt-4.1-mini-2025-04-14，不改代码、不走 Loopwork 换模型轮**；`PRACTICE_TURN_MICROS`（每轮 30,000 微美元）、每课 20 轮、每日 60 轮、对练总上限都不变。
+- 如果以后仍要换：现在每轮预留 USD0.03 是按 mini 估的“转写 + 小回复 + 配音”。换 gpt-4.1 时，回应一项若按“每字符一个 token”的最坏情况算，满 10 轮历史（每轮最多 500+500 字符）加提示词约 16,000 字符，最坏约 USD0.033，单项就超过 0.03，需先重算每轮预留再换。
+
+### 局限
+
+- 每个模型 15 轮、单次采样，只说明“会不会出现”，不是遵守率。之前 mini 在 6 次改目标请求里漏了 3 次 goalChange（见上文“残余风险”），这次 6/6 全给，说明单次采样波动大；同样不能说 gpt-4.1 的 6/6 是稳定的。
+- mini 组 E1 用的是前一天同条件的记录，不是本次新请求。
+- 质量判断（是否跟聊、是否下结论、coachNote 是否多余）由执行者一人判断。

@@ -185,4 +185,92 @@ if (args.includes('--turns')) {
     console.log(c.id, JSON.stringify(v ?? r.error));
   }
 }
+// C15-2d A/B (user 2026-10-19 05:38 UTC "换并复查", this run reserves at most USD0.05, labels "AB-"): the same hard cases
+// for the partner reply under gpt-4.1-2025-04-14 and gpt-4.1-mini-2025-04-14. The repo's respondInScene runs unchanged;
+// only the request body's model is swapped inside the fetch wrapper (--model 4.1 | mini). Each answer then goes through
+// the real turn service (C15-2c fallbacks included) with a stub transcript and stub voice, to see the final product output.
+// The reservation is made inside the wrapper from the exact request body (every character counted as a token).
+if (args.includes('--ab')) {
+  const AB_BUDGET = 0.05;
+  const which = args[args.indexOf('--model') + 1];
+  const MODELS = { '4.1': { id: 'gpt-4.1-2025-04-14', price: 'gpt-4.1' }, mini: { id: 'gpt-4.1-mini-2025-04-14', price: 'gpt-4.1-mini' } };
+  const m = MODELS[which];
+  if (!m) throw new Error('--model 4.1 | mini');
+  const abSpent = () => ledger.entries(ITEM).filter(e => /^AB-/.test(e.label)).reduce((sum, e) => sum + (e.status === 'settled' ? e.actual : e.reserved), 0);
+  const { createPracticeTurnService } = await import('../../lib/practice-turn.ts');
+  const { sealGoogleSession } = await import('../../lib/google-auth.ts');
+  const { mkdtempSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const secret = 'c15-2d-ab-synthetic-secret-at-least-32-chars', now = Date.now();
+  const cookie = await sealGoogleSession({ provider: 'google', issuer: 'https://accounts.google.com', providerSubject: 'ab', email: 'synthetic@example.invalid' }, secret, now);
+  const courseOf = lines => ({ id: 'c', lines: lines.map((l, i) => ({ id: 'x' + i, role: l.role, text: l.text })), turns: lines.filter((_, i) => i % 2 === 0).map((_, k) => ({ partnerLineId: 'x' + 2 * k, learnerLineId: 'x' + (2 * k + 1) })) });
+  const t = (lines, i, transcript, over = {}) => () => ({ lines, turnIndex: i, ctx: base(lines, i, transcript, { history: historyUpTo(lines, i), ...over }) });
+  const abCases = [
+    { id: 'GQ1', rule: '改目标·数量', expect: 'goalChange', make: t(hawker, 0, 'Can I order three packets to take home for my family instead?') },
+    { id: 'GQ2', rule: '改目标·数量', expect: 'goalChange', make: t(hawker, 1, 'Actually, can I have two plates instead of one? My friend is coming.') },
+    { id: 'GQ3', rule: '改目标·数量', expect: 'goalChange', make: t(office, 1, 'Can I collect two cards today, mine and my brother\'s?') },
+    { id: 'GT1', rule: '改目标·时间', expect: 'goalChange', make: t(office, 1, 'Sorry, can I come back tomorrow afternoon instead? I forgot my passport.') },
+    { id: 'GT2', rule: '改目标·时间', expect: 'goalChange', make: () => t(clinic, 1, 'Actually, can I come back at four o\'clock instead? I need to fetch my son first.')() },
+    { id: 'GT3', rule: '改目标·时间', expect: 'goalChange', make: t(hawker, 2, 'Can I collect it at seven tonight instead? I am going to work now.') },
+    { id: 'OT1', rule: '偏题', expect: 'understood false, reply does not follow the topic', make: t(hawker, 0, 'My son goes to school near here.') },
+    { id: 'OT2', rule: '偏题', expect: 'understood false, reply does not follow the topic', make: t(office, 1, 'The weather is so hot today. Do you like durian?') },
+    { id: 'OT3', rule: '偏题', expect: 'understood false, reply does not follow the topic', make: () => t(clinic, 1, 'Do you know where I can buy a cheap phone near here?')() },
+    { id: 'CN1', rule: '能懂时 coachNote 为空', expect: 'understood true, coachNote null', make: t(hawker, 0, 'One chicken rice, please.') },
+    { id: 'CN2', rule: '能懂时 coachNote 为空', expect: 'understood true, coachNote null', make: t(hawker, 0, 'Is the chicken rice spicy?') },
+    { id: 'CN3', rule: '能懂时 coachNote 为空', expect: 'understood true, coachNote null', make: t(office, 1, 'Yes, here they are.') },
+    { id: 'E1', rule: '最后一句结束', expect: 'done true', make: t(office, lastPair(office), 'Okay, thank you very much.') },
+    { id: 'E2', rule: '最后一句结束', expect: 'done true', make: () => t(clinic, lastPair(clinic), 'Okay, I will tell you if I feel worse. Thank you.')() },
+    { id: 'M1', rule: '医疗不下结论', expect: 'no diagnosis or medicine advice', make: () => t(clinic, 1, 'Is it serious? What medicine should I take for my cough?')() },
+  ];
+  const abDir = args.includes('--out') ? outDir : '/mnt/project-files/les-c15/prompt-ab';
+  const abFile = join(abDir, `results-${which}.json`);
+  mkdirSync(abDir, { recursive: true });
+  const abResults = existsSync(abFile) ? JSON.parse(readFileSync(abFile, 'utf8')) : [];
+  const doneIds = new Set(abResults.map(r => r.id));
+  // --ids sets the order (cases with the largest worst-case reservation first, so the cap cuts off cheap ones last).
+  const order = args.includes('--ids') ? args[args.indexOf('--ids') + 1].split(',') : abCases.map(c => c.id);
+  for (const c of order.map(id => abCases.find(x => x.id === id) ?? (() => { throw new Error(`unknown case ${id}`); })())) {
+    if (doneIds.has(c.id)) continue; // a recorded (or failed) case is never sent again
+    const { lines, turnIndex, ctx } = c.make();
+    const label = `AB-${which}-${c.id}`;
+    let hold = null, capped = false, call = null;
+    const send = async (url, init) => {
+      const body = JSON.parse(init.body);
+      if (body.model !== 'gpt-4.1-mini-2025-04-14') throw new Error('unexpected model in request');
+      body.model = m.id;
+      const text = JSON.stringify(body);
+      const reserve = responseReserve(m.price, text.length, body.max_output_tokens);
+      if (abSpent() + reserve > AB_BUDGET) { capped = true; throw new Error('ab budget reached'); }
+      hold = ledger.reserve(ITEM, label, reserve);
+      call = { model: m.id, bodyChars: text.length, reserved: reserve };
+      const response = await fetch(url, { ...init, body: text });
+      call.status = response.status;
+      try {
+        const json = await response.clone().json();
+        call.usage = json.usage ? { input_tokens: json.usage.input_tokens, output_tokens: json.usage.output_tokens } : null; call.responseStatus = json.status ?? null;
+        call.outputText = (json.output ?? []).flatMap(item => item.content ?? []).filter(x => x.type === 'output_text').map(x => x.text).join('');
+      } catch { call.usage = null; }
+      return response;
+    };
+    let raw = null, rawError = null;
+    const service = createPracticeTurnService({ directory: mkdtempSync(join(tmpdir(), 'les-ab-')), sessionSecret: secret, maxReservedMicros: 10_000_000, turnMicros: 1, maxTurnsPerMinute: 100,
+      getCourse: async () => courseOf(lines), transcribe: async () => ({ text: ctx.transcript }),
+      respond: async context => { try { raw = await respondInScene(context, { enabled: true, apiKey, fetch: send }); return raw; } catch (e) { rawError = e.message; throw e; } },
+      speak: async () => ({ bytes: Buffer.from('ID3 x'), mimeType: 'audio/mpeg' }) });
+    let product = null, productError = null;
+    try {
+      const res = await service.turn({ cookie, now: now + 1, courseId: 'c', revision: 1, turnIndex, language: ctx.language, history: ctx.history, audio: { bytes: Buffer.from('x'), mimeType: 'audio/webm' }, correction: ctx.correction, focus: ctx.focus, ...(ctx.goal ? { goal: ctx.goal } : {}) });
+      product = { understood: res.understood, done: res.done, goalChange: res.goalChange, reply: res.reply.text, coachNote: res.coachNote, replyChanged: res.reply.text !== String(raw?.reply ?? '').trim() };
+    } catch (e) { productError = e.message; }
+    if (capped) { console.error('ab budget reached; stop'); break; }
+    if (hold) { if (call?.usage) hold.settle(responseCost(m.price, call.usage), call.usage); else hold.unknown(rawError ?? 'no usage'); }
+    abResults.push({ id: c.id, rule: c.rule, expect: c.expect, model: m.id, input: { transcript: ctx.transcript, partnerLine: ctx.partnerLine, historyTurns: ctx.history.length, language: ctx.language, safety: ctx.safety },
+      rawOutputText: call?.outputText ?? null, raw, rawError, product, productError, usage: call?.usage ?? null, bodyChars: call?.bodyChars ?? null, reserved: call?.reserved ?? null,
+      actual: call?.usage ? responseCost(m.price, call.usage) : null });
+    writeFileSync(abFile, JSON.stringify(abResults, null, 2));
+    console.log(label, JSON.stringify(product ?? productError), 'raw:', JSON.stringify(raw ?? rawError));
+    if (!call?.usage) { console.error('failed or unknown request; stop without retry'); break; }
+  }
+  console.log(`AB spent USD ${abSpent().toFixed(6)} (cap ${AB_BUDGET})`);
+}
 console.log(`${ITEM} spent so far USD ${ledger.total(ITEM).toFixed(6)}`);
