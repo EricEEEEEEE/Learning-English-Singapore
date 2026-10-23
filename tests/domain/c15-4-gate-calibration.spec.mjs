@@ -196,3 +196,48 @@ test('C15-4c prompt: without segment timings the whole-lesson prompt is unchange
   expect(prompt).not.toContain('In this clip');
   expect(sceneVideoPrompt('plain goal')).toBe('plain goal');
 });
+
+// C15-4d (2026-10-23, zero cost): segment boundaries before a partner line. Attempts 3-5 of the school lesson: the
+// second segment always opened with a learner line (silent in the drive audio) and started from the last frame of the
+// first segment, taken while the partner was mid-sentence; the partner kept mouthing words through those first 4 s on
+// all four takes (learner_mouth 0.51 / 0.63 / 0.63 / 0.51 / 0.47, key frames 0.2-4 s), even with the C15-4c prompt.
+// Segments that opened with the partner's own line passed every time. In a scene lesson (learner lines marked silence)
+// the lines are now packed as partner line + following learner lines, so every segment starts with the partner speaking
+// and ends with her listening; if that cannot fit in four segments of at most 20 s, the old line-by-line plan is kept.
+const schoolA5 = [['p1', 5.75], ['l1', 4.25], ['p2', 6.7], ['l2', 4.05], ['p3', 7.7], ['l3', 4.5], ['p4', 6.55], ['l4', 4.4], ['p5', 5.8], ['l5', 2.6]]
+  .map(([lineId, duration]) => ({ lineId, duration, silence: lineId.startsWith('l') }));
+
+test('C15-4d plan: in a scene lesson every segment starts with a partner line and ends after her listener line', async () => {
+  const { planAudioSegments } = await import('../../lib/generated-audio.ts');
+  const plan = planAudioSegments(schoolA5);
+  expect(plan.map(segment => segment.lineIds)).toEqual([['p1', 'l1'], ['p2', 'l2'], ['p3', 'l3'], ['p4', 'l4', 'p5', 'l5']]);
+  for (const segment of plan) { expect(segment.lineIds[0]).toMatch(/^p/); expect(segment.duration).toBeLessThanOrEqual(20); }
+  expect(plan.map(segment => +segment.duration.toFixed(2))).toEqual([10, 10.75, 12.2, 19.35]);
+  // The old greedy plan for the same lines (what attempts 3-5 got) put l2 at the start of segment 2.
+  const legacy = planAudioSegments(schoolA5.map(({ lineId, duration }) => ({ lineId, duration })));
+  expect(legacy.map(segment => segment.lineIds)).toEqual([['p1', 'l1', 'p2'], ['l2', 'p3', 'l3'], ['p4', 'l4', 'p5', 'l5']]);
+});
+
+test('C15-4d plan: a lesson opening with a learner line keeps it first; if pairs need more than four segments the old plan is kept', async () => {
+  const { planAudioSegments } = await import('../../lib/generated-audio.ts');
+  const opening = [{ lineId: 'l0', duration: 3, silence: true }, { lineId: 'p1', duration: 9, silence: false }, { lineId: 'l1', duration: 9, silence: true }, { lineId: 'p2', duration: 5, silence: false }];
+  expect(planAudioSegments(opening).map(segment => segment.lineIds)).toEqual([['l0'], ['p1', 'l1'], ['p2']]);
+  // Five pairs of 11 s cannot fit four 20 s segments as whole pairs: the line-by-line plan is used instead.
+  const long = Array.from({ length: 10 }, (_, i) => ({ lineId: `x${i}`, duration: i % 2 ? 5 : 6, silence: i % 2 === 1 }));
+  const greedy = planAudioSegments(long.map(({ lineId, duration }) => ({ lineId, duration })));
+  expect(planAudioSegments(long)).toEqual(greedy);
+});
+
+test('C15-4d assembly: the scene audio assembly starts every segment with the partner line', async () => {
+  const { assembleCourseAudio } = await import('../../lib/assemble-course-audio.ts');
+  const wav = seconds => {
+    const data = Math.round(seconds * 16000) * 2, bytes = Buffer.alloc(44 + data);
+    bytes.write('RIFF'); bytes.writeUInt32LE(36 + data, 4); bytes.write('WAVE', 8); bytes.write('fmt ', 12); bytes.writeUInt32LE(16, 16); bytes.writeUInt16LE(1, 20); bytes.writeUInt16LE(1, 22); bytes.writeUInt32LE(16000, 24); bytes.writeUInt32LE(32000, 28); bytes.writeUInt16LE(2, 32); bytes.writeUInt16LE(16, 34); bytes.write('data', 36); bytes.writeUInt32LE(data, 40);
+    for (let i = 44; i < bytes.length; i += 2) bytes.writeInt16LE(Math.round(6000 * Math.sin(i / 15)), i);
+    return bytes;
+  };
+  const inputs = schoolA5.map(({ lineId, duration, silence }) => { const bytes = wav(duration); return { lineId, bytes, sha256: createHash('sha256').update(bytes).digest('hex'), silence }; });
+  const assembled = assembleCourseAudio(inputs);
+  expect(assembled.segments.map(segment => segment.lineIds[0])).toEqual(['p1', 'p2', 'p3', 'p4']);
+  for (const line of assembled.lines.filter(line => line.segmentStart === 0)) expect(line.lineId).toMatch(/^p/);
+});
