@@ -4,6 +4,7 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 
 // C15-4a (2026-10-23, zero cost): calibration of the C14 single-face check with the first paid C15-4 sample.
 // The school lesson (ltx-2-3-pro, task 752bd329) failed single_face twice (0.8152, then 0.7935 on the redo). Per-frame
@@ -110,4 +111,43 @@ test.describe('C15-4a detection', () => {
       expect(checks.find(check => check.id === 'single_face').status).toBe('failed');
     }
   });
+});
+
+// C15-4b (2026-10-23, zero cost): seam SSIM calibration. Attempt 3 of the school lesson: segment 2 (chained from the last
+// frame of segment 1) failed seam_ssim at 0.42 on both takes, while frame by frame the seam is continuous (same woman,
+// same room, a small shift). Gray SSIM at 360x640 is 0.43 even between the first and last frame of one continuous
+// segment; the two user-rejected C3 seams (a different person after the seam) measure 0.13 and 0.23. Threshold 0.6 -> 0.3.
+const seamPrevious = '/mnt/project-files/les-c15/video/school-ltx-2-3-pro-a3-seg0.mp4';
+const seamNext = '/mnt/project-files/les-c15/video/school-ltx-2-3-pro-a3-seg1-redo.mp4';
+const media = file => { const bytes = readFileSync(file); return { bytes, sha256: createHash('sha256').update(bytes).digest('hex') }; };
+function c3Halves(file, at) {
+  const a = join(scratch, `${at}-a.mp4`), b = join(scratch, `${at}-b.mp4`);
+  execFileSync(ffmpeg, ['-v', 'error', '-y', '-i', file, '-t', String(at), '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', a]);
+  execFileSync(ffmpeg, ['-v', 'error', '-y', '-ss', String(at + 0.05), '-i', file, '-t', '3', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', b]);
+  return [media(a), media(b)];
+}
+
+test('C15-4b threshold: seam SSIM >= 0.3, marked as calibrated in C15-4b', async () => {
+  const { QUALITY_THRESHOLDS } = await load();
+  expect(QUALITY_THRESHOLDS.minSeamSsim).toBe(0.3);
+  expect(readFileSync(new URL('../../lib/video-quality.ts', import.meta.url), 'utf8')).toContain('C15-4b');
+});
+
+test('C15-4b seam: the real continuous C15-4 seam passes; the two rejected C3 seams still fail', async () => {
+  test.setTimeout(120_000);
+  const files = [seamPrevious, seamNext, ...c3];
+  if (!files.every(existsSync)) console.log(`[C15-4b] seam videos missing on this machine: ${files.filter(f => !existsSync(f)).join(', ')}`);
+  test.skip(!files.every(existsSync), 'seam videos not on this machine');
+  const { createVideoQualityGate } = await load();
+  const gate = createVideoQualityGate({ ffmpeg, ffprobe: '/usr/bin/ffprobe' });
+  const seam = report => report.checks.find(check => check.id === 'seam_ssim');
+  const real = seam(await gate({ segmentIndex: 1, previous: media(seamPrevious), video: media(seamNext), learnerWindows: [] }));
+  console.log(`[C15-4b] school a3 seam: ${JSON.stringify(real)}`);
+  expect(real.status).toBe('passed');
+  for (const [file, at] of [[c3[0], 19.042], [c3[1], 18.0]]) {
+    const [previous, video] = c3Halves(file, at);
+    const jump = seam(await gate({ segmentIndex: 1, previous, video, learnerWindows: [] }));
+    console.log(`[C15-4b] ${file} seam: ${JSON.stringify(jump)}`);
+    expect(jump.status).toBe('failed');
+  }
 });

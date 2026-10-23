@@ -81,17 +81,17 @@ test('C14-1 gate: more than one second of black or of a frozen picture is caught
   expect(qualityVerdict(frozen)).toBe('quality_failed');
 });
 
-test('C14-1 gate: the seam SSIM compares the previous last frame with this first frame (threshold 0.6)', async () => {
+test('C14-1 gate: the seam SSIM compares the previous last frame with this first frame (threshold 0.3 since C15-4b, was 0.6)', async () => {
   const { createVideoQualityGate, qualityVerdict, QUALITY_THRESHOLDS } = await load();
-  expect(QUALITY_THRESHOLDS.minSeamSsim).toBe(0.6);
+  expect(QUALITY_THRESHOLDS.minSeamSsim).toBe(0.3);
   const gate = createVideoQualityGate({ ffmpeg, ffprobe });
   const previous = samples.previous();
   const good = await gate({ segmentIndex: 1, previous, video: samples.nextGood(), learnerWindows: [] });
   expect(byId(good, 'seam_ssim').status).toBe('passed');
-  expect(byId(good, 'seam_ssim').value).toBeGreaterThanOrEqual(0.6);
+  expect(byId(good, 'seam_ssim').value).toBeGreaterThanOrEqual(0.3);
   const bad = await gate({ segmentIndex: 1, previous, video: samples.nextBad(), learnerWindows: [] });
   expect(byId(bad, 'seam_ssim').status).toBe('failed');
-  expect(byId(bad, 'seam_ssim').value).toBeLessThan(0.6);
+  expect(byId(bad, 'seam_ssim').value).toBeLessThan(0.3);
   expect(qualityVerdict(bad)).toBe('quality_failed');
 });
 
