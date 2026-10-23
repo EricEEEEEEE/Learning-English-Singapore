@@ -38,7 +38,8 @@ const samples = {
   // Seam samples: "previous" ends at 2 s of a moving shot; the good next segment carries on from there, the bad one is a different picture.
   previous: () => sample('previous', ['-f', 'lavfi', '-i', 'testsrc2=s=360x640:r=24:d=2']),
   nextGood: () => sample('next-good', ['-f', 'lavfi', '-i', 'testsrc2=s=360x640:r=24:d=4', '-vf', 'trim=start=2,setpts=PTS-STARTPTS']),
-  nextBad: () => sample('next-bad', ['-f', 'lavfi', '-i', 'mandelbrot=s=360x640:r=24', '-t', '2']),
+  // C15-4b: random noise instead of mandelbrot (its flat black areas score 0.52 against testsrc2, above the new 0.3).
+  nextBad: () => sample('next-bad-noise', ['-f', 'lavfi', '-i', "nullsrc=s=360x640:r=24,geq=lum='random(1)*255':cb=128:cr=128", '-t', '2']),
 };
 const load = () => import('../../lib/video-quality-gate.ts');
 const byId = (report, id) => report.checks.find(check => check.id === id);
