@@ -100,7 +100,11 @@ test('T61B CFR runtime: verified task duration reaches native normalizer, failur
  fetch:async()=>{calls++;throw new Error('Unexpected network');}});
  await expect(live.assembleVideo({...c.input,normalizeDuration:1})).rejects.toThrow();
  const args=JSON.parse(await readFile(marker,'utf8'));
- expect(args[args.indexOf('-vf')+1]).toBe('fps=24');
+ // C15-4g: with two or more segments the runtime cross-fades the seams, so the 24 fps normalisation sits in the
+ // -filter_complex graph (every segment input runs through fps=24) instead of a plain -vf.
+ const graph=args.includes('-vf')?args[args.indexOf('-vf')+1]:args[args.indexOf('-filter_complex')+1];
+ expect(graph).toContain('fps=24');
+ if(!args.includes('-vf')) expect(graph).toContain('xfade=transition=fade');
  expect(args[args.indexOf('-t')+1]).toBe('22');
  expect(args).not.toContain('copy');
  expect(await live.get(c.input)).toEqual(before);
