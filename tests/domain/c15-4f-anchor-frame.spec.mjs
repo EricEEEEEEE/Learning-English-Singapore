@@ -108,7 +108,8 @@ const drift = checks => checks.find(check => check.id === 'framing_drift');
 test('C15-4f drift threshold: +-35% against the first segment, marked to be calibrated', async () => {
   const { QUALITY_THRESHOLDS, OPTIONAL_QUALITY_CHECK_IDS, QUALITY_CHECK_IDS } = await quality();
   expect(QUALITY_THRESHOLDS.maxFramingDrift).toBe(0.35);
-  expect(OPTIONAL_QUALITY_CHECK_IDS).toEqual(['framing_drift']);
+  // C15-4g added background_noise and learner_mouth_motion after it (考题随 C15-4g 更新).
+  expect(OPTIONAL_QUALITY_CHECK_IDS).toEqual(['framing_drift', 'background_noise', 'learner_mouth_motion']);
   // The five required checks are unchanged.
   expect(QUALITY_CHECK_IDS).toEqual(['cuts', 'single_face', 'learner_mouth', 'seam_ssim', 'black_freeze']);
 });

@@ -11,10 +11,12 @@ export const coursePointer = { id: 't70-synthetic-hotel', revision: 2, materials
 export const mediaSha = 'a'.repeat(64);
 const hotelBytes = await readFile(new URL('../../public/media/hotel-pov-12s.mp4', import.meta.url));
 export const key = (owner, pointer = coursePointer) => JSON.stringify([owner, pointer.id, pointer.revision, pointer.materialsRevision ?? 0]);
-export function progressRecord(position = { page: 'watch', time: 1.25, turnIndex: 0 }, version = 4) {
-  return { course: { ...coursePointer, mediaSha256: mediaSha }, version, position: structuredClone(position), updatedAt: 1000 };
+export function progressRecord(position = { page: 'watch', time: 1.25, turnIndex: 0 }, version = 4, sha256 = mediaSha) {
+  return { course: { ...coursePointer, mediaSha256: sha256 }, version, position: structuredClone(position), updatedAt: 1000 };
 }
-export async function setupLearning(page, context, baseURL, { progress = null, extraTurn = false, legacy = false } = {}) {
+// C15-4g: course = { media, lines, phrases, turns } and mediaBytes let a real generated course (its own media hash and
+// bytes) be served; saved progress then carries that course's hash, as the server does, never the synthetic one.
+export async function setupLearning(page, context, baseURL, { progress = null, extraTurn = false, legacy = false, course: realCourse = null, mediaBytes = null } = {}) {
   const record = hotelRequirement(), latest = hotelRequirement(); latest.revision = 9;
   latest.content.description = '正在编辑的新场景草稿'; latest.content.keywords.learnerRole = '新草稿中的导游';
   const state = await setupBrowser(page, context, baseURL, latest);
@@ -25,8 +27,12 @@ export async function setupLearning(page, context, baseURL, { progress = null, e
     HTMLMediaElement.prototype.play = function () { window.t70PlayCalls++; return play.call(this); };
     if (navigator.mediaDevices) navigator.mediaDevices.getUserMedia = () => { window.t70MicCalls++; return Promise.reject(new DOMException('Synthetic microphone denied', 'NotAllowedError')); };
   });
-  const course = { ...coursePointer, source: 'ai-generated', media: { courseId: coursePointer.id, revision: 2, assetId: 'synthetic-existing-hotel', sha256: mediaSha, duration: hotelSample.media.duration },
-    lines: hotelSample.lines.map(({ version, ...line }) => ({ ...structuredClone(line), revision: 2 })), phrases: structuredClone(hotelSample.phrases), turns: structuredClone(hotelSample.turns) };
+  const course = realCourse
+    ? { ...coursePointer, source: 'ai-generated', media: { ...structuredClone(realCourse.media), courseId: coursePointer.id, revision: 2 },
+      lines: realCourse.lines.map(line => ({ ...structuredClone(line), revision: 2 })), phrases: structuredClone(realCourse.phrases), turns: structuredClone(realCourse.turns) }
+    : { ...coursePointer, source: 'ai-generated', media: { courseId: coursePointer.id, revision: 2, assetId: 'synthetic-existing-hotel', sha256: mediaSha, duration: hotelSample.media.duration },
+      lines: hotelSample.lines.map(({ version, ...line }) => ({ ...structuredClone(line), revision: 2 })), phrases: structuredClone(hotelSample.phrases), turns: structuredClone(hotelSample.turns) };
+  const servedBytes = mediaBytes ?? hotelBytes;
   if (extraTurn) {
     // Metadata only: existing hotel bytes do not contain this additional dialogue.
     const translations = text => Object.fromEntries(['zh-Hans', 'id', 'ja', 'ko', 'hi'].map(code => [code, text]));
@@ -60,7 +66,7 @@ export async function setupLearning(page, context, baseURL, { progress = null, e
     if (state.owner !== ownerA || state.mediaStatus !== 200) return route.fulfill({ status: state.owner !== ownerA ? 404 : state.mediaStatus, body: '' });
     expect(url.searchParams.get('id')).toBe(coursePointer.id); expect(url.searchParams.get('revision')).toBe('2');
     const response = await handleGeneratedMedia(new Request(request.url(), { method: request.method(), headers: request.headers() }), {
-      now: 0, store: { async getCourseMedia() { return { bytes: hotelBytes, size: hotelBytes.byteLength }; } },
+      now: 0, store: { async getCourseMedia() { return { bytes: servedBytes, size: servedBytes.byteLength }; } },
     });
     return route.fulfill({ status: response.status, headers: Object.fromEntries(response.headers), body: Buffer.from(await response.arrayBuffer()) });
   });
@@ -79,7 +85,8 @@ export async function setupLearning(page, context, baseURL, { progress = null, e
       if (state.progressWriteStatus !== 200) return route.fulfill({ status: state.progressWriteStatus, json: { error: state.progressWriteStatus === 401 ? 'unauthenticated' : 'temporarily_unavailable' } });
       const entryKey = key(owner, body.course), previous = state.progress[entryKey] ?? null, version = previous?.version ?? 0;
       if (body.expectedVersion !== version && !(previous && body.expectedVersion < version && isDeepStrictEqual(body.position, previous.position))) return route.fulfill({ status: 409, json: { error: 'conflict' } });
-      const saved = body.expectedVersion < version ? previous : { course: { ...body.course, mediaSha256: mediaSha }, version: version + 1, position: structuredClone(body.position), updatedAt: 1000 + version + 1 };
+      // C15-4g: the server stores the hash of the course it serves (lib/scene-progress.ts), not a fixed synthetic one.
+      const saved = body.expectedVersion < version ? previous : { course: { ...body.course, mediaSha256: state.course.media.sha256 }, version: version + 1, position: structuredClone(body.position), updatedAt: 1000 + version + 1 };
       state.progress[entryKey] = saved;
       if (state.progressAckGates[owner]) await state.progressAckGates[owner];
       if (state.lostAckOnce) { state.lostAckOnce = false; return route.abort('failed'); }
