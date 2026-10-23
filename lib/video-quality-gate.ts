@@ -38,7 +38,10 @@ export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[]): Qu
   if (result.status !== 'measured') return open(`人脸检测没有完成：${typeof result.reason === 'string' ? result.reason : 'no measurement'}`);
   const t = QUALITY_THRESHOLDS, checks: QualityCheck[] = [];
   const face = result.single_face, faceRatio = ratio(face?.ratio), faceKeys = keyframeList(face?.keyframes);
-  if (!Number.isSafeInteger(result.frames) || result.frames <= 0 || faceRatio === undefined || !faceKeys) checks.push(open('人脸检测结果不完整')[0]);
+  // C15-4a: the share of frames with two or more faces is judged separately; without it the check is not_checked.
+  const multiRatio = ratio(face?.multi_ratio), multiKeys = keyframeList(face?.multi_keyframes ?? []);
+  if (!Number.isSafeInteger(result.frames) || result.frames <= 0 || faceRatio === undefined || !faceKeys || multiRatio === undefined || !multiKeys) checks.push(open('人脸检测结果不完整')[0]);
+  else if (multiRatio > t.maxMultiFaceRatio) checks.push({ id: 'single_face', status: 'failed', value: faceRatio, reason: 'more than one face on screen in too many frames', keyframes: multiKeys });
   else checks.push({ id: 'single_face', status: faceRatio >= t.minSingleFaceRatio ? 'passed' : 'failed', value: faceRatio,
     ...(faceRatio >= t.minSingleFaceRatio ? {} : { reason: 'not exactly one face on screen in too many frames', keyframes: faceKeys }) });
   const mouth = result.learner_mouth;

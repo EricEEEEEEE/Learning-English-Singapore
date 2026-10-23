@@ -307,6 +307,9 @@ def measure(args):
             'single_frames': len(single),
             'max_faces': max(frame['faces'] for frame in frames),
             'keyframes': [frame['t'] for frame in frames if frame['faces'] != 1][:20],
+            # C15-4a: frames with two or more faces, judged on their own (a second person on screen).
+            'multi_ratio': round(sum(1 for frame in frames if frame['faces'] >= 2) / len(frames), 4),
+            'multi_keyframes': [frame['t'] for frame in frames if frame['faces'] >= 2][:20],
         },
         'learner_mouth': {
             'windows': len(windows),

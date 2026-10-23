@@ -4,7 +4,11 @@ export const QUALITY_THRESHOLDS = {
   // ffmpeg scdet score (0-100) at or above which a frame starts a new shot.
   sceneChangeScore: 10,
   maxCutsPerSegment: 0,
-  minSingleFaceRatio: 0.9,
+  // C15-4a (2026-10-23, first paid C15-4 sample): one face in >= 75% of sampled frames (was 0.9: a 3 s walk-in with the
+  // face under the minimum size failed a single-woman segment at 0.79; the two user-rejected C3 courses measure 0.43 / 0.59)
+  // and two or more faces in <= 10% of them, so a second person is still caught.
+  minSingleFaceRatio: 0.75,
+  maxMultiFaceRatio: 0.1,
   maxLearnerMouthRatio: 0.35,
   minSeamSsim: 0.6,
   maxBlackSeconds: 1,
