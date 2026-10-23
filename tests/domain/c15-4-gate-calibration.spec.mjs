@@ -152,3 +152,47 @@ test('C15-4b seam: the real continuous C15-4 seam passes; the two rejected C3 se
     expect(jump.status).toBe('failed');
   }
 });
+
+// C15-4c (2026-10-23, zero cost): per-segment video prompt. Attempt 4 of the school lesson: segment 2 opens with a
+// 4-second learner line (silent in the drive audio) and the teacher visibly mouths words through it on both takes
+// (learner_mouth 0.6327 twice; frame by frame her mouth opens and closes, eyes shut, as if talking). Every segment's
+// prompt listed all five partner lines of the lesson ("She says: ..."), so the model had words to say but no voice for
+// them. Now each segment's prompt names only that segment's partner words and says when she listens silently.
+const lessonLines = [
+  { id: 'p1', role: 'partner', text: 'Hello, you are here early today.' }, { id: 'l1', role: 'learner', text: 'Thank you for letting me know.' },
+  { id: 'p2', role: 'partner', text: 'Your child is making friends.' }, { id: 'l2', role: 'learner', text: 'At home she shared a bit.' },
+  { id: 'p3', role: 'partner', text: 'She tries her best in class.' }, { id: 'l3', role: 'learner', text: 'I am glad to know.' },
+];
+const lessonScene = { setting: 'A primary school classroom door after school.', partnerGender: 'female', partnerLook: 'in her forties, school lanyard' };
+
+test('C15-4c prompt: a segment names only its own partner words, and when she listens silently', async () => {
+  const { sceneVideoPrompt } = await import('../../lib/scene-video-prompt.ts');
+  const script = { lines: lessonLines, scene: lessonScene };
+  const prompt = sceneVideoPrompt('goal', script, { lines: [{ lineId: 'l2', start: 0, end: 4.2 }, { lineId: 'p3', start: 4.2, end: 11 }, { lineId: 'l3', start: 11, end: 16.7 }] });
+  expect(prompt).toContain('In this clip she says only: "She tries her best in class."');
+  for (const other of ['Hello, you are here early today.', 'Your child is making friends.']) expect(prompt).not.toContain(other);
+  for (const learner of lessonLines.filter(line => line.role === 'learner')) expect(prompt).not.toContain(learner.text);
+  expect(prompt).toContain('The clip opens with her listening');
+  expect(prompt).toContain('From 0.0 s to 4.2 s she listens silently with her lips closed');
+  expect(prompt).toContain('From 11.0 s to 16.7 s she listens silently with her lips closed');
+  expect(prompt).toContain('She is the only person on screen');
+  expect(prompt.length).toBeLessThanOrEqual(5000);
+  // A segment that starts with her own line does not say it opens with listening.
+  const first = sceneVideoPrompt('goal', script, { lines: [{ lineId: 'p1', start: 0, end: 6.6 }, { lineId: 'l1', start: 6.6, end: 11.3 }, { lineId: 'p2', start: 11.3, end: 18.1 }] });
+  expect(first).toContain('In this clip she says only: "Hello, you are here early today." / "Your child is making friends."');
+  expect(first).not.toContain('The clip opens with her listening');
+  expect(first).toContain('From 6.6 s to 11.3 s she listens silently with her lips closed');
+  // A learner-only segment: no partner words at all.
+  const only = sceneVideoPrompt('goal', { lines: lessonLines, scene: { ...lessonScene, partnerGender: 'male' } }, { lines: [{ lineId: 'l3', start: 0, end: 3.8 }] });
+  expect(only).toContain('In this clip he does not speak at all');
+  expect(only).toContain('From 0.0 s to 3.8 s he listens silently with his lips closed');
+  expect(only).not.toContain(' says only');
+});
+
+test('C15-4c prompt: without segment timings the whole-lesson prompt is unchanged', async () => {
+  const { sceneVideoPrompt } = await import('../../lib/scene-video-prompt.ts');
+  const prompt = sceneVideoPrompt('goal', { lines: lessonLines, scene: lessonScene });
+  expect(prompt).toContain('She says: "Hello, you are here early today." / "Your child is making friends." / "She tries her best in class."');
+  expect(prompt).not.toContain('In this clip');
+  expect(sceneVideoPrompt('plain goal')).toBe('plain goal');
+});

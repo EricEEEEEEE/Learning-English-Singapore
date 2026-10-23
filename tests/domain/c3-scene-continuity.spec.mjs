@@ -66,10 +66,12 @@ test('C3 scene: later segments start from the previous last frame, every segment
   for (const submit of seen.submits.slice(1)) expect(submit.reference).toBe(sha(png));
   expect(seen.extracts).toHaveLength(3);
   for (const time of seen.extracts) expect(time).toBeCloseTo(15 - 2 / 24, 2); // the repaired segment matches the 15-second source audio
-  for (const submit of seen.submits) {
+  for (const [i, submit] of seen.submits.entries()) {
     expect(submit.prompt).toContain('first-person');
     expect(submit.prompt).toContain('adult man');
-    expect(submit.prompt).toContain('"Hello friend');
+    // C15-4c: each segment's prompt names only that segment's partner words; learner-only segments have none.
+    if (i % 2 === 0) expect(submit.prompt).toContain('"Hello friend');
+    else { expect(submit.prompt).not.toContain('"Hello friend'); expect(submit.prompt).toContain('In this clip he does not speak at all'); }
     expect(submit.prompt).not.toContain('"Hi okay');
     expect(submit.prompt).toContain('no cuts');
   }
