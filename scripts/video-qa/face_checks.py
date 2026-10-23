@@ -40,6 +40,9 @@ MODEL_NAME = 'face_landmarker.task'
 MODEL_SHA256 = '64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff'
 # Face mesh points: inner upper lip, inner lower lip, mouth corners.
 UPPER_LIP, LOWER_LIP, MOUTH_LEFT, MOUTH_RIGHT = 13, 14, 61, 291
+# C15-4f: eyelids and eye corners (both eyes) and the nose tip, for the fixed reference frame measurements.
+EYES = ((159, 145, 33, 133), (386, 374, 362, 263))
+NOSE_TIP = 1
 MAX_FACES = 5
 MIN_DETECTION_SCORE = 0.5  # MediaPipe default min_face_detection_confidence
 NMS_IOU = 0.3
@@ -232,6 +235,32 @@ def mouth_open(points):
     return math.hypot(lx - ux, ly - uy) / mouth_width if mouth_width > 0 else None
 
 
+def eye_open(points):
+    # The less open eye: lid gap / eye width (a blink in either eye counts as closed).
+    values = []
+    for upper, lower, inner, outer in EYES:
+        width = math.hypot(points[outer][0] - points[inner][0], points[outer][1] - points[inner][1])
+        if width <= 0:
+            return None
+        values.append(math.hypot(points[lower][0] - points[upper][0], points[lower][1] - points[upper][1]) / width)
+    return min(values)
+
+
+def yaw(points):
+    # Nose tip offset from the middle of the outer eye corners, as a share of their distance (0 = facing the camera).
+    left, right = points[33][0], points[263][0]
+    return (points[NOSE_TIP][0] - (left + right) / 2) / abs(right - left) if right != left else None
+
+
+def sharpness(frame, xs, ys, cv2):
+    # Variance of the Laplacian of the face box in gray (higher = sharper).
+    height, width = frame.shape[:2]
+    x0, y0, x1, y1 = max(0, int(min(xs))), max(0, int(min(ys))), min(width, int(max(xs))), min(height, int(max(ys)))
+    if x1 - x0 < 8 or y1 - y0 < 8:
+        return None
+    return float(cv2.Laplacian(cv2.cvtColor(frame[y0:y1, x0:x1], cv2.COLOR_BGR2GRAY), cv2.CV_64F).var())
+
+
 def scene_cuts(video):
     from scenedetect import ContentDetector, detect
     return [round(start.seconds, 3) for start, _ in detect(video, ContentDetector())[1:]]
@@ -277,15 +306,22 @@ def measure(args):
             for points in backend.faces(frame, cv2):
                 xs, ys = [p[0] for p in points], [p[1] for p in points]
                 if (max(ys) - min(ys)) / height >= args.min_face_height:
-                    faces.append(((max(xs) - min(xs)) * (max(ys) - min(ys)), mouth_open(points)))
+                    faces.append(((max(xs) - min(xs)) * (max(ys) - min(ys)), mouth_open(points), (max(ys) - min(ys)) / height, points, xs, ys))
             faces.sort(key=lambda face: face[0], reverse=True)
-            frames.append({'t': round(time, 3), 'faces': len(faces), 'open': faces[0][1] if faces else None})
+            row = {'t': round(time, 3), 'faces': len(faces), 'open': faces[0][1] if faces else None, 'height': faces[0][2] if faces else None}
+            if args.anchor and len(faces) == 1:
+                _, opening, face_height, points, xs, ys = faces[0]
+                row['anchor'] = {'t': round(time, 3), 'face_height': face_height, 'mouth_open': opening, 'eye_open': eye_open(points), 'yaw': yaw(points), 'sharpness': sharpness(frame, xs, ys, cv2)}
+            frames.append(row)
     finally:
         capture.release()
         backend.close()
     if not frames:
         not_checked('no frames could be decoded')
     single = [frame for frame in frames if frame['faces'] == 1]
+    # C15-4f: median face height (landmark box / frame height) over the one-face frames, for the framing drift check.
+    heights = sorted(frame['height'] for frame in single)
+    median_height = None if not heights else (heights[len(heights) // 2] if len(heights) % 2 else (heights[len(heights) // 2 - 1] + heights[len(heights) // 2]) / 2)
     # Mouth movement: the largest face's opening (lip gap / mouth width) changes by at least mouth_delta between two
     # consecutive sampled frames; counted only for frames inside learner line windows.
     inside = lambda t: any(start <= t <= end for start, end in windows)
@@ -310,6 +346,7 @@ def measure(args):
             # C15-4a: frames with two or more faces, judged on their own (a second person on screen).
             'multi_ratio': round(sum(1 for frame in frames if frame['faces'] >= 2) / len(frames), 4),
             'multi_keyframes': [frame['t'] for frame in frames if frame['faces'] >= 2][:20],
+            'face_height': None if median_height is None else round(median_height, 4),
         },
         'learner_mouth': {
             'windows': len(windows),
@@ -320,6 +357,10 @@ def measure(args):
         },
         'versions': {'mediapipe': getattr(mediapipe, '__version__', 'unknown'), 'opencv': cv2.__version__, 'model_sha256': MODEL_SHA256},
     }
+    if args.anchor:
+        # C15-4f: per-frame measurements of the one-face frames, for choosing the fixed reference frame (TypeScript decides).
+        rounded = lambda value: None if value is None or not math.isfinite(value) else round(value, 4)
+        result['anchor'] = {'candidates': [{key: (value if key == 't' else rounded(value)) for key, value in frame['anchor'].items()} for frame in frames if 'anchor' in frame][:400]}
     if args.scenes:
         result['scene_cuts'] = scene_cuts(args.video)
     emit(result)
@@ -351,6 +392,7 @@ def main():
     parser.add_argument('--mouth-delta', type=float, default=0.03)
     parser.add_argument('--model-dir')
     parser.add_argument('--scenes', action='store_true', help='also list PySceneDetect ContentDetector cuts (cross-check only)')
+    parser.add_argument('--anchor', action='store_true', help='C15-4f: also list per-frame measurements for choosing the fixed reference frame')
     parser.add_argument('--fetch-model', action='store_true')
     parser.add_argument('--probe', action='store_true', help='report whether libraries and the cached model are usable')
     try:

@@ -4,16 +4,18 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
-import { QUALITY_THRESHOLDS, FACE_CHECK_PENDING, FACE_DETECTION, type QualityCheck, type QualityReport } from './video-quality';
+import { QUALITY_THRESHOLDS, FACE_CHECK_PENDING, FACE_DETECTION, chooseAnchorFrame, type AnchorChoice, type QualityCheck, type QualityReport } from './video-quality';
 
-export { QUALITY_THRESHOLDS, MAX_SEGMENT_REDOS, FACE_CHECK_PENDING, FACE_DETECTION, QUALITY_CHECK_IDS, combineQualityChecks, qualityVerdict, validQualityCheck, taskQuality } from './video-quality';
+export { QUALITY_THRESHOLDS, MAX_SEGMENT_REDOS, FACE_CHECK_PENDING, FACE_DETECTION, QUALITY_CHECK_IDS, OPTIONAL_QUALITY_CHECK_IDS, ANCHOR_FRAME_LIMITS, chooseAnchorFrame, combineQualityChecks, qualityVerdict, validQualityCheck, taskQuality } from './video-quality';
 
 type Media = { bytes: Uint8Array; sha256: string };
-export type QualityGateInput = { segmentIndex: number; video: Media; previous?: Media; learnerWindows: { start: number; end: number }[] };
+// C15-4f: baseFaceHeight is the first segment's median face height, for the framing drift check of later segments.
+export type QualityGateInput = { segmentIndex: number; video: Media; previous?: Media; learnerWindows: { start: number; end: number }[]; baseFaceHeight?: number };
 export type QualityGate = (input: QualityGateInput) => Promise<QualityReport>;
 // Pluggable face checks (single face share, partner mouth movement while the learner speaks). They receive a local
 // file and return the two checks; createFaceChecks runs the C14-4 script, and without it they must say not_checked.
-export type FaceChecks = (input: { file: string; duration: number; learnerWindows: { start: number; end: number }[] }) => Promise<QualityCheck[]>;
+// C15-4f: with segmentIndex the checks also include framing_drift (baseFaceHeight: the first segment's median face height).
+export type FaceChecks = (input: { file: string; duration: number; learnerWindows: { start: number; end: number }[]; segmentIndex?: number; baseFaceHeight?: number }) => Promise<QualityCheck[]>;
 type Execute = (file: string, args: string[], options: { timeout: number; maxBuffer: number; encoding: 'utf8'; cwd?: string; env?: Record<string, string> }) => Promise<{ stdout: string; stderr: string }>;
 const run = promisify(execFile) as unknown as Execute;
 const round = (value: number) => Math.round(value * 1000) / 1000;
@@ -26,6 +28,22 @@ export const notCheckedFaces: FaceChecks = async () => [
 type Window = { start: number; end: number };
 const keyframeList = (value: unknown) => Array.isArray(value) && value.length <= 20 && value.every(time => typeof time === 'number' && Number.isFinite(time) && time >= 0) ? value as number[] : undefined;
 const ratio = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value >= 0 && value <= 1 ? value : undefined;
+const height = (value: unknown) => typeof value === 'number' && Number.isFinite(value) && value > 0 && value < 1 ? value : undefined;
+type Framing = { segmentIndex: number; baseFaceHeight?: number };
+
+// C15-4f: framing drift. Segment 1 only sets the reference (its median face height is the value); a later segment fails
+// when its median face height differs from segment 1's by more than maxFramingDrift. Unknown heights are not_checked.
+function framingDrift(raw: Record<string, any>, framing: Framing): QualityCheck {
+  if (raw.status !== 'measured') return { id: 'framing_drift', status: 'not_checked', reason: 'face measurement not available' };
+  const current = height(raw.single_face?.face_height);
+  if (current === undefined) return { id: 'framing_drift', status: 'not_checked', reason: 'face height not measured' };
+  if (framing.segmentIndex === 0) return { id: 'framing_drift', status: 'passed', value: current, reason: 'first segment sets the reference framing' };
+  const base = height(framing.baseFaceHeight);
+  if (base === undefined) return { id: 'framing_drift', status: 'not_checked', value: current, reason: 'first segment face height unknown' };
+  const change = current / base - 1, ok = Math.abs(change) <= QUALITY_THRESHOLDS.maxFramingDrift;
+  return { id: 'framing_drift', status: ok ? 'passed' : 'failed', value: current,
+    ...(ok ? {} : { reason: `framing drift: face height ${current} against ${base} in the first segment (${change > 0 ? '+' : ''}${Math.round(change * 100)}%)` }) };
+}
 const open = (reason: string): QualityCheck[] => [
   { id: 'single_face', status: 'not_checked', reason: reason.slice(0, 300) },
   { id: 'learner_mouth', status: 'not_checked', reason: reason.slice(0, 300) },
@@ -33,9 +51,10 @@ const open = (reason: string): QualityCheck[] => [
 
 // C14-4: turn the script's measurements into the two checks. The script only measures; the thresholds live here.
 // Anything that is not a well-formed measurement is not_checked, never passed.
-export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[]): QualityCheck[] {
+export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[], framing?: Framing): QualityCheck[] {
   const result = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, any> : {};
-  if (result.status !== 'measured') return open(`人脸检测没有完成：${typeof result.reason === 'string' ? result.reason : 'no measurement'}`);
+  const drift = framing && Number.isSafeInteger(framing.segmentIndex) && framing.segmentIndex >= 0 ? [framingDrift(result, framing)] : [];
+  if (result.status !== 'measured') return [...open(`人脸检测没有完成：${typeof result.reason === 'string' ? result.reason : 'no measurement'}`), ...drift];
   const t = QUALITY_THRESHOLDS, checks: QualityCheck[] = [];
   const face = result.single_face, faceRatio = ratio(face?.ratio), faceKeys = keyframeList(face?.keyframes);
   // C15-4a: the share of frames with two or more faces is judged separately; without it the check is not_checked.
@@ -53,7 +72,7 @@ export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[]): Qu
     else checks.push({ id: 'learner_mouth', status: mouthRatio <= t.maxLearnerMouthRatio ? 'passed' : 'failed', value: mouthRatio,
       ...(mouthRatio <= t.maxLearnerMouthRatio ? {} : { reason: 'partner mouth moves while the learner speaks', keyframes: mouthKeys }) });
   }
-  return checks;
+  return [...checks, ...drift];
 }
 
 export const FACE_SCRIPT = join(process.cwd(), 'scripts', 'video-qa', 'face_checks.py');
@@ -66,21 +85,54 @@ export function createFaceChecks(options: { python: string; script?: string; mod
   if (!options || [options.python, script, ...(options.modelDir !== undefined ? [options.modelDir] : [])].some(path => typeof path !== 'string' || !isAbsolute(path) || path.includes('\0'))) throw new Error('Invalid face check configuration');
   const timeout = options.timeoutMs ?? FACE_DETECTION.timeoutMs;
   if (!Number.isSafeInteger(timeout) || timeout <= 0) throw new Error('Invalid face check configuration');
-  const execute = options.execute ?? run, d = FACE_DETECTION;
+  const execute = options.execute ?? run;
   return async input => {
     const windows = Array.isArray(input?.learnerWindows) ? input.learnerWindows.filter(item => Number.isFinite(item?.start) && Number.isFinite(item?.end)).map(item => ({ start: item.start, end: item.end })) : [];
-    const args = ['-I', script, '--video', input.file, '--learner-windows', JSON.stringify(windows), '--fps', String(d.sampleFps),
-      '--min-face-height', String(d.minFaceHeight), '--mouth-delta', String(d.mouthMoveDelta), ...(options.modelDir ? ['--model-dir', options.modelDir] : [])];
-    let stdout: string;
+    const framing = Number.isSafeInteger(input?.segmentIndex) && input.segmentIndex! >= 0 ? { segmentIndex: input.segmentIndex!, baseFaceHeight: input.baseFaceHeight } : undefined;
+    const measured = await measureFaces(execute, options.python, script, input.file, windows, timeout, options.modelDir, []);
+    if ('error' in measured) return [...open(measured.error), ...(framing ? [{ id: 'framing_drift' as const, status: 'not_checked' as const, reason: measured.error }] : [])];
+    return judgeFaceMeasurement(measured.parsed, windows, framing);
+  };
+}
+
+// One run of the face script; the error strings are the not_checked reasons.
+async function measureFaces(execute: Execute, python: string, script: string, file: string, windows: Window[], timeout: number, modelDir: string | undefined, extra: string[]): Promise<{ parsed: unknown } | { error: string }> {
+  const d = FACE_DETECTION;
+  const args = ['-I', script, '--video', file, '--learner-windows', JSON.stringify(windows), '--fps', String(d.sampleFps),
+    '--min-face-height', String(d.minFaceHeight), '--mouth-delta', String(d.mouthMoveDelta), ...(modelDir ? ['--model-dir', modelDir] : []), ...extra];
+  let stdout: string;
+  try {
+    ({ stdout } = await execute(python, args, { timeout, maxBuffer: 1_000_000, encoding: 'utf8', cwd: tmpdir(), env: { PATH: '/usr/bin:/bin', HOME: homedir(), LANG: 'C.UTF-8' } }));
+  } catch (error) {
+    const killed = !!error && typeof error === 'object' && ((error as { killed?: boolean }).killed || (error as { code?: unknown }).code === 'ETIMEDOUT');
+    return { error: killed ? '人脸检测超时' : '人脸检测脚本无法运行' };
+  }
+  try { return { parsed: JSON.parse(stdout.trim().split('\n').pop() ?? '') }; } catch { return { error: '人脸检测输出无法读取' }; }
+}
+
+export type AnchorFrameSelect = (input: { video: Media; learnerWindows: Window[] }) => Promise<AnchorChoice>;
+// C15-4f: choose the fixed reference frame of a lesson from its first segment: the face script with --anchor measures each
+// one-face frame, chooseAnchorFrame applies ANCHOR_FRAME_LIMITS. Anything that goes wrong is { status: 'none', reason }.
+export function createAnchorFrameSelect(options: { python: string; script?: string; modelDir?: string; timeoutMs?: number; execute?: Execute }): AnchorFrameSelect {
+  const script = options?.script ?? FACE_SCRIPT;
+  if (!options || [options.python, script, ...(options.modelDir !== undefined ? [options.modelDir] : [])].some(path => typeof path !== 'string' || !isAbsolute(path) || path.includes('\0'))) throw new Error('Invalid anchor frame configuration');
+  const timeout = options.timeoutMs ?? FACE_DETECTION.timeoutMs;
+  if (!Number.isSafeInteger(timeout) || timeout <= 0) throw new Error('Invalid anchor frame configuration');
+  const execute = options.execute ?? run;
+  return async input => {
+    const windows = Array.isArray(input?.learnerWindows) ? input.learnerWindows.filter(item => Number.isFinite(item?.start) && Number.isFinite(item?.end)).map(item => ({ start: item.start, end: item.end })) : [];
+    const bytes = input?.video?.bytes;
+    if (!(bytes instanceof Uint8Array) || !bytes.length || bytes.length > 100_000_000) return { status: 'none', reason: 'invalid segment video' };
+    let directory: string | undefined;
     try {
-      ({ stdout } = await execute(options.python, args, { timeout, maxBuffer: 1_000_000, encoding: 'utf8', cwd: tmpdir(), env: { PATH: '/usr/bin:/bin', HOME: homedir(), LANG: 'C.UTF-8' } }));
-    } catch (error) {
-      const killed = !!error && typeof error === 'object' && ((error as { killed?: boolean }).killed || (error as { code?: unknown }).code === 'ETIMEDOUT');
-      return open(killed ? '人脸检测超时' : '人脸检测脚本无法运行');
-    }
-    let parsed: unknown;
-    try { parsed = JSON.parse(stdout.trim().split('\n').pop() ?? ''); } catch { return open('人脸检测输出无法读取'); }
-    return judgeFaceMeasurement(parsed, windows);
+      directory = await mkdtemp(join(tmpdir(), 'les-anchor-frame-'));
+      const file = join(directory, 'segment.mp4');
+      await writeFile(file, bytes, { flag: 'wx', mode: 0o600 });
+      const measured = await measureFaces(execute, options.python, script, file, windows, timeout, options.modelDir, ['--anchor']);
+      return 'error' in measured ? { status: 'none', reason: measured.error } : chooseAnchorFrame(measured.parsed, windows);
+    } catch {
+      return { status: 'none', reason: 'anchor frame selection failed' };
+    } finally { if (directory) await rm(directory, { recursive: true, force: true }); }
   };
 }
 
@@ -108,7 +160,8 @@ export function createVideoQualityGate(options: { ffmpeg: string; ffprobe: strin
   const tool = (file: string, args: string[]) => execute(file, args, { timeout: 120_000, maxBuffer: 8_000_000, encoding: 'utf8' });
   return async input => {
     const valid = (media?: Media) => !!media && media.bytes instanceof Uint8Array && media.bytes.length > 0 && media.bytes.length <= 100_000_000 && createHash('sha256').update(media.bytes).digest('hex') === media.sha256;
-    if (!input || !Number.isSafeInteger(input.segmentIndex) || input.segmentIndex < 0 || !valid(input.video) || (input.previous !== undefined && !valid(input.previous)) || !Array.isArray(input.learnerWindows)) throw new Error('Invalid quality gate input');
+    if (!input || !Number.isSafeInteger(input.segmentIndex) || input.segmentIndex < 0 || !valid(input.video) || (input.previous !== undefined && !valid(input.previous)) || !Array.isArray(input.learnerWindows)
+      || (input.baseFaceHeight !== undefined && height(input.baseFaceHeight) === undefined)) throw new Error('Invalid quality gate input');
     const directory = await mkdtemp(join(tmpdir(), 'les-video-quality-'));
     try {
       const video = join(directory, 'segment.mp4');
@@ -142,11 +195,14 @@ export function createVideoQualityGate(options: { ffmpeg: string; ffprobe: strin
         if (!Number.isFinite(ssim)) checks.push({ id: 'seam_ssim', status: 'not_checked', reason: 'seam could not be measured' });
         else checks.push({ id: 'seam_ssim', status: ssim >= t.minSeamSsim ? 'passed' : 'failed', value: round(ssim), ...(ssim >= t.minSeamSsim ? {} : { reason: 'jump at the seam with the previous segment', keyframes: [0] }) });
       } else checks.push({ id: 'seam_ssim', status: 'passed', reason: 'first segment, no seam' });
-      const faceChecks = await faces({ file: video, duration, learnerWindows: structuredClone(input.learnerWindows) });
+      const faceChecks = await faces({ file: video, duration, learnerWindows: structuredClone(input.learnerWindows), segmentIndex: input.segmentIndex, ...(input.baseFaceHeight !== undefined ? { baseFaceHeight: input.baseFaceHeight } : {}) });
       for (const id of ['single_face', 'learner_mouth'] as const) {
         const found = Array.isArray(faceChecks) ? faceChecks.find(check => check?.id === id) : undefined;
         checks.push(found ? structuredClone(found) : { id, status: 'not_checked', reason: FACE_CHECK_PENDING });
       }
+      // C15-4f: the optional framing drift check, only when the face checks measured it.
+      const framing = Array.isArray(faceChecks) ? faceChecks.find(check => check?.id === 'framing_drift') : undefined;
+      if (framing) checks.push(structuredClone(framing));
       return { sha256: input.video.sha256, mode: 'ffmpeg', checks };
     } finally { await rm(directory, { recursive: true, force: true }); }
   };

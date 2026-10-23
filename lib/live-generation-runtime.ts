@@ -7,7 +7,7 @@ import { createPrivateMediaStore } from './private-media-store';
 import { generateSceneScript } from './generated-script';
 import { generateLineAudio } from './generated-audio';
 import { submitEncodedVideoSegment, queryVideoSegment, resolveLtxModel } from './generated-video';
-import { createVideoQualityGate, createPreviewQualityGate, createFaceChecks } from './video-quality-gate';
+import { createVideoQualityGate, createPreviewQualityGate, createFaceChecks, createAnchorFrameSelect } from './video-quality-gate';
 import { createPlaceholderKeyframeProvider, createReferenceFrameCheck } from './generated-keyframe';
 import { downloadGeneratedMedia } from './download-generated-media';
 import { encodeVideoAudio } from './encode-video-audio';
@@ -74,6 +74,8 @@ export function createLiveGenerationRuntime(options: Options) {
     videoQualityGate: preview ? createPreviewQualityGate() : createVideoQualityGate({ ...media, faces: createFaceChecks({ python }) }),
     // C14-2: in preview only, a local placeholder keyframe starts the first segment (no image model exists here yet).
     ...(preview ? { keyframeProvider: createPlaceholderKeyframeProvider(media), referenceFrameCheck: createReferenceFrameCheck(media) } : {}),
+    // C15-4f: provider video only: segment 1 gives the lesson's fixed reference frame (same face script, --anchor).
+    ...(preview ? {} : { anchorFrameSelect: createAnchorFrameSelect({ python }) }),
   });
 }
 

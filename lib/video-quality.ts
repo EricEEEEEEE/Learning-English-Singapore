@@ -15,6 +15,9 @@ export const QUALITY_THRESHOLDS = {
   minSeamSsim: 0.3,
   maxBlackSeconds: 1,
   maxFreezeSeconds: 1,
+  // C15-4f (2026-10-23): framing drift, each segment's median face height against the first segment's, at most +-35%
+  // (待标定: attempt 6 medians 0.33 / 0.388 / 0.419 / 0.451 = +18% / +27% / +37%, the last one a big close-up).
+  maxFramingDrift: 0.35,
 } as const;
 // A failed segment may be generated again once (after a fresh reservation); a second failure stops the course.
 export const MAX_SEGMENT_REDOS = 1;
@@ -34,8 +37,45 @@ export const FACE_DETECTION = {
   timeoutMs: 120_000,
 } as const;
 export const QUALITY_CHECK_IDS = ['cuts', 'single_face', 'learner_mouth', 'seam_ssim', 'black_freeze'] as const;
+// C15-4f: checks that a report may carry on top of the five. When present they count like the others (failed blocks,
+// not_checked caps at needs_review); when absent the five alone decide, as before.
+export const OPTIONAL_QUALITY_CHECK_IDS = ['framing_drift'] as const;
 
-export type QualityCheckId = typeof QUALITY_CHECK_IDS[number];
+// C15-4f: limits for the fixed reference frame chosen from segment 1 (one face, measured by scripts/video-qa/face_checks.py
+// --anchor). All 待标定 (to be calibrated) with more paid samples. First values from the C15-4 school segments 1:
+// attempt 4 waist-up face height 0.15-0.20, attempt 6 already a close-up at 0.33-0.37 during the learner line; closed lips
+// measure <= 0.02 (smiling parted lips 0.17); a blink <= 0.14 against 0.25-0.40 open; frontal yaw within 0.05;
+// Laplacian variance of the face box 20-120 on these clips.
+export const ANCHOR_FRAME_LIMITS = { minFaceHeight: 0.1, maxFaceHeight: 0.28, maxMouthOpen: 0.05, minEyeOpen: 0.2, maxYaw: 0.1, minSharpness: 20 } as const;
+
+export type AnchorChoice =
+  | { status: 'selected'; timeSeconds: number; faceHeight: number; mouthOpen: number; eyeOpen: number; yaw: number; sharpness: number }
+  | { status: 'none'; reason: string };
+
+// C15-4f: the quietest qualifying frame. With learner lines in the segment only frames inside them count (the partner is
+// silent there); among frames that meet every limit the one with the smallest mouth opening wins (earliest on a tie).
+export function chooseAnchorFrame(raw: unknown, learnerWindows: { start: number; end: number }[]): AnchorChoice {
+  const result = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, any> : {};
+  if (result.status !== 'measured') return { status: 'none', reason: `face measurement not available: ${typeof result.reason === 'string' ? result.reason.slice(0, 200) : 'no measurement'}` };
+  const candidates = result.anchor?.candidates;
+  if (!Array.isArray(candidates)) return { status: 'none', reason: 'face measurement has no anchor candidates' };
+  const numbers = ['t', 'face_height', 'mouth_open', 'eye_open', 'yaw', 'sharpness'];
+  const valid = candidates.filter(item => item && typeof item === 'object' && numbers.every(key => finite(item[key])) && item.t >= 0);
+  const windows = (Array.isArray(learnerWindows) ? learnerWindows : []).filter(item => finite(item?.start) && finite(item?.end));
+  const quiet = windows.length ? valid.filter(item => windows.some(window => item.t >= window.start && item.t <= window.end)) : valid;
+  if (!quiet.length) return { status: 'none', reason: windows.length ? 'no one-face frame measured during the learner lines' : 'no one-face frame measured' };
+  const l = ANCHOR_FRAME_LIMITS, misses = new Map<string, number>();
+  const miss = (key: string) => { misses.set(key, (misses.get(key) ?? 0) + 1); return false; };
+  const passing = quiet.filter(item =>
+    (item.face_height <= l.maxFaceHeight || miss('face too large (closer than waist-up)')) && (item.face_height >= l.minFaceHeight || miss('face too small (too far)'))
+    && (item.mouth_open <= l.maxMouthOpen || miss('mouth open')) && (item.eye_open >= l.minEyeOpen || miss('eyes closed'))
+    && (Math.abs(item.yaw) <= l.maxYaw || miss('face turned')) && (item.sharpness >= l.minSharpness || miss('blurred')));
+  if (!passing.length) return { status: 'none', reason: `no quiet, closed-mouth, front-facing waist-up frame among ${quiet.length}: ${[...misses].map(([key, count]) => `${key} ${count}`).join(', ')}`.slice(0, 300) };
+  const best = passing.reduce((a, b) => b.mouth_open < a.mouth_open ? b : a);
+  return { status: 'selected', timeSeconds: best.t, faceHeight: best.face_height, mouthOpen: best.mouth_open, eyeOpen: best.eye_open, yaw: best.yaw, sharpness: best.sharpness };
+}
+
+export type QualityCheckId = typeof QUALITY_CHECK_IDS[number] | typeof OPTIONAL_QUALITY_CHECK_IDS[number];
 export type QualityCheck = { id: QualityCheckId; status: 'passed' | 'failed' | 'not_checked'; value?: number; reason?: string; keyframes?: number[] };
 export type QualityVerdict = 'passed' | 'quality_failed' | 'needs_review';
 export type QualityReport = { sha256: string; mode: 'ffmpeg' | 'preview'; checks: QualityCheck[] };
@@ -50,7 +90,7 @@ export function validQualityCheck(value: unknown): value is QualityCheck {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const check = value as Record<string, unknown>;
   if (Object.keys(check).some(key => !['id', 'status', 'value', 'reason', 'keyframes'].includes(key))) return false;
-  if (!QUALITY_CHECK_IDS.includes(check.id as QualityCheckId) || !statuses.includes(check.status as string)) return false;
+  if (![...QUALITY_CHECK_IDS, ...OPTIONAL_QUALITY_CHECK_IDS].includes(check.id as QualityCheckId) || !statuses.includes(check.status as string)) return false;
   if (check.value !== undefined && !finite(check.value)) return false;
   if (check.reason !== undefined && (typeof check.reason !== 'string' || check.reason.length > 300)) return false;
   if (check.keyframes !== undefined && (!Array.isArray(check.keyframes) || check.keyframes.length > 20 || check.keyframes.some(time => !finite(time) || time < 0))) return false;
@@ -62,10 +102,15 @@ export function validQualityCheck(value: unknown): value is QualityCheck {
 export function combineQualityChecks(checks: unknown): QualityVerdict {
   if (!Array.isArray(checks)) return 'needs_review';
   if (checks.some(check => !!check && typeof check === 'object' && (check as { status?: unknown }).status === 'failed')) return 'quality_failed';
-  if (checks.length !== QUALITY_CHECK_IDS.length) return 'needs_review';
+  const optional = checks.filter(check => OPTIONAL_QUALITY_CHECK_IDS.includes((check as { id?: unknown } | null)?.id as typeof OPTIONAL_QUALITY_CHECK_IDS[number]));
+  if (checks.length - optional.length !== QUALITY_CHECK_IDS.length) return 'needs_review';
   for (const id of QUALITY_CHECK_IDS) {
     const matches = checks.filter(check => (check as { id?: unknown } | null)?.id === id);
     if (matches.length !== 1 || !validQualityCheck(matches[0]) || matches[0].status !== 'passed') return 'needs_review';
+  }
+  for (const id of OPTIONAL_QUALITY_CHECK_IDS) {
+    const matches = optional.filter(check => (check as { id?: unknown }).id === id);
+    if (matches.length > 1 || (matches.length === 1 && (!validQualityCheck(matches[0]) || matches[0].status !== 'passed'))) return 'needs_review';
   }
   return 'passed';
 }

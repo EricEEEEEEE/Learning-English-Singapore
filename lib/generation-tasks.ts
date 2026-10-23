@@ -26,9 +26,15 @@ import type { KeyframeImage } from './generated-keyframe';
 
 type ReferenceResult = { bytes: Uint8Array; sha256: string; sourceVideoSha256: string; timeSeconds: number; mimeType: 'image/png'; width: number; height: number; decoded: true };
 // C14-2: origin 'keyframe' is the partner keyframe; chainedFromSha256 marks a keyframe fallback used after that segment.
-type SavedReference = Omit<ReferenceResult, 'bytes'> & { assetId: string; sourceCourseId: string; sourceRevision: number; sourceAssetId: string; origin?: 'keyframe'; chainedFromSha256?: string; fallbackReasons?: string[] };
+// C15-4f: origin 'anchor' is the lesson's fixed reference frame from segment 1; chainedFromSha256 is the segment it follows.
+type SavedReference = Omit<ReferenceResult, 'bytes'> & { assetId: string; sourceCourseId: string; sourceRevision: number; sourceAssetId: string; origin?: 'keyframe' | 'anchor'; chainedFromSha256?: string; fallbackReasons?: string[] };
+// C15-4f: what happened to the fixed reference frame of this lesson (selected from segment 1, or why the last-frame chain is used).
+type AnchorFrame = { status: 'selected'; assetId: string; sha256: string; sourceAssetId: string; sourceVideoSha256: string; timeSeconds: number; faceHeight: number; mouthOpen?: number }
+  | { status: 'fallback'; sourceVideoSha256: string; reason: string };
+type AnchorChoice = { status: string; timeSeconds?: unknown; faceHeight?: unknown; mouthOpen?: unknown; reason?: unknown };
+type AnchorFrameSelect = (input: { video: { bytes: Uint8Array; sha256: string }; learnerWindows: { start: number; end: number }[] }) => Promise<AnchorChoice>;
 type SavedKeyframe = { assetId: string; sha256: string; source: KeyframeImage['source']; mimeType: 'image/png'; width: 720; height: 1280 };
-type QualityGateInput = { segmentIndex: number; video: { bytes: Uint8Array; sha256: string }; previous?: { bytes: Uint8Array; sha256: string }; learnerWindows: { start: number; end: number }[] };
+type QualityGateInput = { segmentIndex: number; video: { bytes: Uint8Array; sha256: string }; previous?: { bytes: Uint8Array; sha256: string }; learnerWindows: { start: number; end: number }[]; baseFaceHeight?: number };
 type FrameCheck = (input: { bytes: Uint8Array; sha256: string }) => Promise<{ usable: boolean; checks: { id: string; status: string }[] }>;
 type EncodedAudio = Awaited<ReturnType<typeof encodeVideoAudio>>;
 type SavedEncodedAudio = Omit<EncodedAudio, 'bytes'> & { segmentIndex: number; assetId: string; size: number };
@@ -43,17 +49,18 @@ type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDura
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; prompt?: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled' | 'deleted'; deletedAt?: number; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[]; videoQuality?: QualityRecord[]; videoRedos?: VideoRedo[]; keyframe?: SavedKeyframe };
+export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled' | 'deleted'; deletedAt?: number; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[]; videoQuality?: QualityRecord[]; videoRedos?: VideoRedo[]; keyframe?: SavedKeyframe; anchorFrame?: AnchorFrame };
 export type StopState = { kind: 'cancelled' | 'stop'; at: number };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
 // C15-4c: one segment's line timings (relative to that segment) for its video prompt; none when the assembly has no lines.
-function segmentPromptLines(assembly: { lines?: { lineId: string; segmentIndex: number; segmentStart: number; segmentEnd: number }[] } | undefined, segmentIndex: number) {
+function segmentPromptLines(assembly: { lines?: { lineId: string; segmentIndex: number; segmentStart: number; segmentEnd: number }[]; segments?: unknown[] } | undefined, segmentIndex: number) {
   const lines = (assembly?.lines ?? []).filter(line => line.segmentIndex === segmentIndex).map(line => ({ lineId: line.lineId, start: line.segmentStart, end: line.segmentEnd }));
-  return lines.length ? { lines } : undefined;
+  // C15-4f: the segment's place in the lesson, for the first-segment and last-segment wording.
+  return lines.length ? { lines, index: segmentIndex, count: assembly?.segments?.length ?? 0 } : undefined;
 }
 
-export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor, videoQualityGate, keyframeProvider, referenceFrameCheck }: { directory: string; sessionSecret: string; videoQualityGate?: (input: QualityGateInput) => Promise<QualityReport>; keyframeProvider?: { source: string; generate: (scene: NonNullable<GeneratedScript['scene']>) => Promise<KeyframeImage> }; referenceFrameCheck?: FrameCheck; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number], cast?: { partnerGender?: 'female' | 'male' }) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
+export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor, videoQualityGate, keyframeProvider, referenceFrameCheck, anchorFrameSelect }: { directory: string; sessionSecret: string; anchorFrameSelect?: AnchorFrameSelect; videoQualityGate?: (input: QualityGateInput) => Promise<QualityReport>; keyframeProvider?: { source: string; generate: (scene: NonNullable<GeneratedScript['scene']>) => Promise<KeyframeImage> }; referenceFrameCheck?: FrameCheck; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number], cast?: { partnerGender?: 'female' | 'male' }) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   const budget = liveBudget ? { ...liveBudget } : undefined;
   function transact<T>(work: (db: DatabaseSync) => T): T {
@@ -171,6 +178,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     // C14: the runner only runs these steps when the server configured them; otherwise behaviour is unchanged.
     videoQualityEnabled: !!videoQualityGate,
     keyframeEnabled: !!keyframeProvider,
+    anchorFrameEnabled: !!anchorFrameSelect,
     async getCourse(input: Session & { id: string; revision: number; materialsRevision?: number }) { return (await readCourse(input)).course; },
     async saveLearningMaterials(input: Session & { id: string; materials: unknown }) {
       const ownerId = await owner(input);
@@ -552,12 +560,47 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       // Near-last frame: two frame durations before the verified end. The container end can run past the last
       // video frame, and a seek beyond the last frame start yields no image at all (seen in the C3 preview).
       const timeSeconds = Math.min(19.9, Math.max(0, Math.floor((check.duration - 2 / 24) * 1000) / 1000));
-      let reference: SavedReference;
-      try {
+      const extract = async (media: { bytes: Uint8Array }, time: number) => {
+        const result = await referenceExtractor!({ bytes: media.bytes, sha256: asset.sha256, timeSeconds: time });
+        if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length > 5_249_982 || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256 || result.sourceVideoSha256 !== asset.sha256 || result.timeSeconds !== time || result.mimeType !== 'image/png' || result.width !== 720 || result.height !== 1280 || result.decoded !== true) throw new Error('Invalid extracted reference');
+        return result;
+      };
+      let reference: SavedReference | undefined;
+      let anchorRecord: AnchorFrame | undefined;
+      // C15-4f: the lesson's fixed reference frame. Chosen once from segment 1 (a quiet, closed-mouth, front-facing,
+      // waist-up, sharp frame); every later segment then starts from it instead of the previous segment's last frame,
+      // so framing, light and face do not drift from segment to segment. No such frame: the last-frame chain, recorded.
+      const first = snapshot.videoAssets?.find(value => value.segmentIndex === 0);
+      if (anchorFrameSelect && first) {
+        const anchor = snapshot.anchorFrame;
+        if (anchor?.status === 'selected' && anchor.sourceVideoSha256 === first.sha256) {
+          try { await storedAsset(input, snapshot, anchor); } catch { throw new Error('Reference preparation failed'); }
+          reference = { assetId: anchor.assetId, sha256: anchor.sha256, sourceCourseId: snapshot.id, sourceRevision: snapshot.revision, sourceAssetId: anchor.sourceAssetId, sourceVideoSha256: anchor.sourceVideoSha256, timeSeconds: anchor.timeSeconds, mimeType: 'image/png', width: 720, height: 1280, decoded: true, origin: 'anchor', chainedFromSha256: asset.sha256 };
+        } else if (index === 0 && anchor?.sourceVideoSha256 !== first.sha256) {
+          let reason: string;
+          try {
+            const media = await storedAsset(input, snapshot, asset);
+            const choice = await anchorFrameSelect({ video: { bytes: media.bytes, sha256: asset.sha256 }, learnerWindows: learnerWindows(snapshot, 0) }).catch(() => ({ status: 'none', reason: 'anchor frame selection failed' }) as AnchorChoice);
+            const time = typeof choice?.timeSeconds === 'number' ? Math.round(choice.timeSeconds * 1000) / 1000 : NaN;
+            const faceHeight = choice?.faceHeight;
+            if (choice?.status !== 'selected') reason = typeof choice?.reason === 'string' && choice.reason.trim() ? choice.reason.slice(0, 300) : 'no qualifying frame';
+            else if (!Number.isFinite(time) || time < 0 || time > timeSeconds || typeof faceHeight !== 'number' || !Number.isFinite(faceHeight) || faceHeight <= 0 || faceHeight >= 1) reason = 'anchor frame choice not valid';
+            else {
+              const result = await extract(media, time);
+              const metadata = await mediaStore.put({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: `anchor-${result.sha256}`, bytes: result.bytes, sha256: result.sha256 });
+              const mouthOpen = typeof choice.mouthOpen === 'number' && Number.isFinite(choice.mouthOpen) ? choice.mouthOpen : undefined;
+              anchorRecord = { status: 'selected', assetId: metadata.assetId, sha256: result.sha256, sourceAssetId: asset.assetId, sourceVideoSha256: asset.sha256, timeSeconds: time, faceHeight, ...(mouthOpen !== undefined ? { mouthOpen } : {}) };
+              reference = { assetId: metadata.assetId, sha256: result.sha256, sourceCourseId: snapshot.id, sourceRevision: snapshot.revision, sourceAssetId: asset.assetId, sourceVideoSha256: asset.sha256, timeSeconds: time, mimeType: 'image/png', width: 720, height: 1280, decoded: true, origin: 'anchor', chainedFromSha256: asset.sha256 };
+              reason = '';
+            }
+          } catch { reason = 'anchor frame could not be extracted'; }
+          if (!reference) anchorRecord = { status: 'fallback', sourceVideoSha256: first.sha256, reason };
+        }
+      }
+      if (!reference) try {
         const media = await mediaStore.get({ cookie: input.cookie, now: input.now, courseId: snapshot.id, revision: snapshot.revision, assetId: asset.assetId });
         if (!media || media.sha256 !== asset.sha256 || media.size !== asset.size || createHash('sha256').update(media.bytes).digest('hex') !== asset.sha256) throw new Error('Invalid reference source media');
-        const result = await referenceExtractor({ bytes: media.bytes, sha256: asset.sha256, timeSeconds });
-        if (!result || !(result.bytes instanceof Uint8Array) || !result.bytes.length || result.bytes.length > 5_249_982 || createHash('sha256').update(result.bytes).digest('hex') !== result.sha256 || result.sourceVideoSha256 !== asset.sha256 || result.timeSeconds !== timeSeconds || result.mimeType !== 'image/png' || result.width !== 720 || result.height !== 1280 || result.decoded !== true) throw new Error('Invalid extracted reference');
+        const result = await extract(media, timeSeconds);
         // C14-2: a blurred or dark last frame is replaced by the partner keyframe. A check that cannot run keeps the frame.
         let fallback: string[] | null = null;
         if (referenceFrameCheck && snapshot.keyframe) {
@@ -575,7 +618,9 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       return transact(db => {
         const current = read(db, snapshot.id, ownerId);
         if (!current || JSON.stringify(current) !== JSON.stringify(snapshot)) throw new Error('Task changed during reference preparation');
-        current.referenceImage = reference; save(db, current); return current;
+        current.referenceImage = reference!;
+        if (anchorRecord) current.anchorFrame = anchorRecord;
+        save(db, current); return current;
       });
     },
     async prepareReferenceImage(input: Session & { id: string; sourceCourseId: string; sourceRevision: number; sourceAssetId: string; timeSeconds: number }) {
@@ -753,7 +798,11 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         const media = await storedAsset(input, snapshot, asset);
         const before = index > 0 ? snapshot.videoAssets?.find(value => value.segmentIndex === index - 1) : undefined;
         const previous = before ? await storedAsset(input, snapshot, before) : undefined;
-        const report = await videoQualityGate({ segmentIndex: index, video: { bytes: media.bytes, sha256: asset.sha256 }, ...(previous && before ? { previous: { bytes: previous.bytes, sha256: before.sha256 } } : {}), learnerWindows: learnerWindows(snapshot, index) });
+        // C15-4f: the first segment's median face height (its passed framing_drift value) for the drift check of later ones.
+        const firstAsset = snapshot.videoAssets?.find(value => value.segmentIndex === 0);
+        const firstDrift = index > 0 ? snapshot.videoQuality?.find(record => record.segmentIndex === 0 && record.sha256 === firstAsset?.sha256)?.checks.find(item => item.id === 'framing_drift' && item.status === 'passed') : undefined;
+        const baseFaceHeight = typeof firstDrift?.value === 'number' && firstDrift.value > 0 && firstDrift.value < 1 ? firstDrift.value : undefined;
+        const report = await videoQualityGate({ segmentIndex: index, video: { bytes: media.bytes, sha256: asset.sha256 }, ...(previous && before ? { previous: { bytes: previous.bytes, sha256: before.sha256 } } : {}), learnerWindows: learnerWindows(snapshot, index), ...(baseFaceHeight !== undefined ? { baseFaceHeight } : {}) });
         if (!report || report.sha256 !== asset.sha256 || (report.mode !== 'ffmpeg' && report.mode !== 'preview') || !Array.isArray(report.checks) || report.checks.length > 20 || report.checks.some(item => !validQualityCheck(item))) throw new Error('Invalid quality report');
         const checks = structuredClone(report.checks);
         // The verdict is always recomputed here from the checks; the gate cannot declare a pass on its own.

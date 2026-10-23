@@ -170,12 +170,18 @@ const summary = {
   segments: task.audioAssembly?.segments?.map((s, i) => ({ index: i, duration: s.duration })) ?? [],
   videoJobs: task.videoJobs?.map(j => ({ segmentIndex: j.segmentIndex, status: j.status, audioDuration: j.audioDuration, chained: !!j.referenceImageSha256 })) ?? [],
   videoQuality: task.videoQuality ?? [], videoRedos: task.videoRedos ?? [], videoRepairs: task.videoRepairs?.length ?? 0,
+  // C15-4f: the lesson's fixed reference frame (or why the last-frame chain was used) and each job's reference image hash.
+  anchorFrame: task.anchorFrame ?? null, referenceImages: task.videoJobs?.map(j => ({ segmentIndex: j.segmentIndex, sha256: j.referenceImageSha256 ?? null })) ?? [],
   finalVideo: task.finalVideo ? { duration: task.finalVideo.duration, size: task.finalVideo.size, sha256: task.finalVideo.sha256 } : null,
   ledgerItemTotal: ledger.total(ITEM), c15Total: c15Total(),
 };
 if (task.finalVideo) {
   const media = await mediaStore.get({ ...session(), courseId: id, revision: task.revision, assetId: task.finalVideo.assetId });
   if (media) { writeFileSync(join(outDir, `${name}.mp4`), media.bytes); summary.exported = join(outDir, `${name}.mp4`); }
+}
+if (task.anchorFrame?.status === 'selected') {
+  const media = await mediaStore.get({ ...session(), courseId: id, revision: task.revision, assetId: task.anchorFrame.assetId }).catch(() => null);
+  if (media) { writeFileSync(join(outDir, `${name}-anchor.png`), media.bytes); summary.anchorFile = join(outDir, `${name}-anchor.png`); }
 }
 // Every segment as delivered (after audio restore), for frame-by-frame review even when the course stopped.
 summary.segmentFiles = [];
