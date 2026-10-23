@@ -37,7 +37,12 @@ if (!Number.isSafeInteger(attempt) || attempt < 1 || attempt > 9) throw new Erro
 const revision = REVISIONS[`${sceneName}:${model}`] && REVISIONS[`${sceneName}:${model}`] + 10 * (attempt - 1);
 if (!scene || !revision) throw new Error('usage: --scene school|hawker --model ltx-2-3-pro|ltx-2-5-fast');
 
-const directory = resolve('tmp/c15-4-tasks');
+// --fresh-scope NAME (2026-10-23): a new task directory and runtime budget scope whose prior spend is everything already
+// booked for C15-4 on the C15 ledger (settled + reserved/unknown), so the runtime's own reservation cap still ends at USD25.
+// The old scope keeps every earlier task's whole reservation, which would block a new lesson long before USD25 is spent.
+const freshScope = arg('--fresh-scope');
+if (freshScope !== undefined && !/^[a-z0-9-]{1,20}$/.test(freshScope)) throw new Error('--fresh-scope must be a short lowercase name');
+const directory = resolve(freshScope ? `tmp/c15-4-tasks-${freshScope}` : 'tmp/c15-4-tasks');
 const outDir = arg('--out') ?? '/mnt/project-files/les-c15/video';
 mkdirSync(directory, { recursive: true, mode: 0o700 }); mkdirSync(outDir, { recursive: true });
 // A local random session secret (not a provider key) so later runs can read the same private store.
@@ -109,10 +114,10 @@ async function guardedFetch(url, init = {}) {
   return response;
 }
 
-const priorSpentMicros = 0, maxReservedMicros = CAPS[ITEM] * 1e6;
+const priorSpentMicros = freshScope ? Math.ceil(ledger.total(ITEM) * 1e6) : 0, maxReservedMicros = CAPS[ITEM] * 1e6;
 const store = createLiveGenerationRuntime({
   enabled: true, directory, sessionSecret, openaiKey: process.env.OPENAI_API_KEY, ltxKey: process.env.LTX_API_KEY, videoModel: model,
-  budget: { scope: 'C15-4-20261018', priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS, videoMicros: LTX_MODELS[model].segmentMicros },
+  budget: { scope: freshScope ? `C15-4-${freshScope}` : 'C15-4-20261018', priorSpentMicros, maxReservedMicros, ...LIVE_RESERVATIONS, videoMicros: LTX_MODELS[model].segmentMicros },
   media: { ffmpeg: '/usr/bin/ffmpeg', ffprobe: '/usr/bin/ffprobe', python: '/usr/bin/python3', allowedHosts: ['storage.googleapis.com'], maxBytes: 100_000_000 },
   fetch: guardedFetch,
 });
