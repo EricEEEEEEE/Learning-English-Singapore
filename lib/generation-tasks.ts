@@ -47,6 +47,12 @@ export type GenerationTask = { requirement?: SceneRequirement; materialsRevision
 export type StopState = { kind: 'cancelled' | 'stop'; at: number };
 type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
+// C15-4c: one segment's line timings (relative to that segment) for its video prompt; none when the assembly has no lines.
+function segmentPromptLines(assembly: { lines?: { lineId: string; segmentIndex: number; segmentStart: number; segmentEnd: number }[] } | undefined, segmentIndex: number) {
+  const lines = (assembly?.lines ?? []).filter(line => line.segmentIndex === segmentIndex).map(line => ({ lineId: line.lineId, start: line.segmentStart, end: line.segmentEnd }));
+  return lines.length ? { lines } : undefined;
+}
+
 export function createGenerationTaskStore({ directory, sessionSecret, simulation = false, maxReservedMicros, liveBudget, scriptProvider, audioProvider, mediaStore, videoProvider, encodedVideoProvider, videoDownload, videoProbe, videoConcat, finalVideoVerify, audioEncoder, videoRepair, referenceExtractor, videoQualityGate, keyframeProvider, referenceFrameCheck }: { directory: string; sessionSecret: string; videoQualityGate?: (input: QualityGateInput) => Promise<QualityReport>; keyframeProvider?: { source: string; generate: (scene: NonNullable<GeneratedScript['scene']>) => Promise<KeyframeImage> }; referenceFrameCheck?: FrameCheck; referenceExtractor?: (input: { bytes: Uint8Array; sha256: string; timeSeconds: number }) => Promise<ReferenceResult>; videoRepair?: (input: Parameters<typeof repairAndVerifyVideoTail>[0]) => Promise<Awaited<ReturnType<typeof repairAndVerifyVideoTail>>>; simulation?: boolean; maxReservedMicros?: number; liveBudget?: { scope: string; priorSpentMicros: number }; audioEncoder?: (input: Parameters<typeof encodeVideoAudio>[0]) => Promise<EncodedAudio>; videoConcat?: (inputs: Parameters<typeof concatVideoBytes>[0], verifiedDuration: number) => Promise<Awaited<ReturnType<typeof concatVideoBytes>>>; finalVideoVerify?: (input: Parameters<typeof verifyFinalVideo>[0]) => Promise<FinalCheck>; scriptProvider?: ScriptProvider; videoProvider?: VideoProvider; encodedVideoProvider?: EncodedVideoProvider; videoProbe?: (input: { bytes: Uint8Array; sha256: string; expectedDuration: number }) => Promise<VideoCheck>; videoDownload?: (url: string) => Promise<{ bytes: Uint8Array; sha256: string }>; audioProvider?: { reservedMicros: number; generate: (line: GeneratedScript['lines'][number], cast?: { partnerGender?: 'female' | 'male' }) => Promise<AudioAsset> }; mediaStore?: ReturnType<typeof createPrivateMediaStore> }) {
   if (!directory || !sessionSecret) throw new Error('Store configuration required');
   const budget = liveBudget ? { ...liveBudget } : undefined;
@@ -469,7 +475,7 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
       let id: string | undefined;
       try {
         const response = encodedVideoProvider && encoded
-          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal, prompt: sceneVideoPrompt(task.goal, task.script), ...(referenceImage ? { referenceImage } : {}) })
+          ? await encodedVideoProvider.submit({ audio: encoded, reviewedSha256: encoded.sha256, goal: task.goal, prompt: sceneVideoPrompt(task.goal, task.script, segmentPromptLines(snapshot.audioAssembly, segmentIndex)), ...(referenceImage ? { referenceImage } : {}) })
           : await videoProvider!.submit({ bytes: media.bytes, duration: segment.duration, goal: task.goal });
         if (response?.status === 'pending' && typeof response.jobId === 'string' && /^[a-zA-Z0-9_-]{1,200}$/.test(response.jobId)) id = response.jobId;
       } catch { /* Unknown submission: retain reservation and never resubmit automatically. */ }
