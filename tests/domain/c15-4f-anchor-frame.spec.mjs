@@ -422,8 +422,10 @@ test.describe('C15-4f detection', () => {
     const four = await select({ video: media(a4seg0), learnerWindows: [{ start: 6.65, end: 11.35 }] });
     console.log(`[C15-4f] attempt 4 segment 1 anchor: ${JSON.stringify(four)}`);
     expect(four.status).toBe('selected');
-    expect(four.timeSeconds).toBeGreaterThanOrEqual(8.4);
-    expect(four.timeSeconds).toBeLessThanOrEqual(9.3);
+    // Inside the learner line, mouth closed. (Measured: closed-mouth, open-eye frames at 8.4-9.2 s and 10.2-11.2 s.)
+    expect(four.timeSeconds).toBeGreaterThanOrEqual(6.65);
+    expect(four.timeSeconds).toBeLessThanOrEqual(11.35);
+    expect(four.mouthOpen).toBeLessThanOrEqual(0.05);
     expect(four.faceHeight).toBeGreaterThanOrEqual(0.1);
     expect(four.faceHeight).toBeLessThanOrEqual(0.28);
   });
