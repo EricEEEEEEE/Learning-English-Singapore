@@ -28,7 +28,8 @@ for (const fault of ['none', 'offset', 'missing-start', 'excess-tail', 'bad-outp
       const value = report(probes === 1 ? 0.875 : 1);
       if (probes === 1 && fault === 'offset') value.streams[0].start_time = '0.1';
       if (probes === 1 && fault === 'missing-start') delete value.streams[0].start_time;
-      if (probes === 1 && fault === 'excess-tail') { value.format.duration = '0.5'; for (const s of value.streams) s.duration = '0.5'; }
+      // C15-4e: 13.2 frames short of the 1 s audio (the pad limit is now 12 frames; 0.5 s was exactly 12).
+      if (probes === 1 && fault === 'excess-tail') { value.format.duration = '0.45'; for (const s of value.streams) s.duration = '0.45'; }
       if (probes === 2 && fault === 'bad-output-duration') { value.format.duration = '0.875'; for (const s of value.streams) s.duration = '0.875'; }
       return { stdout: JSON.stringify(value), stderr: '' };
     }
