@@ -54,6 +54,7 @@ node --experimental-strip-types -e "import('./lib/google-auth.ts').then(async m 
 ### 1.2 C15-4 视频小样（2026-10-18 增补）
 
 - C15-4 不走上面的服务和 `tmp/generation-tasks`（那里存着 C3 的预算范围），改用 `scripts/c15/video-sample.mjs`：独立目录 `tmp/c15-4-tasks`、预算范围 `C15-4-20261018`（上限 USD25），每笔付费请求先在 C15 账本预留。
+- 2026-10-23 按真实视频调整（C15-4a–e）：单人脸占比阈值 0.75，两张及以上脸的帧占比 ≤0.1；接缝 SSIM 阈值 0.3；视频偏短时最多补 12 帧；场景课分段边界放在对方台词前；每段提示词只写本段对方台词和静听时段。新课用 `--fresh-scope NAME` 开新的运行时预算范围，旧范围已累计以前各任务的整笔预留。
 - LTX 余额不足时可能先回 202，再在任务状态里报 `insufficient_funds_error`。产品端只看得到 `failed`；驱动脚本会识别这个错误并停下整轮。LTX 没有免费的余额查询接口。
 
 ## 2. 生成两节不同场景的短课（约 60 秒默认）

@@ -741,3 +741,20 @@
 - [audit] phase → test-writing @ 2026-10-18T14:11:06+00:00
 - 2026-10-18 C15-2c 提示词兜底（零费用）：红 5a5ae75 → 绿 7b136f4，verify 2492/2492 exit0（verify-20261018-135056）；goalChange→confirm、没听懂→一句含本课实词的问句否则重述对方台词、听懂时无引用无建议句的 coachNote 丢掉；回放 46 轮已记录真实回答：改正 RC-R7a/RC-R7b/RC-R3d/RC2-R3b 的回复与 8 条多余提示；漏 goalChange、understood=true 偏题、带引号夸奖仍是残余风险
 - 2026-10-19 C15-2d gpt-4.1 对比：同 15 个困难用例 A/B，goalChange 两者 6/6、偏题 understood 两者 3/3、产品端偏题回复两者 3/3、能懂时多余 coachNote 两者 1/3、结束两者 2/2；gpt-4.1 不明显更好且 M1 医疗问题被标没听懂，不切换，对练保持 gpt-4.1-mini。实际花费 USD0.047482（gpt-4.1 15 轮 0.040036，每轮平均 0.00267；mini 14 轮 0.007446，每轮平均 0.00053；自设上限 0.05），无失败无重发，证据 docs/evidence/c15-prompt-spotcheck.md「gpt-4.1 对比」
+- [audit] phase → implementing @ 2026-10-23T03:15:09+00:00
+- [audit] phase → test-writing @ 2026-10-23T03:35:55+00:00
+- [audit] phase → implementing @ 2026-10-23T03:42:42+00:00
+- [audit] phase → test-writing @ 2026-10-23T03:43:50+00:00
+- [audit] phase → implementing @ 2026-10-23T03:43:50+00:00
+- [audit] phase → test-writing @ 2026-10-23T03:45:10+00:00
+- [audit] phase → implementing @ 2026-10-23T03:45:10+00:00
+- [audit] phase → test-writing @ 2026-10-23T04:24:34+00:00
+- [audit] phase → implementing @ 2026-10-23T04:31:39+00:00
+- [audit] phase → test-writing @ 2026-10-23T04:53:10+00:00
+- [audit] phase → implementing @ 2026-10-23T04:59:07+00:00
+- [audit] phase → test-writing @ 2026-10-23T05:20:18+00:00
+- [audit] phase → implementing @ 2026-10-23T05:27:21+00:00
+- [audit] phase → test-writing @ 2026-10-23T05:49:12+00:00
+- [audit] phase → implementing @ 2026-10-23T05:49:12+00:00
+- [audit] phase → test-writing @ 2026-10-23T06:10:44+00:00
+- 2026-10-23 C15-4 续跑：学校接孩子 ltx-2-3-pro 尝试 2–6 共 5 次，每次差一段；零费用修 C15-4a–e（单人脸 0.75 + 多脸 ≤0.1、接缝 0.3、分段提示词、分段边界在对方台词前、补帧 12 帧），verify 最终 2506/2506；最后一次 4 段过 3 段，第 4 段学员时段嘴动 0.5652/0.6522 不过；自己看片无乱切、同一人、声音性别对、角色对，但后段走样、结尾对方动嘴，不合格，未开小贩中心与 2.5-fast；今天实付 USD15.7811（LTX 15.54 + 脚本配音 0.238 + 转写 0.0026），C15-4 累计 USD15.8277/25，C15 合计 USD16.0892/26.5；等用户拍板 B-C15-4
