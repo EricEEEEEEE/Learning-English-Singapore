@@ -10,7 +10,9 @@ export const QUALITY_THRESHOLDS = {
   minSingleFaceRatio: 0.75,
   maxMultiFaceRatio: 0.1,
   maxLearnerMouthRatio: 0.35,
-  minSeamSsim: 0.6,
+  // C15-4b (2026-10-23): gray SSIM at 360x640 of a visually continuous real seam is 0.42 (one continuous segment's first
+  // vs last frame: 0.43); the two user-rejected C3 seams, a different person after the seam, are 0.13 / 0.23. Was 0.6.
+  minSeamSsim: 0.3,
   maxBlackSeconds: 1,
   maxFreezeSeconds: 1,
 } as const;
