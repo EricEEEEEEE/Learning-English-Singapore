@@ -74,7 +74,7 @@ const runScript = (args) => JSON.parse(execFileSync(python, ['-I', script, ...ar
 
 test('C14-4 thresholds: single face >= 0.9, learner mouth <= 0.35, about 5 frames a second, all marked for C15-4 calibration', async () => {
   const { QUALITY_THRESHOLDS, FACE_DETECTION } = await load();
-  expect(QUALITY_THRESHOLDS.minSingleFaceRatio).toBe(0.9);
+  expect(QUALITY_THRESHOLDS.minSingleFaceRatio).toBe(0.75); // C15-4a calibration (was 0.9)
   expect(QUALITY_THRESHOLDS.maxLearnerMouthRatio).toBe(0.35);
   expect(FACE_DETECTION.sampleFps).toBe(5);
   expect(FACE_DETECTION.timeoutMs).toBeGreaterThan(0);
@@ -136,12 +136,12 @@ test('C14-4 fallback: the script itself reports not_checked for a missing model,
 
 test('C14-4 judge: measured ratios are compared with the thresholds; no learner line passes the mouth check, no partner face does not', async () => {
   const { judgeFaceMeasurement } = await load();
-  const measured = (face, mouth, frames = 20) => ({ status: 'measured', frames, single_face: { ratio: face, keyframes: [1] }, learner_mouth: { ratio: mouth, frames: mouth === null ? 0 : 8, keyframes: [2] } });
+  const measured = (face, mouth, frames = 20) => ({ status: 'measured', frames, single_face: { ratio: face, multi_ratio: 0, keyframes: [1] }, learner_mouth: { ratio: mouth, frames: mouth === null ? 0 : 8, keyframes: [2] } });
   const windows = [{ start: 0, end: 2 }];
   expect(judgeFaceMeasurement(measured(0.9, 0.35), windows).map(check => check.status)).toEqual(['passed', 'passed']);
-  const failed = judgeFaceMeasurement(measured(0.89, 0.36), windows);
+  const failed = judgeFaceMeasurement(measured(0.74, 0.36), windows);
   expect(failed.map(check => check.status)).toEqual(['failed', 'failed']);
-  expect(failed[0]).toMatchObject({ value: 0.89, keyframes: [1] });
+  expect(failed[0]).toMatchObject({ value: 0.74, keyframes: [1] });
   expect(failed[1]).toMatchObject({ value: 0.36, keyframes: [2] });
   for (const check of failed) expect(typeof check.reason).toBe('string');
   expect(judgeFaceMeasurement(measured(1, null), [])[1]).toMatchObject({ id: 'learner_mouth', status: 'passed' });
