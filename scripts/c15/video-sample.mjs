@@ -4,7 +4,9 @@
 // never the C3 one. Every paid request is reserved first on the C15 ledger at its worst case; a failed or unknown
 // request keeps its reservation and is never retried; an LTX 402 (insufficient funds) stops the run at once.
 // Run: OPENAI_API_KEY="$OPEN_API_KEY" NODE_USE_ENV_PROXY=1 node --experimental-strip-types --no-warnings \
-//        --import ./scripts/c15/ts-loader.mjs scripts/c15/video-sample.mjs --scene school|hawker --model ltx-2-3-pro|ltx-2-5-fast
+//        --import ./scripts/c15/ts-loader.mjs scripts/c15/video-sample.mjs --scene school|hawker --model ltx-2-3-pro|ltx-2-5-fast [--max-usd N]
+// C15-4g: --max-usd N caps this run: before each LTX request its audio seconds (rounded up) x the model price are added
+// to the run total and a request that would pass N is never sent; OpenAI requests count at their worst case until settled.
 import { existsSync, mkdirSync, readFileSync, writeFileSync, appendFileSync, chmodSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -16,11 +18,14 @@ import { LIVE_RESERVATIONS } from '../../lib/live-scene-runner.ts';
 import { LTX_MODELS, resolveLtxModel } from '../../lib/generated-video.ts';
 import { sealGoogleSession, GOOGLE_SESSION_COOKIE } from '../../lib/google-auth.ts';
 import { openLedger, PRICES, LTX_PRICES, CAPS } from './ledger.mjs';
+import { createRunCap, parseMaxUsd } from './run-cap.mjs';
 
 const ITEM = 'C15-4', C15_TOTAL_CAP = 26.5;
 const args = process.argv.slice(2);
 const arg = name => (args.includes(name) ? args[args.indexOf(name) + 1] : undefined);
 const sceneName = arg('--scene'), model = resolveLtxModel(arg('--model'));
+const maxUsd = parseMaxUsd(arg('--max-usd'));
+const runCap = maxUsd === undefined ? null : createRunCap({ maxUsd, ltxUsdPerSecond: LTX_PRICES[model], ltxWorstUsd: LTX_MODELS[model].segmentMicros / 1e6 });
 if (!process.env.OPENAI_API_KEY || !process.env.LTX_API_KEY) throw new Error('OPENAI_API_KEY / LTX_API_KEY missing');
 if (process.env.NODE_USE_ENV_PROXY !== '1') throw new Error('NODE_USE_ENV_PROXY=1 required');
 
@@ -84,6 +89,11 @@ async function guardedFetch(url, init = {}) {
   if (insufficientFunds) throw new Error('LTX insufficient funds: run stopped');
   const kind = u.hostname === 'api.ltx.io' ? 'ltx' : u.pathname.endsWith('/responses') ? 'script' : 'tts';
   const worst = kind === 'ltx' ? LTX_MODELS[model].segmentMicros / 1e6 : kind === 'script' ? LIVE_RESERVATIONS.scriptMicros / 1e6 : LIVE_RESERVATIONS.audioMicros / 1e6;
+  // C15-4g: the run cap first (throws, nothing sent), then the C15 ledger reservation.
+  let ticket = null;
+  try { ticket = runCap ? runCap.reserve({ kind, body: init.body, worstUsd: worst }) : null; }
+  catch (error) { log({ host: u.hostname, method, path: u.pathname, kind, refused: 'run cap' }); throw error; }
+  if (ticket) log({ host: u.hostname, method, path: u.pathname, kind, runCap: { usd: ticket.usd, seconds: ticket.seconds, total: runCap.total() } });
   const handle = reserve(kind, worst);
   let response;
   try { response = await realFetch(url, init); }
@@ -102,12 +112,13 @@ async function guardedFetch(url, init = {}) {
       const body = await response.clone().json().catch(() => null);
       if (response.ok && body?.usage) {
         row.usage = { input_tokens: body.usage.input_tokens, output_tokens: body.usage.output_tokens };
-        handle.settle((body.usage.input_tokens * PRICES['gpt-4.1'].input + body.usage.output_tokens * PRICES['gpt-4.1'].output) / 1e6, row.usage);
+        const actual = (body.usage.input_tokens * PRICES['gpt-4.1'].input + body.usage.output_tokens * PRICES['gpt-4.1'].output) / 1e6;
+        handle.settle(actual, row.usage); ticket?.settle(actual);
       } else handle.unknown(`script http ${response.status}`);
     } else {
       const bytes = response.ok ? (await response.clone().arrayBuffer()).byteLength : 0;
       // 24 kHz mono 16-bit WAV: 48,000 bytes a second; gpt-4o-mini-tts about USD0.015 a minute.
-      if (response.ok && bytes > 44) { row.seconds = +((bytes - 44) / 48000).toFixed(3); handle.settle(row.seconds / 60 * PRICES['gpt-4o-mini-tts'].perMinute, { seconds: row.seconds }); }
+      if (response.ok && bytes > 44) { row.seconds = +((bytes - 44) / 48000).toFixed(3); const actual = row.seconds / 60 * PRICES['gpt-4o-mini-tts'].perMinute; handle.settle(actual, { seconds: row.seconds }); ticket?.settle(actual); }
       else handle.unknown(`tts http ${response.status}`);
     }
   } finally { log(row); }
@@ -124,7 +135,7 @@ const store = createLiveGenerationRuntime({
 const mediaStore = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret });
 const runner = createGenerationRunner({ store, audioReview: createMachineAudioReview({ read: input => mediaStore.get(input) }), pollMs: 10_000, maxPolls: 90 });
 
-if (args.includes('--dry')) { console.log(`[c15-4] dry ok: ${name} revision ${revision}, C15 total so far ${c15Total().toFixed(4)}`); process.exit(0); }
+if (args.includes('--dry')) { console.log(`[c15-4] dry ok: ${name} revision ${revision}, C15 total so far ${c15Total().toFixed(4)}${runCap ? `, run cap USD${runCap.maxUsd}` : ''}`); process.exit(0); }
 const cookie = await sealGoogleSession({ provider: 'google', issuer: 'https://accounts.google.com', providerSubject: 'c15-4-synthetic-learner', email: 'synthetic@example.invalid' }, sessionSecret, Date.now());
 const session = () => ({ cookie, now: Date.now() });
 const requirement = { revision, content: { description: scene.description, language: 'zh-Hans', keywords: scene.keywords } };
@@ -174,6 +185,8 @@ const summary = {
   anchorFrame: task.anchorFrame ?? null, referenceImages: task.videoJobs?.map(j => ({ segmentIndex: j.segmentIndex, sha256: j.referenceImageSha256 ?? null })) ?? [],
   finalVideo: task.finalVideo ? { duration: task.finalVideo.duration, size: task.finalVideo.size, sha256: task.finalVideo.sha256 } : null,
   ledgerItemTotal: ledger.total(ITEM), c15Total: c15Total(),
+  // C15-4g: this run's own cap and what it counted (LTX at rounded-up audio seconds x price).
+  runCap: runCap ? runCap.summary() : null,
 };
 if (task.finalVideo) {
   const media = await mediaStore.get({ ...session(), courseId: id, revision: task.revision, assetId: task.finalVideo.assetId });

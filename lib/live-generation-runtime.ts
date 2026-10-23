@@ -67,7 +67,8 @@ export function createLiveGenerationRuntime(options: Options) {
     videoProbe: input => probeVideoBytes(input, { executable: media.ffprobe }),
     videoRepair: input => repairAndVerifyVideoTail(input, media),
     referenceExtractor: input => extractReferenceImage(input, media),
-    videoConcat: (inputs, verifiedDuration) => concatVideoBytes(inputs, { executable: media.ffmpeg, normalizeDuration: verifiedDuration }),
+    // C15-4g: a short picture cross-fade at every seam (audio, length and line timings unchanged).
+    videoConcat: (inputs, verifiedDuration, seams) => concatVideoBytes(inputs, { executable: media.ffmpeg, normalizeDuration: verifiedDuration, ...(Array.isArray(seams) && seams.length ? { crossfadeAt: seams } : {}) }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
     // C14-1: every segment goes through the quality gate. Preview cards take the preview path; provider video gets
     // the local ffmpeg checks plus the C14-4 face checks (python3 -I script; not_checked whenever it cannot measure).

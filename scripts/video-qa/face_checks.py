@@ -46,6 +46,17 @@ NOSE_TIP = 1
 MAX_FACES = 5
 MIN_DETECTION_SCORE = 0.5  # MediaPipe default min_face_detection_confidence
 NMS_IOU = 0.3
+# C15-4g background specks: small bright spots outside the face boxes (white top-hat of the gray frame). Measured only;
+# lib/video-quality-gate.ts judges the growth. All 待标定 (to be calibrated): attempt 7 segment 2 had drifting white dots.
+SPECK_KERNEL = 9           # top-hat structuring element (pixels, ellipse)
+SPECK_MIN_CONTRAST = 30    # top-hat value (0-255) at or above which a pixel is bright against its surroundings
+SPECK_AREA = (2, 60)       # connected bright blobs of this many pixels count as specks
+SPECK_FACE_MARGIN = 0.5    # each face box is widened by this share of its size on every side before masking
+SPECK_FLOOR = 20           # growth is peak / max(baseline, SPECK_FLOOR), so a nearly clean start cannot blow it up
+ROLL_SECONDS = 1.0         # rolling window for both C15-4g measures
+# C15-4g learner mouth motion: lip gap and mouth width (both / outer eye-corner distance) change between sampled frames
+# inside learner lines; the first MOTION_TRIM seconds of each line are skipped (she may still be closing her mouth).
+MOTION_TRIM = 0.25
 
 
 def emit(payload):
@@ -261,6 +272,92 @@ def sharpness(frame, xs, ys, cv2):
     return float(cv2.Laplacian(cv2.cvtColor(frame[y0:y1, x0:x1], cv2.COLOR_BGR2GRAY), cv2.CV_64F).var())
 
 
+def mouth_shape(points):
+    # C15-4g: (lip gap, mouth width), both divided by the outer eye-corner distance (scale-free, unlike mouth_open alone).
+    eyes = math.hypot(points[263][0] - points[33][0], points[263][1] - points[33][1])
+    if eyes <= 0:
+        return None
+    gap = math.hypot(points[LOWER_LIP][0] - points[UPPER_LIP][0], points[LOWER_LIP][1] - points[UPPER_LIP][1])
+    width = math.hypot(points[MOUTH_RIGHT][0] - points[MOUTH_LEFT][0], points[MOUTH_RIGHT][1] - points[MOUTH_LEFT][1])
+    return gap / eyes, width / eyes
+
+
+def speck_count(frame, boxes, cv2, np):
+    # C15-4g: small bright blobs outside the (widened) face boxes.
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (SPECK_KERNEL, SPECK_KERNEL))
+    mask = (cv2.morphologyEx(gray, cv2.MORPH_TOPHAT, kernel) >= SPECK_MIN_CONTRAST).astype(np.uint8)
+    for x0, y0, x1, y1 in boxes:
+        mx, my = (x1 - x0) * SPECK_FACE_MARGIN, (y1 - y0) * SPECK_FACE_MARGIN
+        mask[max(0, int(y0 - my)):max(0, int(y1 + my)), max(0, int(x0 - mx)):max(0, int(x1 + mx))] = 0
+    _, _, stats, _ = cv2.connectedComponentsWithStats(mask, 8)
+    areas = stats[1:, cv2.CC_STAT_AREA]
+    return int(((areas >= SPECK_AREA[0]) & (areas <= SPECK_AREA[1])).sum())
+
+
+def median(values):
+    ordered = sorted(values)
+    if not ordered:
+        return None
+    middle = len(ordered) // 2
+    return ordered[middle] if len(ordered) % 2 else (ordered[middle - 1] + ordered[middle]) / 2
+
+
+def background_specks(frames):
+    # Baseline: median count over the first second; peak: the highest 1 s rolling median; growth: peak / baseline.
+    rows = [(frame['t'], frame['specks']) for frame in frames if frame.get('specks') is not None]
+    if not rows:
+        return {'frames': 0, 'baseline': None, 'peak': None, 'peak_t': None, 'growth': None}
+    start = rows[0][0]
+    baseline = median([count for t, count in rows if t < start + ROLL_SECONDS])
+    peak, peak_t = None, None
+    for t0, _ in rows:
+        window = [count for t, count in rows if t0 <= t < t0 + ROLL_SECONDS]
+        value = median(window)
+        if peak is None or value > peak:
+            peak, peak_t = value, t0
+    return {'frames': len(rows), 'baseline': baseline, 'peak': peak, 'peak_t': round(peak_t, 3),
+            'growth': round(peak / max(baseline, SPECK_FLOOR), 4)}
+
+
+def back_and_forth(run):
+    # Movement that comes back: total variation minus net change, of lip gap and of mouth width. Opening into a smile
+    # and holding it is one way (close to 0); talking opens and closes again and again.
+    total = 0.0
+    for k in (0, 1):
+        values = [frame['shape'][k] for frame in run]
+        total += sum(abs(b - a) for a, b in zip(values, values[1:])) - abs(values[-1] - values[0])
+    return total
+
+
+def learner_mouth_motion(frames, windows):
+    # C15-4g: back-and-forth lip movement per second inside the learner lines, over the busiest ROLL_SECONDS of any line
+    # (a shorter line: over the whole line). Returns that rate and when its window starts.
+    best, counted = None, 0
+    for start, end in windows:
+        inside = [frame for frame in frames if start + MOTION_TRIM <= frame['t'] <= end and frame.get('shape') is not None]
+        counted += len(inside)
+        if len(inside) < 2:
+            continue
+        span = end - (start + MOTION_TRIM)
+        if span <= ROLL_SECONDS:
+            candidates = [(inside[0]['t'], back_and_forth(inside) / max(span, 1e-6))]
+        else:
+            candidates = []
+            for index, first in enumerate(inside):
+                if first['t'] + ROLL_SECONDS > end + 1e-6:
+                    break
+                run = [frame for frame in inside[index:] if frame['t'] <= first['t'] + ROLL_SECONDS + 1e-6]
+                if len(run) >= 2:
+                    candidates.append((first['t'], back_and_forth(run) / ROLL_SECONDS))
+        for item in candidates:
+            if best is None or item[1] > best[1]:
+                best = item
+    if best is None:
+        return {'windows': len(windows), 'frames': counted, 'peak': None, 'peak_t': None}
+    return {'windows': len(windows), 'frames': counted, 'peak': round(best[1], 4), 'peak_t': round(best[0], 3)}
+
+
 def scene_cuts(video):
     from scenedetect import ContentDetector, detect
     return [round(start.seconds, 3) for start, _ in detect(video, ContentDetector())[1:]]
@@ -308,7 +405,10 @@ def measure(args):
                 if (max(ys) - min(ys)) / height >= args.min_face_height:
                     faces.append(((max(xs) - min(xs)) * (max(ys) - min(ys)), mouth_open(points), (max(ys) - min(ys)) / height, points, xs, ys))
             faces.sort(key=lambda face: face[0], reverse=True)
-            row = {'t': round(time, 3), 'faces': len(faces), 'open': faces[0][1] if faces else None, 'height': faces[0][2] if faces else None}
+            row = {'t': round(time, 3), 'faces': len(faces), 'open': faces[0][1] if faces else None, 'height': faces[0][2] if faces else None,
+                   # C15-4g: background specks outside every detected face, and the largest face's mouth shape.
+                   'specks': speck_count(frame, [(min(f[4]), min(f[5]), max(f[4]), max(f[5])) for f in faces], cv2, np),
+                   'shape': mouth_shape(faces[0][3]) if faces else None}
             if args.anchor and len(faces) == 1:
                 _, opening, face_height, points, xs, ys = faces[0]
                 row['anchor'] = {'t': round(time, 3), 'face_height': face_height, 'mouth_open': opening, 'eye_open': eye_open(points), 'yaw': yaw(points), 'sharpness': sharpness(frame, xs, ys, cv2)}
@@ -355,6 +455,9 @@ def measure(args):
             'ratio': round(len(moving) / counted, 4) if counted else None,
             'keyframes': moving[:20],
         },
+        # C15-4g: measured only; the gate decides.
+        'background_specks': background_specks(frames),
+        'learner_mouth_motion': learner_mouth_motion(frames, windows),
         'versions': {'mediapipe': getattr(mediapipe, '__version__', 'unknown'), 'opencv': cv2.__version__, 'model_sha256': MODEL_SHA256},
     }
     if args.anchor:

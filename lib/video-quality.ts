@@ -18,6 +18,15 @@ export const QUALITY_THRESHOLDS = {
   // C15-4f (2026-10-23): framing drift, each segment's median face height against the first segment's, at most +-35%
   // (待标定: attempt 6 medians 0.33 / 0.388 / 0.419 / 0.451 = +18% / +27% / +37%, the last one a big close-up).
   maxFramingDrift: 0.35,
+  // C15-4g (2026-10-23, zero cost): background specks, small bright spots outside the face boxes. A segment fails when the
+  // busiest second's median count grows past this multiple of its first second's (floor 20 specks). 待标定: attempt 7
+  // segment 2 (drifting white dots, 13-28 s of the lesson) 8.99; segments 1 / 3 / 4: 2.04 / 1.28 / 1.07.
+  maxBackgroundSpeckGrowth: 3,
+  // C15-4g: back-and-forth lip movement per second (lip gap + mouth width over the eye-corner distance, total change minus
+  // net change) in the busiest second of the learner lines. A held smile, open or closed, stays low; whispering along
+  // does not. 待标定: attempt 7 last segment (lips moving at the start of "I appreciate that") 0.365; the toothy smiles of
+  // l3 / l4 0.117, l2 0.099; l1 0.308 (she opens, closes and opens again in its last second).
+  maxLearnerMouthMotion: 0.2,
 } as const;
 // A failed segment may be generated again once (after a fresh reservation); a second failure stops the course.
 export const MAX_SEGMENT_REDOS = 1;
@@ -39,7 +48,9 @@ export const FACE_DETECTION = {
 export const QUALITY_CHECK_IDS = ['cuts', 'single_face', 'learner_mouth', 'seam_ssim', 'black_freeze'] as const;
 // C15-4f: checks that a report may carry on top of the five. When present they count like the others (failed blocks,
 // not_checked caps at needs_review); when absent the five alone decide, as before.
-export const OPTIONAL_QUALITY_CHECK_IDS = ['framing_drift'] as const;
+// C15-4g: background_noise (specks growing in the background) and learner_mouth_motion (lips moving back and forth while
+// the learner speaks, beyond a held smile) join them, judged the same way.
+export const OPTIONAL_QUALITY_CHECK_IDS = ['framing_drift', 'background_noise', 'learner_mouth_motion'] as const;
 
 // C15-4f: limits for the fixed reference frame chosen from segment 1 (one face, measured by scripts/video-qa/face_checks.py
 // --anchor). All 待标定 (to be calibrated) with more paid samples. First values from the C15-4 school segments 1:

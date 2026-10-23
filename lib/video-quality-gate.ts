@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { homedir, tmpdir } from 'node:os';
 import { isAbsolute, join } from 'node:path';
-import { QUALITY_THRESHOLDS, FACE_CHECK_PENDING, FACE_DETECTION, chooseAnchorFrame, type AnchorChoice, type QualityCheck, type QualityReport } from './video-quality';
+import { QUALITY_THRESHOLDS, FACE_CHECK_PENDING, FACE_DETECTION, OPTIONAL_QUALITY_CHECK_IDS, chooseAnchorFrame, type AnchorChoice, type QualityCheck, type QualityReport } from './video-quality';
 
 export { QUALITY_THRESHOLDS, MAX_SEGMENT_REDOS, FACE_CHECK_PENDING, FACE_DETECTION, QUALITY_CHECK_IDS, OPTIONAL_QUALITY_CHECK_IDS, ANCHOR_FRAME_LIMITS, chooseAnchorFrame, combineQualityChecks, qualityVerdict, validQualityCheck, taskQuality } from './video-quality';
 
@@ -44,6 +44,29 @@ function framingDrift(raw: Record<string, any>, framing: Framing): QualityCheck 
   return { id: 'framing_drift', status: ok ? 'passed' : 'failed', value: current,
     ...(ok ? {} : { reason: `framing drift: face height ${current} against ${base} in the first segment (${change > 0 ? '+' : ''}${Math.round(change * 100)}%)` }) };
 }
+// C15-4g: background specks. The script reports each sampled frame's count of small bright spots outside the faces; the
+// busiest second's median against the first second's (floor 20) is the growth. Unknown is not_checked.
+function backgroundNoise(raw: Record<string, any>): QualityCheck {
+  if (raw.status !== 'measured') return { id: 'background_noise', status: 'not_checked', reason: 'face measurement not available' };
+  const specks = raw.background_specks, growth = specks?.growth, peakTime = specks?.peak_t;
+  if (typeof growth !== 'number' || !Number.isFinite(growth) || growth < 0 || !Number.isSafeInteger(specks?.frames) || specks.frames <= 0) return { id: 'background_noise', status: 'not_checked', reason: 'background specks not measured' };
+  const ok = growth <= QUALITY_THRESHOLDS.maxBackgroundSpeckGrowth;
+  return { id: 'background_noise', status: ok ? 'passed' : 'failed', value: round(growth),
+    ...(ok ? {} : { reason: `background specks grew ${round(growth)}x (${specks.baseline} -> ${specks.peak} small bright spots)`.slice(0, 300), ...(typeof peakTime === 'number' && Number.isFinite(peakTime) && peakTime >= 0 ? { keyframes: [peakTime] } : {}) }) };
+}
+
+// C15-4g: back-and-forth lip movement per second while the learner speaks. No learner line passes; no partner face in
+// the learner lines, or no measurement, is not_checked.
+function learnerMouthMotion(raw: Record<string, any>, learnerWindows: Window[]): QualityCheck {
+  if (raw.status !== 'measured') return { id: 'learner_mouth_motion', status: 'not_checked', reason: 'face measurement not available' };
+  if (!learnerWindows.length) return { id: 'learner_mouth_motion', status: 'passed', value: 0, reason: 'no learner line in this segment' };
+  const motion = raw.learner_mouth_motion, peak = motion?.peak, peakTime = motion?.peak_t;
+  if (motion && peak === null && motion.frames === 0) return { id: 'learner_mouth_motion', status: 'not_checked', reason: 'partner face not found during learner lines' };
+  if (typeof peak !== 'number' || !Number.isFinite(peak) || peak < 0 || !Number.isSafeInteger(motion?.frames) || motion.frames <= 0) return { id: 'learner_mouth_motion', status: 'not_checked', reason: 'learner mouth motion not measured' };
+  const ok = peak <= QUALITY_THRESHOLDS.maxLearnerMouthMotion;
+  return { id: 'learner_mouth_motion', status: ok ? 'passed' : 'failed', value: round(peak),
+    ...(ok ? {} : { reason: 'partner lips move back and forth while the learner speaks', ...(typeof peakTime === 'number' && Number.isFinite(peakTime) && peakTime >= 0 ? { keyframes: [peakTime] } : {}) }) };
+}
 const open = (reason: string): QualityCheck[] => [
   { id: 'single_face', status: 'not_checked', reason: reason.slice(0, 300) },
   { id: 'learner_mouth', status: 'not_checked', reason: reason.slice(0, 300) },
@@ -53,7 +76,8 @@ const open = (reason: string): QualityCheck[] => [
 // Anything that is not a well-formed measurement is not_checked, never passed.
 export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[], framing?: Framing): QualityCheck[] {
   const result = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, any> : {};
-  const drift = framing && Number.isSafeInteger(framing.segmentIndex) && framing.segmentIndex >= 0 ? [framingDrift(result, framing)] : [];
+  // C15-4f / C15-4g: with the segment index, the optional checks (framing drift, background noise, mouth motion) follow.
+  const drift = framing && Number.isSafeInteger(framing.segmentIndex) && framing.segmentIndex >= 0 ? [framingDrift(result, framing), backgroundNoise(result), learnerMouthMotion(result, learnerWindows)] : [];
   if (result.status !== 'measured') return [...open(`人脸检测没有完成：${typeof result.reason === 'string' ? result.reason : 'no measurement'}`), ...drift];
   const t = QUALITY_THRESHOLDS, checks: QualityCheck[] = [];
   const face = result.single_face, faceRatio = ratio(face?.ratio), faceKeys = keyframeList(face?.keyframes);
@@ -90,7 +114,7 @@ export function createFaceChecks(options: { python: string; script?: string; mod
     const windows = Array.isArray(input?.learnerWindows) ? input.learnerWindows.filter(item => Number.isFinite(item?.start) && Number.isFinite(item?.end)).map(item => ({ start: item.start, end: item.end })) : [];
     const framing = Number.isSafeInteger(input?.segmentIndex) && input.segmentIndex! >= 0 ? { segmentIndex: input.segmentIndex!, baseFaceHeight: input.baseFaceHeight } : undefined;
     const measured = await measureFaces(execute, options.python, script, input.file, windows, timeout, options.modelDir, []);
-    if ('error' in measured) return [...open(measured.error), ...(framing ? [{ id: 'framing_drift' as const, status: 'not_checked' as const, reason: measured.error }] : [])];
+    if ('error' in measured) return [...open(measured.error), ...(framing ? OPTIONAL_QUALITY_CHECK_IDS.map(id => ({ id, status: 'not_checked' as const, reason: measured.error })) : [])];
     return judgeFaceMeasurement(measured.parsed, windows, framing);
   };
 }
@@ -200,9 +224,11 @@ export function createVideoQualityGate(options: { ffmpeg: string; ffprobe: strin
         const found = Array.isArray(faceChecks) ? faceChecks.find(check => check?.id === id) : undefined;
         checks.push(found ? structuredClone(found) : { id, status: 'not_checked', reason: FACE_CHECK_PENDING });
       }
-      // C15-4f: the optional framing drift check, only when the face checks measured it.
-      const framing = Array.isArray(faceChecks) ? faceChecks.find(check => check?.id === 'framing_drift') : undefined;
-      if (framing) checks.push(structuredClone(framing));
+      // C15-4f / C15-4g: the optional checks (framing drift, background noise, mouth motion), only when the face checks gave them.
+      for (const id of OPTIONAL_QUALITY_CHECK_IDS) {
+        const found = Array.isArray(faceChecks) ? faceChecks.find(check => check?.id === id) : undefined;
+        if (found) checks.push(structuredClone(found));
+      }
       return { sha256: input.video.sha256, mode: 'ffmpeg', checks };
     } finally { await rm(directory, { recursive: true, force: true }); }
   };
