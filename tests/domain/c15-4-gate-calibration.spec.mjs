@@ -122,7 +122,8 @@ const seamNext = '/mnt/project-files/les-c15/video/school-ltx-2-3-pro-a3-seg1-re
 const media = file => { const bytes = readFileSync(file); return { bytes, sha256: createHash('sha256').update(bytes).digest('hex') }; };
 function c3Halves(file, at) {
   const a = join(scratch, `${at}-a.mp4`), b = join(scratch, `${at}-b.mp4`);
-  execFileSync(ffmpeg, ['-v', 'error', '-y', '-i', file, '-t', String(at), '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', a]);
+  // Stop 0.15 s before the seam: re-encoding at 24 fps up to the seam time can end on the first frame after it.
+  execFileSync(ffmpeg, ['-v', 'error', '-y', '-i', file, '-t', String(at - 0.15), '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', a]);
   execFileSync(ffmpeg, ['-v', 'error', '-y', '-ss', String(at + 0.05), '-i', file, '-t', '3', '-an', '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-r', '24', b]);
   return [media(a), media(b)];
 }
