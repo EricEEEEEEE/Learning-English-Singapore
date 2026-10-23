@@ -82,7 +82,29 @@ export function looksLikeMp3(bytes: Uint8Array) {
   return bytes.length >= 4 && ((bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) || (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0));
 }
 
-export function planAudioSegments(assets: { lineId: string; duration: number }[]): { lineIds: string[]; duration: number }[] {
+// C15-4d: in a scene lesson (learner lines marked silence) lines are packed as "partner line + the learner lines after
+// it", so every later segment starts with the partner speaking and its reference frame is taken while she listens.
+// When those groups cannot fit four segments of at most 20 s, the line-by-line plan below is used unchanged.
+export function planAudioSegments(assets: { lineId: string; duration: number; silence?: boolean }[]): { lineIds: string[]; duration: number }[] {
+  const lineByLine = planLineByLine(assets);
+  if (!assets.some(asset => asset.silence === true)) return lineByLine;
+  const groups: { lineIds: string[]; duration: number }[] = [];
+  for (const asset of assets) {
+    const group = groups.at(-1);
+    if (!group || asset.silence !== true) groups.push({ lineIds: [asset.lineId], duration: asset.duration });
+    else { group.lineIds.push(asset.lineId); group.duration += asset.duration; }
+  }
+  const segments: { lineIds: string[]; duration: number }[] = [];
+  for (const group of groups) {
+    if (group.duration > 20) return lineByLine;
+    const segment = segments.at(-1);
+    if (!segment || segment.duration + group.duration > 20) segments.push({ lineIds: [...group.lineIds], duration: group.duration });
+    else { segment.lineIds.push(...group.lineIds); segment.duration += group.duration; }
+  }
+  return segments.length <= 4 ? segments : lineByLine;
+}
+
+function planLineByLine(assets: { lineId: string; duration: number }[]): { lineIds: string[]; duration: number }[] {
   if (!Array.isArray(assets) || !assets.length || assets.length > 10) throw new Error('Invalid audio assets');
   const seen = new Set<string>(); const segments: { lineIds: string[]; duration: number }[] = []; let total = 0;
   for (const asset of assets) {
