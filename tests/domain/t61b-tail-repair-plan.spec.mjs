@@ -28,7 +28,7 @@ test('T61B tail repair: seven-frame live LTX shortfall is padded, not rejected',
 });
 
 for(const [name,change] of [
- ['more than eight frames missing',{videoDuration:15.9}],
+ ['more than twelve frames missing (C15-4e, was eight)',{videoDuration:15.7}],
  ['more than eight frames longer',{videoDuration:16.7}],
  ['shifted picture',{videoStart:0.1}],
  ['shifted audio',{audioStart:0.1}],

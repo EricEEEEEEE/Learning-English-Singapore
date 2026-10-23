@@ -241,3 +241,18 @@ test('C15-4d assembly: the scene audio assembly starts every segment with the pa
   expect(assembled.segments.map(segment => segment.lineIds[0])).toEqual(['p1', 'p2', 'p3', 'p4']);
   for (const line of assembled.lines.filter(line => line.segmentStart === 0)) expect(line.lineId).toMatch(/^p/);
 });
+
+// C15-4e (2026-10-23, zero cost): tail repair limit. Attempt 6 of the school lesson passed the gate on segments 1-3;
+// segment 4 (9.05 s of audio) came back from LTX as 209 frames, 8.708 s, 0.342 s (8.2 frames) short, just over the
+// 8-frame pad limit, so the run stopped with "Verified tail repair failed" and no course. Segments now end on the
+// partner listening (C15-4d), so holding her last frame a little longer is harmless (the gate still rejects any
+// freeze over 1 s). A short video is padded up to 12 frames (0.5 s); a long one is still trimmed only up to 8 frames.
+test('C15-4e tail repair: the real 8.2-frame LTX shortfall is padded; more than 12 frames short or 8 frames long still fails', async () => {
+  const { planVideoTailRepair } = await import('../../lib/video-tail-repair.ts');
+  const base = { videoStart: 0, audioStart: 0, fps: 24, width: 720, height: 1280 };
+  expect(planVideoTailRepair({ ...base, sourceAudioDuration: 9.05, videoDuration: 8.708333 })).toMatchObject({ targetDuration: 9.05, padFrames: 9, replaceWithSourceAudio: true });
+  expect(planVideoTailRepair({ ...base, sourceAudioDuration: 10, videoDuration: 9.5 })).toMatchObject({ padFrames: 12 });
+  expect(() => planVideoTailRepair({ ...base, sourceAudioDuration: 10, videoDuration: 9.45 })).toThrow();
+  expect(planVideoTailRepair({ ...base, sourceAudioDuration: 10, videoDuration: 10.3 })).toMatchObject({ padFrames: 0 });
+  expect(() => planVideoTailRepair({ ...base, sourceAudioDuration: 10, videoDuration: 10.4 })).toThrow();
+});
