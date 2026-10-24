@@ -202,7 +202,8 @@ test('C15-4g thresholds: background specks may grow up to 3x, back-and-forth lip
   const { QUALITY_THRESHOLDS, OPTIONAL_QUALITY_CHECK_IDS, QUALITY_CHECK_IDS } = await quality();
   expect(QUALITY_THRESHOLDS.maxBackgroundSpeckGrowth).toBe(3);
   expect(QUALITY_THRESHOLDS.maxLearnerMouthMotion).toBe(0.2);
-  expect(OPTIONAL_QUALITY_CHECK_IDS).toEqual(['framing_drift', 'background_noise', 'learner_mouth_motion']);
+  // C16-2 added background_haze after them (考题随 C16-2 更新).
+  expect(OPTIONAL_QUALITY_CHECK_IDS).toEqual(['framing_drift', 'background_noise', 'learner_mouth_motion', 'background_haze']);
   expect(QUALITY_CHECK_IDS).toEqual(['cuts', 'single_face', 'learner_mouth', 'seam_ssim', 'black_freeze']);
   // The old mouth check and its threshold stay as they were.
   expect(QUALITY_THRESHOLDS.maxLearnerMouthRatio).toBe(0.35);
@@ -277,7 +278,7 @@ test('C15-4g gate: the new checks from the face checks are kept in the report; a
   expect(byId(report.checks, 'background_noise')).toMatchObject({ status: 'failed', value: 9 });
   expect(byId(report.checks, 'learner_mouth_motion')).toMatchObject({ status: 'failed', keyframes: [7.8] });
   const broken = await createFaceChecks({ python, script, execute: async () => { throw Object.assign(new Error('boom'), { code: 1 }); } })({ file, duration: 3, learnerWindows: [], segmentIndex: 1, baseFaceHeight: 0.25 });
-  expect(broken.map(check => [check.id, check.status])).toEqual([['single_face', 'not_checked'], ['learner_mouth', 'not_checked'], ['framing_drift', 'not_checked'], ['background_noise', 'not_checked'], ['learner_mouth_motion', 'not_checked']]);
+  expect(broken.map(check => [check.id, check.status])).toEqual([['single_face', 'not_checked'], ['learner_mouth', 'not_checked'], ['framing_drift', 'not_checked'], ['background_noise', 'not_checked'], ['learner_mouth_motion', 'not_checked'], ['background_haze', 'not_checked']]); // C16-2: background_haze joins them (考题随 C16-2 更新)
 });
 
 // ---- store setup (offline stand-ins only, as in C15-4f) ----
