@@ -65,7 +65,9 @@ export function sanitizeScriptRejection(value: unknown): ScriptRejection | null 
 }
 export class ScriptRejectedError extends Error {
   readonly code = 'script_rejected';
-  constructor(readonly rejection: ScriptRejection) { super('Script material validation failed'); }
+  readonly rejection: ScriptRejection;
+  // No parameter properties: the paid driver runs this file under Node's strip-only TypeScript.
+  constructor(rejection: ScriptRejection) { super('Script material validation failed'); this.rejection = rejection; }
 }
 
 function inspectScript(value: unknown): { issues: string[]; fields: string[] } {
