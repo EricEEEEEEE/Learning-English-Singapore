@@ -780,3 +780,8 @@
 - [audit] phase → implementing @ 2026-10-24T04:23:43+00:00
 - [audit] phase → test-writing @ 2026-10-24T04:42:39+00:00
 - 2026-10-24 C15-4h 修正：ScriptRejectedError 参数属性在驱动的仅剥类型模式下报错（--dry 发现，未发付费请求），补红考题后改显式字段 → 绿 7dc7b9a，verify 2575/2575
+- [audit] phase → implementing @ 2026-10-24T04:53:20+00:00
+- [audit] phase → test-writing @ 2026-10-24T04:56:31+00:00
+- [audit] phase → implementing @ 2026-10-24T04:56:31+00:00
+- [audit] phase → test-writing @ 2026-10-24T05:17:27+00:00
+- 2026-10-24 C15-4i 零费用：尝试 9 三段闸门全过但组装后最终检查报长度不符（48.158333 秒非整帧，画面多一帧到 48.1667），组装画面滤镜加整帧截断，音频原长；红 baf7949（考题纠错 T61B CFR）→ 绿 10ddfa0，verify 2580/2580
