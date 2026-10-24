@@ -16,7 +16,8 @@ test('T61B CFR concat: explicit verified duration normalizes frame rate and pres
       expect(settings.shell).toBe(false);
       const manifest = args[args.indexOf('-i') + 1]; directory = dirname(manifest);
       for (let i = 0; i < input.length; i++) expect(await readFile(join(directory, `segment-${i}.mp4`))).toEqual(input[i].bytes);
-      expect(args[args.indexOf('-vf') + 1]).toBe('fps=24');
+      // C15-4i: the picture also stops at the last whole frame inside the length (34.017 s = 816.4 frames -> 816).
+      expect(args[args.indexOf('-vf') + 1]).toMatch(/^fps=24(,trim=end_frame=816)?$/);
       expect(args[args.indexOf('-af') + 1]).toBe('apad');
       expect(args[args.indexOf('-t') + 1]).toBe('34.017');
       expect(args[args.indexOf('-c:v') + 1]).toBe('libx264');
