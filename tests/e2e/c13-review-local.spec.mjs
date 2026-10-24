@@ -41,7 +41,8 @@ test('C13-2 / F15.1: my scenes show "continue" at the saved place and an only-gr
   // "Continue" opens the very course; its saved position is restored by the course page as before.
   await resume.click();
   await expect(main.getByTestId('real-scene-course')).toBeVisible();
-  expect(state.courseReads.at(-1)).toEqual(coursePointer);
+  // The course section shows its loading line before the read arrives, so wait for the read instead of racing it.
+  await expect.poll(() => state.courseReads.at(-1)).toEqual(coursePointer);
   noGeneration(state);
 });
 
