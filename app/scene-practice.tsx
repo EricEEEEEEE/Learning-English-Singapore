@@ -14,6 +14,7 @@ import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
 import { c12Copy } from './c12-copy';
 import { c13Copy } from './c13-copy';
+import { c16Copy } from './c16-copy';
 
 type Line = { id: string; text: string; translations?: Partial<Record<EntryLanguage, string>>; register?: string; plainAlternative?: string | null };
 type Alternative = { text: string; translations?: Partial<Record<EntryLanguage, string>> };
@@ -136,6 +137,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
   if (!session.current) session.current = newSession();
   const [reviewSave, setReviewSave] = useState<'idle' | 'saving' | 'saved' | 'failed'>('idle');
   const [previousReview, setPreviousReview] = useState<PracticeReview | null>(null);
+  // C16-6: the last review of another scene, shown beside this one without ranking either.
+  const [otherReview, setOtherReview] = useState<PracticeReview | null>(null);
   // C9-1: the confirmed goal and its revision; a reply sent under an older revision is ignored when it arrives.
   const [goal, setGoal] = useState<Goal | null>(memory?.goal ?? null);
   const goalRef = useRef<Goal | null>(memory?.goal ?? null);
@@ -287,7 +290,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     const body = { course: { id: course.id, revision: course.revision, ...(course.materialsRevision !== undefined ? { materialsRevision: course.materialsRevision } : {}) }, session: session.current,
       turns: outcomes.map((outcome, turnIndex) => ({ turnIndex, outcome })), help: { hints: stats.current.hints, autoHelp: stats.current.autoHelp, translations: stats.current.translations, native: stats.current.native ?? 0 } };
     if (isOffline()) { setReviewSave('failed'); return; }
-    setReviewSave('saving'); setPreviousReview(null);
+    setReviewSave('saving'); setPreviousReview(null); setOtherReview(null);
     const controller = new AbortController(), deadline = window.setTimeout(() => controller.abort(), 5000);
     fetch('/api/practice-reviews', { method: 'POST', credentials: 'same-origin', cache: 'no-store', signal: controller.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
       .then(async response => {
@@ -296,6 +299,8 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
         if (!data) { setReviewSave('failed'); return; }
         const previous = data.previous as PracticeReview | null;
         setPreviousReview(previous && Array.isArray(previous.turns) && previous.turns.every(turn => outcomeOrder.includes(turn?.outcome)) ? previous : null);
+        const other = data.otherScene as PracticeReview | null | undefined;
+        setOtherReview(other && Array.isArray(other.turns) && other.turns.length > 0 && other.turns.every(turn => outcomeOrder.includes(turn?.outcome)) ? other : null);
         setReviewSave('saved');
       })
       .catch(() => { if (active) setReviewSave('failed'); })
@@ -441,7 +446,7 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
     for (const key of Object.keys(answered.current)) delete answered.current[Number(key)];
     for (const key of Object.keys(chosen.current)) delete chosen.current[Number(key)];
     for (const record of [helped.current, understoodBy.current]) for (const key of Object.keys(record)) delete record[Number(key)];
-    stats.current.native = 0; session.current = newSession(); setReviewSave('idle'); setPreviousReview(null);
+    stats.current.native = 0; session.current = newSession(); setReviewSave('idle'); setPreviousReview(null); setOtherReview(null);
     goalRef.current = null; setGoal(null);
     playPartner(course.turns[0].partnerLineId);
   }
@@ -602,6 +607,10 @@ export default function ScenePractice({ course, language, startTurn, onHint, onL
           <p data-testid="practice-compare-previous">{compareLine(gaps.previousReview, previousReview.turns.map(turn => turn.outcome))}</p>
           <p data-testid="practice-compare-current">{compareLine(gaps.thisReview, course.turns.map((_, i) => outcomeOf(i)))}</p>
           <p className="scene-note">{gaps.compareNote}</p>
+        </div>}
+        {reviewSave === 'saved' && otherReview && <div className="practice-compare">
+          <p data-testid="practice-compare-other">{compareLine(c16Copy[language].otherScene, otherReview.turns.map(turn => turn.outcome))}</p>
+          <p className="scene-note">{c16Copy[language].otherNote}</p>
         </div>}
       </div>
       {ending === 'ended' && <button type="button" className="text-button keep-going" onClick={() => setEnding(null)}>{quality.keepGoing}</button>}

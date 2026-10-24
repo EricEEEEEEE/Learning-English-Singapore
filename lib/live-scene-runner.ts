@@ -1,6 +1,6 @@
 import { isAbsolute, join } from 'node:path';
 import { createLiveGenerationRuntime } from './live-generation-runtime';
-import { createPrivateMediaStore } from './private-media-store';
+import { createMediaStore } from './media-store-config';
 import { createGenerationRunner } from './generation-runner';
 import { createMachineAudioReview } from './machine-audio-review';
 import { LTX_MODELS, resolveLtxModel } from './generated-video';
@@ -42,7 +42,7 @@ export function createLiveSceneRunner(env: Env, directory: string, options: { fe
       media: { ffmpeg, ffprobe, python, allowedHosts: hosts, maxBytes: 100_000_000 },
       ...(options.fetch ? { fetch: options.fetch } : {}),
     });
-    const mediaStore = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret: env.AUTH_SESSION_SECRET });
+    const mediaStore = createMediaStore({ directory: join(directory, 'media'), sessionSecret: env.AUTH_SESSION_SECRET });
     return createGenerationRunner({ store, audioReview: createMachineAudioReview({ read: input => mediaStore.get(input) }) });
   } catch {
     return null;

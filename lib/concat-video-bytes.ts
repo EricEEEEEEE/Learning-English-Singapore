@@ -14,17 +14,32 @@ const hash = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('h
 // frames of the next segment are blended with the last frame of the one before (held), fading into the new segment;
 // every segment still starts at its own timeline time, so the length, the audio and the line timings do not change.
 export const SEAM_CROSSFADE_FRAMES = 3;
+// C16-3 (2026-10-24, zero cost): the three-frame fade showed two heads at once for about two frames where the partner had
+// moved (attempts 7 and 9). Each seam may instead be 'short' (a two-frame transition whose only blended frame is the seam
+// frame, halfway; the frame after it is the new segment) or 'cut' (no blend). Without seamModes every seam is 'fade'.
+export const SEAM_SHORT_FRAMES = 2;
+export type SeamMode = 'fade' | 'short' | 'cut';
+const SEAM_MODES: readonly SeamMode[] = ['fade', 'short', 'cut'];
 const FPS = 24;
 
 // The video part of the filter graph: each segment at 24 fps from 0, all but the last held on their last frame for a
 // little longer, then one xfade per seam starting a quarter frame before the seam's frame (so that frame is the first
 // blended one) and lasting SEAM_CROSSFADE_FRAMES frames.
-function crossfadeGraph(seamFrames: number[]) {
-  const count = seamFrames.length + 1, fade = SEAM_CROSSFADE_FRAMES / FPS, hold = (SEAM_CROSSFADE_FRAMES + FPS) / FPS;
-  const parts = Array.from({ length: count }, (_, i) => `[${i + 1}:v:0]fps=${FPS},setpts=PTS-STARTPTS,format=yuv420p,settb=1/${FPS}${i < count - 1 ? `,tpad=stop_mode=clone:stop_duration=${hold.toFixed(6)}` : ''}[v${i}]`);
+// C16-3: a 'short' seam is a two-frame xfade starting one frame before the seam frame (that frame is the halfway blend,
+// the next one is the new segment); a 'cut' trims everything so far at the seam frame and appends the next segment.
+// A short seam starts the later segment one frame early, so with one the last segment is held too; the trim keeps the planned length.
+function crossfadeGraph(seamFrames: number[], modes: SeamMode[]) {
+  const count = seamFrames.length + 1, hold = (SEAM_CROSSFADE_FRAMES + FPS) / FPS;
+  const parts = Array.from({ length: count }, (_, i) => `[${i + 1}:v:0]fps=${FPS},setpts=PTS-STARTPTS,format=yuv420p,settb=1/${FPS}${i < count - 1 || modes.includes('short') ? `,tpad=stop_mode=clone:stop_duration=${hold.toFixed(6)}` : ''}[v${i}]`);
   let last = 'v0';
   seamFrames.forEach((frame, i) => {
-    parts.push(`[${last}][v${i + 1}]xfade=transition=fade:duration=${fade.toFixed(6)}:offset=${((frame - 0.25) / FPS).toFixed(6)}[x${i + 1}]`);
+    const mode = modes[i];
+    if (mode === 'cut') {
+      parts.push(`[${last}]trim=end_frame=${frame},setpts=PTS-STARTPTS[t${i + 1}]`, `[t${i + 1}][v${i + 1}]concat=n=2:v=1:a=0,settb=1/${FPS}[x${i + 1}]`);
+    } else {
+      const [frames, lead] = mode === 'short' ? [SEAM_SHORT_FRAMES, 1] : [SEAM_CROSSFADE_FRAMES, 0.25];
+      parts.push(`[${last}][v${i + 1}]xfade=transition=fade:duration=${(frames / FPS).toFixed(6)}:offset=${((frame - lead) / FPS).toFixed(6)}[x${i + 1}]`);
+    }
     last = `x${i + 1}`;
   });
   return { graph: parts.join(';'), output: `[${last}]` };
@@ -33,7 +48,8 @@ function crossfadeGraph(seamFrames: number[]) {
 // Trusted caller supplies the verified timeline duration for optional CFR output.
 // Caller must probe inputs and re-probe/decode the final output in either mode.
 // C15-4g: crossfadeAt (CFR mode only) lists each later segment's start time on the timeline, one per seam.
-export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: string }[], options: { executable: string; execute?: Execute; normalizeDuration?: number; crossfadeAt?: number[] }) {
+// C16-3: seamModes (one per seam, with crossfadeAt) picks 'fade', 'short' or 'cut' for each seam.
+export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: string }[], options: { executable: string; execute?: Execute; normalizeDuration?: number; crossfadeAt?: number[]; seamModes?: SeamMode[] }) {
   if (!Array.isArray(inputs) || !inputs.length || inputs.length > 4 || !options || typeof options.executable !== 'string' || !isAbsolute(options.executable) || options.executable.includes('\0')) throw new Error('Invalid concat configuration');
   const duration = options.normalizeDuration;
   if (duration !== undefined && (typeof duration !== 'number' || !Number.isFinite(duration) || duration <= 0 || duration > 60 + 4 * 0.129002)) throw new Error('Invalid normalization duration');
@@ -48,6 +64,9 @@ export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: stri
     if (seamFrames.some((frame, i) => frame < SEAM_CROSSFADE_FRAMES || (i > 0 && frame - seamFrames![i - 1] < SEAM_CROSSFADE_FRAMES) || Math.abs(frame / FPS - seams[i]) > 0.5 / FPS)
       || duration * FPS - seamFrames.at(-1)! < SEAM_CROSSFADE_FRAMES) throw new Error('Invalid crossfade');
   }
+  const modes = options.seamModes;
+  if (modes !== undefined && (!seamFrames || !Array.isArray(modes) || modes.length !== seamFrames.length || modes.some(mode => !SEAM_MODES.includes(mode)))) throw new Error('Invalid seam modes');
+  const seamModes: SeamMode[] = seamFrames ? (modes ? [...modes] : seamFrames.map(() => 'fade')) : [];
   let total = 0;
   const segments = inputs.map(input => {
     if (!input || !(input.bytes instanceof Uint8Array) || !input.bytes.length || input.bytes.length > 100_000_000) throw new Error('Invalid concat input');
@@ -73,7 +92,7 @@ export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: stri
     const trim = `trim=end_frame=${frames}`;
     const encode = ['-af', 'apad', '-t', String(duration), '-c:v', 'libx264', '-preset', 'fast', '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k'];
     // Audio always comes from the concat list, as before; with cross-fades the picture comes from the segment files.
-    const fade = seamFrames && crossfadeGraph(seamFrames);
+    const fade = seamFrames && crossfadeGraph(seamFrames, seamModes);
     const streams = fade ? [...names.flatMap(name => ['-i', join(directory, name)]), '-filter_complex', `${fade.graph};${fade.output}${trim}[vout]`, '-map', '[vout]', '-map', '0:a:0']
       : ['-map', '0:v:0', '-map', '0:a:0', ...(duration === undefined ? [] : ['-vf', `fps=24,${trim}`])];
     const encoding = duration === undefined ? ['-c', 'copy'] : encode;

@@ -3,7 +3,7 @@ import { promisify } from 'node:util';
 import { isAbsolute, join } from 'node:path';
 import { isIP } from 'node:net';
 import { createGenerationTaskStore } from './generation-tasks';
-import { createPrivateMediaStore } from './private-media-store';
+import { createMediaStore } from './media-store-config';
 import { generateSceneScript } from './generated-script';
 import { generateLineAudio } from './generated-audio';
 import { submitEncodedVideoSegment, queryVideoSegment, resolveLtxModel } from './generated-video';
@@ -50,7 +50,7 @@ export function createLiveGenerationRuntime(options: Options) {
   return createGenerationTaskStore({
     directory: options.directory, sessionSecret: options.sessionSecret, simulation: false,
     maxReservedMicros: b.maxReservedMicros, liveBudget: { scope: b.scope, priorSpentMicros: b.priorSpentMicros },
-    mediaStore: createPrivateMediaStore({ directory: join(options.directory, 'media'), sessionSecret: options.sessionSecret }),
+    mediaStore: createMediaStore({ directory: join(options.directory, 'media'), sessionSecret: options.sessionSecret }),
     scriptProvider: { reservedMicros: b.scriptMicros, generate: input => generateSceneScript(input, openai) },
     audioProvider: { reservedMicros: b.audioMicros, generate: (line, cast) => generateLineAudio(line, { ...openai, ...(cast?.partnerGender ? { partnerGender: cast.partnerGender } : {}) }) },
     audioEncoder: input => encodeVideoAudio(input, media),
@@ -68,7 +68,8 @@ export function createLiveGenerationRuntime(options: Options) {
     videoRepair: input => repairAndVerifyVideoTail(input, media),
     referenceExtractor: input => extractReferenceImage(input, media),
     // C15-4g: a short picture cross-fade at every seam (audio, length and line timings unchanged).
-    videoConcat: (inputs, verifiedDuration, seams) => concatVideoBytes(inputs, { executable: media.ffmpeg, normalizeDuration: verifiedDuration, ...(Array.isArray(seams) && seams.length ? { crossfadeAt: seams } : {}) }),
+    // C16-3: each seam a hard cut or one blended frame, as the store chose from the gate's seam measurement.
+    videoConcat: (inputs, verifiedDuration, seams, modes) => concatVideoBytes(inputs, { executable: media.ffmpeg, normalizeDuration: verifiedDuration, ...(Array.isArray(seams) && seams.length ? { crossfadeAt: seams, ...(Array.isArray(modes) && modes.length === seams.length ? { seamModes: modes } : {}) } : {}) }),
     finalVideoVerify: input => verifyFinalVideo(input, media),
     // C14-1: every segment goes through the quality gate. Preview cards take the preview path; provider video gets
     // the local ffmpeg checks plus the C14-4 face checks (python3 -I script; not_checked whenever it cannot measure).

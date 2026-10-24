@@ -3,7 +3,7 @@ import { mkdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { ownerIdFromSessionCookie } from './private-owner';
 import { createGenerationTaskStore, MAX_SCRIPT_ATTEMPTS, type GenerationTask, type StopState } from './generation-tasks';
-import { createPrivateMediaStore } from './private-media-store';
+import { createMediaStore } from './media-store-config';
 import { createLocalCourseLibrary } from './local-course-library';
 import { createSceneProgressStore } from './scene-progress';
 import { createSceneRequirementStore } from './scene-requirements';
@@ -35,7 +35,7 @@ export function generationRecordStatus(task: GenerationTask, stop: StopState | n
 // cost, because the spending ledger that enforces the budget ceiling must never shrink.
 export function createMyDataStore({ directory, requirementsDirectory, sessionSecret }: { directory: string; requirementsDirectory: string; sessionSecret: string }) {
   if (!directory || !requirementsDirectory || !sessionSecret) throw new Error('Data store configuration required');
-  const media = createPrivateMediaStore({ directory: join(directory, 'media'), sessionSecret });
+  const media = createMediaStore({ directory: join(directory, 'media'), sessionSecret });
   const tasks = createGenerationTaskStore({ directory, sessionSecret, mediaStore: media });
   const copies = createLocalCourseLibrary({ directory, sessionSecret, mediaStore: media });
   const progress = createSceneProgressStore({ directory, sessionSecret });

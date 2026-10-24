@@ -54,6 +54,17 @@ SPECK_AREA = (2, 60)       # connected bright blobs of this many pixels count as
 SPECK_FACE_MARGIN = 0.5    # each face box is widened by this share of its size on every side before masking
 SPECK_FLOOR = 20           # growth is peak / max(baseline, SPECK_FLOOR), so a nearly clean start cannot blow it up
 ROLL_SECONDS = 1.0         # rolling window for both C15-4g measures
+# C16-2 background haze: a large bright, colourless, flat area in the upper part of the frame, outside the person (each
+# face box widened sideways and everything below it masked). Measured only; lib/video-quality-gate.ts judges the increase
+# from the first second. All 待标定: hawker attempt 9 segment 2 was swallowed by white steam, school attempt 7 was not.
+HAZE_TOP = 0.5             # share of the frame height (from the top) that is looked at
+HAZE_MIN_LUMA = 150        # gray value (0-255) at or above which a pixel is bright
+HAZE_MAX_SATURATION = 45   # HSV saturation (0-255) at or below which a pixel is colourless
+HAZE_MAX_TEXTURE = 10      # local standard deviation of gray below which a pixel is flat
+HAZE_WINDOW = 15           # local window (pixels) for that standard deviation
+HAZE_SIDE_MARGIN = 0.75    # each face box is widened by this share of its width on both sides, and masked to the bottom
+HAZE_UP_MARGIN = 0.5       # and raised by this share of its height
+HAZE_MIN_AREA = 0.1        # a frame counts only if at least this share of the looked-at area is left after masking
 # C15-4g learner mouth motion: lip gap and mouth width (both / outer eye-corner distance) change between sampled frames
 # inside learner lines; the first MOTION_TRIM seconds of each line are skipped (she may still be closing her mouth).
 MOTION_TRIM = 0.25
@@ -295,6 +306,41 @@ def speck_count(frame, boxes, cv2, np):
     return int(((areas >= SPECK_AREA[0]) & (areas <= SPECK_AREA[1])).sum())
 
 
+def haze_share(frame, boxes, cv2, np):
+    # C16-2: share of the background (upper part, outside the person) that is bright, colourless and flat; None when the
+    # person covers too much of it to say.
+    height, width = frame.shape[:2]
+    region = frame[:max(1, int(height * HAZE_TOP))]
+    gray = cv2.cvtColor(region, cv2.COLOR_BGR2GRAY).astype(np.float32)
+    saturation = cv2.cvtColor(region, cv2.COLOR_BGR2HSV)[..., 1]
+    mean = cv2.blur(gray, (HAZE_WINDOW, HAZE_WINDOW))
+    texture = np.sqrt(np.maximum(cv2.blur(gray * gray, (HAZE_WINDOW, HAZE_WINDOW)) - mean * mean, 0))
+    hazy = (gray >= HAZE_MIN_LUMA) & (saturation <= HAZE_MAX_SATURATION) & (texture < HAZE_MAX_TEXTURE)
+    keep = np.ones(hazy.shape, dtype=bool)
+    for x0, y0, x1, y1 in boxes:
+        w, h = x1 - x0, y1 - y0
+        keep[max(0, int(y0 - h * HAZE_UP_MARGIN)):, max(0, int(x0 - w * HAZE_SIDE_MARGIN)):max(0, int(x1 + w * HAZE_SIDE_MARGIN))] = False
+    area = int(keep.sum())
+    if area < HAZE_MIN_AREA * keep.size:
+        return None
+    return float((hazy & keep).sum()) / area
+
+
+def background_haze(frames):
+    # Baseline: median share over the first second; peak: the highest 1 s rolling median; increase: peak - baseline.
+    rows = [(frame['t'], frame['haze']) for frame in frames if frame.get('haze') is not None]
+    if not rows:
+        return {'frames': 0, 'baseline': None, 'peak': None, 'peak_t': None, 'increase': None}
+    start = rows[0][0]
+    baseline = median([share for t, share in rows if t < start + ROLL_SECONDS])
+    peak, peak_t = None, None
+    for t0, _ in rows:
+        value = median([share for t, share in rows if t0 <= t < t0 + ROLL_SECONDS])
+        if peak is None or value > peak:
+            peak, peak_t = value, t0
+    return {'frames': len(rows), 'baseline': round(baseline, 4), 'peak': round(peak, 4), 'peak_t': round(peak_t, 3), 'increase': round(peak - baseline, 4)}
+
+
 def median(values):
     ordered = sorted(values)
     if not ordered:
@@ -408,6 +454,8 @@ def measure(args):
             row = {'t': round(time, 3), 'faces': len(faces), 'open': faces[0][1] if faces else None, 'height': faces[0][2] if faces else None,
                    # C15-4g: background specks outside every detected face, and the largest face's mouth shape.
                    'specks': speck_count(frame, [(min(f[4]), min(f[5]), max(f[4]), max(f[5])) for f in faces], cv2, np),
+                   # C16-2: bright, colourless, flat background outside the person.
+                   'haze': haze_share(frame, [(min(f[4]), min(f[5]), max(f[4]), max(f[5])) for f in faces], cv2, np),
                    'shape': mouth_shape(faces[0][3]) if faces else None}
             if args.anchor and len(faces) == 1:
                 _, opening, face_height, points, xs, ys = faces[0]
@@ -458,6 +506,8 @@ def measure(args):
         # C15-4g: measured only; the gate decides.
         'background_specks': background_specks(frames),
         'learner_mouth_motion': learner_mouth_motion(frames, windows),
+        # C16-2: measured only; the gate decides.
+        'background_haze': background_haze(frames),
         'versions': {'mediapipe': getattr(mediapipe, '__version__', 'unknown'), 'opencv': cv2.__version__, 'model_sha256': MODEL_SHA256},
     }
     if args.anchor:

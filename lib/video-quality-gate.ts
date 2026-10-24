@@ -55,6 +55,17 @@ function backgroundNoise(raw: Record<string, any>): QualityCheck {
     ...(ok ? {} : { reason: `background specks grew ${round(growth)}x (${specks.baseline} -> ${specks.peak} small bright spots)`.slice(0, 300), ...(typeof peakTime === 'number' && Number.isFinite(peakTime) && peakTime >= 0 ? { keyframes: [peakTime] } : {}) }) };
 }
 
+// C16-2: background haze. The script reports the share of the upper background (outside the person) that is bright,
+// colourless and flat; the increase of the busiest second over the first second is judged. Unknown is not_checked.
+function backgroundHaze(raw: Record<string, any>): QualityCheck {
+  if (raw.status !== 'measured') return { id: 'background_haze', status: 'not_checked', reason: 'face measurement not available' };
+  const haze = raw.background_haze, increase = haze?.increase, peakTime = haze?.peak_t;
+  if (typeof increase !== 'number' || !Number.isFinite(increase) || increase < 0 || !Number.isSafeInteger(haze?.frames) || haze.frames <= 0) return { id: 'background_haze', status: 'not_checked', reason: 'background haze not measured' };
+  const ok = increase <= QUALITY_THRESHOLDS.maxBackgroundHazeIncrease;
+  return { id: 'background_haze', status: ok ? 'passed' : 'failed', value: round(increase),
+    ...(ok ? {} : { reason: `background haze covered ${Math.round(increase * 100)} more parts in 100 of the background (${haze.baseline} -> ${haze.peak})`.slice(0, 300), ...(typeof peakTime === 'number' && Number.isFinite(peakTime) && peakTime >= 0 ? { keyframes: [peakTime] } : {}) }) };
+}
+
 // C15-4g: back-and-forth lip movement per second while the learner speaks. No learner line passes; no partner face in
 // the learner lines, or no measurement, is not_checked.
 function learnerMouthMotion(raw: Record<string, any>, learnerWindows: Window[]): QualityCheck {
@@ -77,7 +88,7 @@ const open = (reason: string): QualityCheck[] => [
 export function judgeFaceMeasurement(raw: unknown, learnerWindows: Window[], framing?: Framing): QualityCheck[] {
   const result = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, any> : {};
   // C15-4f / C15-4g: with the segment index, the optional checks (framing drift, background noise, mouth motion) follow.
-  const drift = framing && Number.isSafeInteger(framing.segmentIndex) && framing.segmentIndex >= 0 ? [framingDrift(result, framing), backgroundNoise(result), learnerMouthMotion(result, learnerWindows)] : [];
+  const drift = framing && Number.isSafeInteger(framing.segmentIndex) && framing.segmentIndex >= 0 ? [framingDrift(result, framing), backgroundNoise(result), learnerMouthMotion(result, learnerWindows), backgroundHaze(result)] : [];
   if (result.status !== 'measured') return [...open(`人脸检测没有完成：${typeof result.reason === 'string' ? result.reason : 'no measurement'}`), ...drift];
   const t = QUALITY_THRESHOLDS, checks: QualityCheck[] = [];
   const face = result.single_face, faceRatio = ratio(face?.ratio), faceKeys = keyframeList(face?.keyframes);

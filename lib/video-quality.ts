@@ -27,7 +27,25 @@ export const QUALITY_THRESHOLDS = {
   // does not. 待标定: attempt 7 last segment (lips moving at the start of "I appreciate that") 0.365; the toothy smiles of
   // l3 / l4 0.117, l2 0.099; l1 0.308 (she opens, closes and opens again in its last second).
   maxLearnerMouthMotion: 0.2,
+  // C16-2 (2026-10-24, zero cost): background haze, the share of the upper background (outside the person) that is bright,
+  // colourless and flat. A segment fails when the busiest second's median share rises past its first second's by more than
+  // this. 待标定: hawker attempt 9 segments 2 / 3 (white steam over the roast chickens) +0.53 / +0.49; segment 1 +0.01;
+  // school attempt 7 segments +0.00 to +0.07.
+  maxBackgroundHazeIncrease: 0.2,
 } as const;
+// C16-3 (2026-10-24, zero cost): how each seam is joined. A seam whose gate SSIM (previous last frame against this
+// segment's first frame) is under cutBelowSsim changes too much for a blend (attempt 9 seam at 19.35 s, 0.405: two heads
+// for two frames), so it is a hard cut; every other seam, or one without a measurement, gets one blended frame.
+export const SEAM_TRANSITION = { cutBelowSsim: 0.45 } as const;
+export type SeamMode = 'fade' | 'short' | 'cut';
+export function seamModesFor(task: { videoAssets?: { segmentIndex: number; sha256: string }[]; videoQuality?: { segmentIndex: number; sha256: string; checks: { id: string; value?: number }[] }[] }): SeamMode[] {
+  const assets = [...(task.videoAssets ?? [])].sort((a, b) => a.segmentIndex - b.segmentIndex);
+  return assets.slice(1).map(asset => {
+    const record = task.videoQuality?.find(item => item.segmentIndex === asset.segmentIndex && item.sha256 === asset.sha256);
+    const ssim = record?.checks.find(check => check.id === 'seam_ssim')?.value;
+    return typeof ssim === 'number' && Number.isFinite(ssim) && ssim < SEAM_TRANSITION.cutBelowSsim ? 'cut' : 'short';
+  });
+}
 // A failed segment may be generated again once (after a fresh reservation); a second failure stops the course.
 export const MAX_SEGMENT_REDOS = 1;
 // C14-4: the two face checks run scripts/video-qa/face_checks.py (MediaPipe face landmarker, python3 -I). A gate
@@ -50,7 +68,8 @@ export const QUALITY_CHECK_IDS = ['cuts', 'single_face', 'learner_mouth', 'seam_
 // not_checked caps at needs_review); when absent the five alone decide, as before.
 // C15-4g: background_noise (specks growing in the background) and learner_mouth_motion (lips moving back and forth while
 // the learner speaks, beyond a held smile) join them, judged the same way.
-export const OPTIONAL_QUALITY_CHECK_IDS = ['framing_drift', 'background_noise', 'learner_mouth_motion'] as const;
+// C16-2: background_haze (a large bright haze such as steam swallowing the background) joins them.
+export const OPTIONAL_QUALITY_CHECK_IDS = ['framing_drift', 'background_noise', 'learner_mouth_motion', 'background_haze'] as const;
 
 // C15-4f: limits for the fixed reference frame chosen from segment 1 (one face, measured by scripts/video-qa/face_checks.py
 // --anchor). All 待标定 (to be calibrated) with more paid samples. First values from the C15-4 school segments 1:

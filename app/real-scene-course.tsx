@@ -19,6 +19,7 @@ import { ActionBar, AppBar, Icon, Sheet, useShell } from './shell';
 import { shellCopy } from './shell-copy';
 import { c11Copy } from './c11-copy';
 import { c13Copy, localTag } from './c13-copy';
+import { c16Copy } from './c16-copy';
 import { postReview } from './review-listen';
 
 type Copy = { title: string; steps: string[]; notice: string; play: string; replay: string; pause: string; back: string; listen: string; answer: string; hint: string; error: string };
@@ -53,6 +54,8 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const [answerShown, setAnswerShown] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [slow, setSlow] = useState(false);
+  // C16-7: "a bit faster" (1.25×), switched in the watch page's more sheet; it and slow switch each other off.
+  const [fast, setFast] = useState(false);
   const [captionsHidden, setCaptionsHidden] = useState(false);
   const [loopKey, setLoopKey] = useState<string | null>(null);
   const [ab, setAb] = useState<{ a: string; b: string } | null>(null);
@@ -69,6 +72,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   const segmentLine = useRef<string | null>(null);
   const fullStart = useRef(0);
   const slowRef = useRef(false);
+  const fastRef = useRef(false);
   const loopRange = useRef<{ start: number; end: number } | null>(null);
   const loopFrame = useRef(0);
   const abId = useId();
@@ -216,7 +220,7 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     stop();
     setGuess(current => current === 'open' ? 'skipped' : current);
     segmentLine.current = options.loop ? null : options.line ?? null; fullStart.current = start;
-    media.playbackRate = options.rate ?? (slowRef.current ? 0.75 : 1); media.preservesPitch = true;
+    media.playbackRate = options.rate ?? (slowRef.current ? 0.75 : fastRef.current ? 1.25 : 1); media.preservesPitch = true;
     wantsPlayback.current = true; setSegmentPlaying(true);
     fullPlayback.current = full;
     setWatchComplete(false);
@@ -232,7 +236,13 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
   }
   function toggleSlow() {
     const next = !slowRef.current; slowRef.current = next; setSlow(next);
+    if (next) { fastRef.current = false; setFast(false); }
     if (video.current) { video.current.playbackRate = next ? 0.75 : 1; video.current.preservesPitch = true; }
+  }
+  function toggleFast() {
+    const next = !fastRef.current; fastRef.current = next; setFast(next);
+    if (next) { slowRef.current = false; setSlow(false); }
+    if (video.current) { video.current.playbackRate = next ? 1.25 : 1; video.current.preservesPitch = true; }
   }
   // C11-1: the line that starts after the current time (or the first one).
   function nextLine() {
@@ -324,6 +334,8 @@ export default function RealSceneCourse({ language, onBack, saved, guided = fals
     </div>;
   })() : null;
   const sheet = guided && !practising ? <Sheet open={moreOpen} onClose={() => setMoreOpen(false)} title={shell.more} testId="more-sheet" closeLabel={shell.close}>
+    {page === 'watch' && course ? <section className="sheet-section"><h3 className="sheet-label">{c11.practiceTools}</h3>
+      <div className="sheet-rows"><button type="button" className="sheet-row" aria-label={c16Copy[language].faster} aria-pressed={fast} onClick={toggleFast}><span className="speed-text" aria-hidden="true">1.25×</span>{c16Copy[language].faster}</button></div></section> : null}
     {page === 'learn' && step === 3 && course ? <section className="sheet-section"><h3 className="sheet-label">{c11.practiceTools}</h3>{abLoop}</section> : null}
     {page === 'learn' ? <div className="sheet-rows">{watchAgainRow}{leaveRow}</div> : page === 'role' && course ? <div className="sheet-rows">{leaveRow}</div> : null}
     {shellContext?.common({ meta: course ? meta : undefined, trial: true })}

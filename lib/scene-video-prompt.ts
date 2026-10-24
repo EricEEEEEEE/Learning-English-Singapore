@@ -4,6 +4,35 @@ import type { GeneratedScript } from './generated-script';
 // segment in the lesson (first segment: no walk-in; last one ending on a learner line: a quiet, nodding ending).
 export type SegmentLines = { lines: { lineId: string; start: number; end: number }[]; index?: number; count?: number };
 
+// C16-1 (2026-10-24, zero cost; hawker attempt 9 had no counter or hall, no apron, and a large cloud of steam over the
+// background in segment 2): a small table of local places gives two or three fixed things to keep in view; clothing items
+// named in partnerLook stay on in every frame; the background stays clear of steam, smoke and haze; people that the
+// setting mentions (customers, children, parents) stay out of view, since the partner is the only person on screen.
+type Place = { match: RegExp; things: (object: string) => string };
+const PLACES: Place[] = [
+  { match: /hawker|food court|kopitiam|coffee shop|food stall|小贩|熟食|咖啡店/i, things: o => `a food stall counter between ${o} and the viewer, and behind ${o} the open hawker centre hall with tables, stools and ceiling fans, softly out of focus and empty of people` },
+  { match: /school|classroom|kindergarten|学校|教室|幼儿园|家长会/i, things: o => `a primary school corridor or classroom doorway behind ${o}, with a notice board and bright painted walls, softly out of focus and empty of people` },
+  { match: /clinic|polyclinic|hospital|doctor|pharmacy|诊所|医院|药房/i, things: o => `a clinic reception counter between ${o} and the viewer, and a calm waiting area behind ${o}, softly out of focus and empty of people` },
+  { match: /supermarket|grocery|minimart|超市|杂货/i, things: o => `a checkout counter between ${o} and the viewer, and supermarket shelves behind ${o}, softly out of focus and empty of people` },
+  { match: /\bhdb\b|void deck|estate|neighbou?r|组屋|邻居|楼下/i, things: o => `an HDB void deck with pillars and letterboxes behind ${o}, softly out of focus and empty of people` },
+  { match: /\bmrt\b|bus (stop|interchange)|train station|地铁|巴士|车站/i, things: o => `a station or bus stop sign area behind ${o}, softly out of focus and empty of people` },
+  { match: /office|workplace|company|办公室|公司|同事/i, things: o => `an office desk between ${o} and the viewer, and a tidy open office behind ${o}, softly out of focus and empty of people` },
+  { match: /hotel|reception desk|front desk|酒店|前台/i, things: o => `a hotel front desk between ${o} and the viewer, and a quiet lobby behind ${o}, softly out of focus and empty of people` },
+];
+const CLOTHING = ['apron', 'uniform', 'lanyard', 'name tag', 'scrubs', 'vest', 'cap', 'headscarf', 'tudung', 'lab coat'];
+const CROWD = /\b(customers?|queue|queu(e|ing)|lined up|crowds?|children|kids|students|pupils|parents|people|passers-by|shoppers|diners|patients|commuters|colleagues)\b/i;
+function sceneDetails(goal: string, setting: string, look: string, object: string, possessive: string, Pronoun: string) {
+  const place = PLACES.find(item => item.match.test(setting)) ?? PLACES.find(item => item.match.test(goal));
+  const lower = look.toLowerCase();
+  const worn = CLOTHING.filter(item => new RegExp(`\\b${item}\\b`).test(lower));
+  return [
+    ...(place ? [`Keep these fixed things in view: ${place.things(object)}.`] : []),
+    ...(worn.length ? [`${Pronoun} wears ${possessive} ${worn.join(' and ')} in every frame.`] : []),
+    `The background stays clear and the same throughout: no steam, smoke, mist, fog or haze covering it.`,
+    ...(CROWD.test(setting) ? ['Any customers, queue, crowd, children, parents or other people mentioned above stay out of view.'] : []),
+  ].join(' ');
+}
+
 // Builds the provider prompt for every segment of one course. Without a scene description (older scripts)
 // the stored goal is sent unchanged, as before. C15-4c: with a segment's timings, the prompt names only that
 // segment's partner words and the times she listens silently (a whole-lesson list made the model mouth words
@@ -42,6 +71,7 @@ export function sceneVideoPrompt(goal: string, script?: GeneratedScript, segment
     `${pronoun} is the only person on screen and the only one whose lips move. No one else is in the frame: no passers-by and no other people in the background. ${speech}${ending}`,
     `While the unseen viewer answers, ${pronoun.toLowerCase()} listens quietly with a closed mouth and small nods.`,
     `One steady eye-level shot, single shot, not multi-shot, in one place: same person, clothing, background and lighting throughout, no cuts, no scene changes, no other people speaking.`,
+    sceneDetails(goal, scene.setting, scene.partnerLook, object, possessive, pronoun),
     `No readable signs, no subtitles. Match the supplied audio; do not add dialogue.`,
   ].join(' ');
   return prompt.length <= 5000 ? prompt : prompt.slice(0, 5000);

@@ -13,6 +13,7 @@ import RealSceneCourse from './real-scene-course';
 import { useLearningLibrary } from './use-learning-library';
 import { learningLibraryCopy } from './learning-library-copy';
 import { dataTrustCopy } from './data-trust-copy';
+import { c16Copy } from './c16-copy';
 import { SignOutButton, SceneDelete, DeleteAllData, StoredData, GenerationRecords } from './data-trust';
 import { sceneSeedCategories, sceneSeeds, type SceneSeed, type SceneSeedCategory } from '../lib/scene-seeds';
 import { sceneSeedCopy } from './scene-seed-copy';
@@ -136,6 +137,7 @@ function SceneDescription({ draft, onChange, language, title, hint, focusMemory,
         <p className="scene-note">{confirmCopy.wait}</p>
         <ActionBar>
           <p className="action-note action-note--quiet scene-confirm-length">{confirmCopy.length}</p>
+          <p className="action-note action-note--quiet scene-confirm-level" data-testid="confirm-level">{confirmCopy.level}</p>
           <p className="action-note">{confirmCopy.cost}</p>
           <button className="btn btn-ghost" type="button" disabled={generation.preparing} onClick={() => { nextFocus.current = 'heading'; setConfirming(false); }}>{confirmCopy.edit}</button>
           <button className="btn btn-primary" type="submit" disabled={generation.preparing || requirements.saving || requirements.conflict}>{confirmCopy.confirm}</button>
@@ -398,10 +400,13 @@ export default function LearningEntry() {
                   </button> : null}
                 </>;
               })()}
-              {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map(scene => {
+              {library.result.scenes.length ? <ul className="learning-scenes">{library.result.scenes.map((scene, _, all) => {
                 const key = `${scene.course.id}:${scene.course.revision}:${scene.course.materialsRevision ?? 0}`;
                 const words = scene.requirement.content.keywords;
-                const meta = [words.learnerRole.trim() || words.partnerRole.trim(), c11.seconds(Math.round(scene.duration))].filter(Boolean).join(' · ');
+                // C16-5: lessons made from the same description are numbered by version, oldest first; a single lesson has no number.
+                const same = all.filter(item => item.description === scene.description);
+                const version = same.length > 1 ? same.filter(item => item.requirement.revision < scene.requirement.revision || (item.requirement.revision === scene.requirement.revision && item.course.revision < scene.course.revision)).length + 1 : 0;
+                const meta = [words.learnerRole.trim() || words.partnerRole.trim(), c11.seconds(Math.round(scene.duration)), version ? c16Copy[language].version(version) : ''].filter(Boolean).join(' · ');
                 return <li key={key} className="scene-card scene-row">
                   <button className="scene-row-main" type="button" aria-label={libraryCopy.learn} aria-describedby={`scene-row-${key}`} onClick={() => library.choose(scene)}>
                     <span className="scene-row-icon" aria-hidden="true"><Icon name="watch" size={22} /></span>
@@ -420,6 +425,11 @@ export default function LearningEntry() {
             const scenes = library.result?.status === 'ready' ? library.result.scenes : [];
             const scene = scenes.find(item => `${item.course.id}:${item.course.revision}:${item.course.materialsRevision ?? 0}` === rowMenu);
             return <Sheet open={!!scene} onClose={() => setRowMenu(null)} title={scene?.description ?? ''} testId="scene-row-sheet" closeLabel={shell.close}>
+              {scene && requirements.draft ? <div className="sheet-rows"><button className="sheet-row" type="button" onClick={() => {
+                const draft = requirements.draft;
+                if (draft) requirements.change({ owner: draft.owner, text: scene.requirement.content.description, page: 'scene', keywords: { ...scene.requirement.content.keywords } });
+                setRowMenu(null); library.close();
+              }}><Icon name="loop" />{c16Copy[language].remake}</button></div> : null}
               {scene ? <SceneDelete language={language} description={scene.description} course={scene.course} onCancel={() => setRowMenu(null)}
                 onDeleted={() => { setRowMenu(null); library.drop(scene.course); queue.refresh(); setDataNotice({ text: 'sceneDeleted', error: false }); }}
                 onFailed={() => { setRowMenu(null); setDataNotice({ text: 'sceneDeleteFailed', error: true }); }} /> : null}

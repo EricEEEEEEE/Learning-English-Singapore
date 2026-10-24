@@ -59,7 +59,9 @@ export function createPracticeReviewStore({ directory, sessionSecret, getCourse 
   }
   const project = (row: Record<string, unknown> | undefined): PracticeReview | null => row ? { session: String(row.session), ...JSON.parse(String(row.body)), at: Number(row.at) } : null;
   return {
-    async save(input: Session & Record<string, unknown>): Promise<{ review: PracticeReview; previous: PracticeReview | null }> {
+    // C16-6 (F10.4): otherScene is the owner's latest review of a different course (every course is an entry-level short
+    // lesson for now), only when there is one; it is listed beside this one, never ranked against it.
+    async save(input: Session & Record<string, unknown>): Promise<{ review: PracticeReview; previous: PracticeReview | null; otherScene?: PracticeReview }> {
       const id = await owner(input);
       const review = parse(input);
       if (!getCourse) throw new Error('Course unavailable');
@@ -71,7 +73,8 @@ export function createPracticeReviewStore({ directory, sessionSecret, getCourse 
         db.prepare('INSERT INTO practice_reviews VALUES(?,?,?,?,?,?,?) ON CONFLICT(owner,course,revision,session) DO UPDATE SET materials=excluded.materials,body=excluded.body,at=excluded.at')
           .run(...keys, review.course.materialsRevision ?? 0, review.session, body, at);
         const previous = project(db.prepare('SELECT session,body,at FROM practice_reviews WHERE owner=? AND course=? AND revision=? AND session<>? ORDER BY at DESC, rowid DESC LIMIT 1').get(...keys, review.session));
-        return { review: { session: review.session, turns: review.turns, help: review.help, at }, previous };
+        const other = project(db.prepare('SELECT session,body,at FROM practice_reviews WHERE owner=? AND course<>? ORDER BY at DESC, rowid DESC LIMIT 1').get(id, review.course.id));
+        return { review: { session: review.session, turns: review.turns, help: review.help, at }, previous, ...(other ? { otherScene: other } : {}) };
       });
     },
     async removeCourse(input: Session & { id: string }) {
