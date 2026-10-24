@@ -777,3 +777,6 @@
 - [audit] phase → implementing @ 2026-10-24T04:03:23+00:00
 - [audit] phase → test-writing @ 2026-10-24T04:23:02+00:00
 - 2026-10-24 C15-4h 零费用：剧本被本地校验拒绝记 script_rejected（问题代码/字段路径/计数，不存文字），与 submission_unknown 分开；产品带问题代码自动重写一次（经预算守卫按最坏预留），第二次被拒最终失败；状态页五语“剧本没写好，正在重写”/最终失败说明；驱动摘要带 scriptRejections；红 6e62b06 → 绿 3a3af01，verify 2574/2574；零模型调用
+- [audit] phase → implementing @ 2026-10-24T04:23:43+00:00
+- [audit] phase → test-writing @ 2026-10-24T04:42:39+00:00
+- 2026-10-24 C15-4h 修正：ScriptRejectedError 参数属性在驱动的仅剥类型模式下报错（--dry 发现，未发付费请求），补红考题后改显式字段 → 绿 7dc7b9a，verify 2575/2575
