@@ -258,3 +258,11 @@ test('C15-4h driver: the paid-run summary records each refusal\'s codes (no text
   const source = await readFile(new URL('../../scripts/c15/video-sample.mjs', import.meta.url), 'utf8');
   expect(source).toMatch(/scriptRejections:\s*task\.scriptRejections\s*\?\?\s*\[\]/);
 });
+
+test('C15-4h driver: the changed product modules load under Node strip-only TypeScript, as the paid driver runs them', async () => {
+  const { execFileSync } = await import('node:child_process');
+  const root = new URL('../../', import.meta.url).pathname;
+  const code = "await import('./lib/generated-script.ts'); await import('./lib/generation-runner.ts'); await import('./lib/live-generation-runtime.ts'); console.log('loaded');";
+  const out = execFileSync(process.execPath, ['--experimental-strip-types', '--no-warnings', '--import', './scripts/c15/ts-loader.mjs', '--input-type=module', '-e', code], { cwd: root, encoding: 'utf8' });
+  expect(out.trim()).toBe('loaded');
+});
