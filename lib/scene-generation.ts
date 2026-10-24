@@ -1,10 +1,10 @@
 import { createHash } from 'node:crypto';
 import { parseSceneRequirement, type SceneRequirement } from './scene-requirement-content';
 import type { createSceneRequirementStore } from './scene-requirements';
-import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
+import { MAX_SCRIPT_ATTEMPTS, type createGenerationTaskStore, type GenerationTask } from './generation-tasks';
 import { taskQuality, type TaskQualityVerdict } from './video-quality';
 
-export type SceneGenerationPhase = 'not_submitted' | Exclude<GenerationTask['status'], 'deleted'> | 'failed' | 'simulation' | 'media_unavailable' | 'ready' | 'cancelled' | 'stopped' | 'quality_failed';
+export type SceneGenerationPhase = 'not_submitted' | Exclude<GenerationTask['status'], 'deleted'> | 'failed' | 'simulation' | 'media_unavailable' | 'ready' | 'cancelled' | 'stopped' | 'quality_failed' | 'script_rewriting';
 export type SceneCoursePointer = { id: string; revision: number; materialsRevision?: number };
 export type SceneGenerationView = { requirement: SceneRequirement; task: null | Pick<GenerationTask, 'id' | 'revision' | 'status' | 'simulation' | 'providerCalls'> & { requirementRevision: number }; phase: SceneGenerationPhase; course: SceneCoursePointer | null;
   // C14: quality only on a ready course whose segments were all checked; keyframe when a partner keyframe exists.
@@ -30,6 +30,10 @@ export function createSceneGenerationService({ requirements, tasks }: { requirem
     if (task.videoJobs?.some(job => job.status === 'failed')) return view('failed');
     // C14-1: a segment failed the quality gate again after its one redo; the course is never offered.
     if (quality.blocked) return view('quality_failed');
+    // C15-4h: a refused script is being rewritten once (or the rewrite is in flight); after two refusals it has failed.
+    const rejections = task.scriptRejections?.length ?? 0;
+    if (task.status === 'script_rejected') return view(rejections < MAX_SCRIPT_ATTEMPTS ? 'script_rewriting' : 'script_rejected');
+    if (task.status === 'submitting' && rejections > 0) return view('script_rewriting');
     if (task.status !== 'video_assembled') {
       if (!['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(task.status)) throw new Error('Invalid task status');
       return view(task.status as Exclude<GenerationTask['status'], 'deleted' | 'video_assembled'>);

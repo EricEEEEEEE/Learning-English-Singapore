@@ -2,7 +2,7 @@ import { DatabaseSync } from 'node:sqlite';
 import { mkdirSync, chmodSync } from 'node:fs';
 import { join } from 'node:path';
 import { ownerIdFromSessionCookie } from './private-owner';
-import { createGenerationTaskStore, type GenerationTask, type StopState } from './generation-tasks';
+import { createGenerationTaskStore, MAX_SCRIPT_ATTEMPTS, type GenerationTask, type StopState } from './generation-tasks';
 import { createPrivateMediaStore } from './private-media-store';
 import { createLocalCourseLibrary } from './local-course-library';
 import { createSceneProgressStore } from './scene-progress';
@@ -18,13 +18,15 @@ export type GenerationRecord = { id: string; revision: number; description: stri
 export type DeletionEvent = { kind: 'scene' | 'all'; at: number };
 const identifier = (value: unknown): value is string => typeof value === 'string' && /^[a-zA-Z0-9_-]{1,120}$/.test(value);
 
-function recordStatus(task: GenerationTask, stop: StopState | null): GenerationRecordStatus {
+export function generationRecordStatus(task: GenerationTask, stop: StopState | null): GenerationRecordStatus {
   if (task.status === 'deleted') return 'deleted';
   // C8-4 / C9: a learner's cancel (before any provider call) or stop (after the current step) is shown as such.
   if (stop && task.status !== 'video_assembled') return stop.kind === 'cancelled' ? 'cancelled' : 'stopped';
   if (task.simulation) return 'simulation';
   if (task.videoJobs?.some(job => job.status === 'failed')) return 'failed';
   if (task.status === 'submission_unknown') return 'unknown';
+  // C15-4h: refused twice is a failure; refused once means the one rewrite is still to come.
+  if (task.status === 'script_rejected') return (task.scriptRejections?.length ?? 0) >= MAX_SCRIPT_ATTEMPTS ? 'failed' : 'in_progress';
   return task.status === 'video_assembled' ? 'ready' : 'in_progress';
 }
 
@@ -106,7 +108,7 @@ export function createMyDataStore({ directory, requirementsDirectory, sessionSec
     async records(input: Session): Promise<{ tasks: GenerationRecord[]; deletions: DeletionEvent[] }> {
       const session = { cookie: input.cookie, now: input.now }, id = await owner(session);
       const rows = await Promise.all((await tasks.list(session)).map(async task => {
-        const status = recordStatus(task, task.status === 'deleted' ? null : await tasks.stopState({ ...session, id: task.id }));
+        const status = generationRecordStatus(task, task.status === 'deleted' ? null : await tasks.stopState({ ...session, id: task.id }));
         return { id: task.id, revision: task.revision, description: status === 'deleted' ? null : task.goal, status, reservedMicros: task.reservedMicros, providerCalls: task.providerCalls,
           ...(status === 'deleted' && task.deletedAt !== undefined ? { deletedAt: task.deletedAt } : {}) };
       }));

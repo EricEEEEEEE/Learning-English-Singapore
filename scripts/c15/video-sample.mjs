@@ -176,6 +176,8 @@ for (const [jobId, handle] of ltxJobs) if (!(task.videoJobs ?? []).some(job => j
 const summary = {
   name, model, taskId: id, revision, stopped: result?.stopped, status: task.status, insufficientFunds,
   wallSeconds: Math.round((Date.now() - started) / 1000), runtimeReservedMicros: task.reservedMicros, providerCalls: task.providerCalls,
+  // C15-4h: each script the local checks refused (issue codes, field paths and counts; never the model's text).
+  scriptRejections: task.scriptRejections ?? [],
   scene: task.script?.scene ?? null, lines: task.script?.lines?.map(line => ({ id: line.id, role: line.role, text: line.text })) ?? [],
   timeline: task.videoTimeline ?? null,
   segments: task.audioAssembly?.segments?.map((s, i) => ({ index: i, duration: s.duration })) ?? [],

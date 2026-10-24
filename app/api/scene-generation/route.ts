@@ -10,7 +10,7 @@ const reply = (body: object, status = 200) => Response.json(body, { status, head
 type Service = ReturnType<typeof createSceneGenerationService>;
 type Runner = { advance: (input: { cookie?: string | null; now?: number; id: string }) => Promise<unknown>; isRunning: (id: string) => boolean };
 type View = Awaited<ReturnType<Service['get']>>;
-const ACTIVE = new Set(['awaiting_budget', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending']);
+const ACTIVE = new Set(['awaiting_budget', 'script_rewriting', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending']);
 
 // Starts or resumes the server runner for an active task; the response never waits for generation.
 function kick(runner: Runner | undefined, view: View, cookie: string | undefined, now: number) {

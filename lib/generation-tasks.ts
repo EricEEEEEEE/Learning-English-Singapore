@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { createHash, randomUUID } from 'node:crypto';
 import { isDeepStrictEqual } from 'node:util';
 import { ownerIdFromSessionCookie } from './private-owner';
-import { validateGeneratedScript, type GeneratedScript } from './generated-script';
+import { validateGeneratedScript, describeScriptRejection, sanitizeScriptRejection, type GeneratedScript, type ScriptRejection } from './generated-script';
 import { buildGeneratedCourse, buildRevisedLearningCourse } from './generated-course';
 import { parseSceneRequirement, type SceneRequirement, type SceneRequirementContent } from './scene-requirement-content';
 
@@ -49,9 +49,14 @@ type VideoJob = { referenceImageSha256?: string; audioSha256?: string; audioDura
 type VideoProvider = { reservedMicros: number; audioReviewed: boolean; submit: (input: { bytes: Uint8Array; duration: number; goal: string }) => Promise<{ status: string; jobId?: string }>; query?: (id: string) => Promise<{ status: string; jobId: string; videoUrl?: string }> };
 type EncodedVideoProvider = { query?: VideoProvider['query']; reservedMicros: number; submit: (input: { audio: EncodedAudio; reviewedSha256: string; goal: string; prompt?: string; referenceImage?: { bytes: Uint8Array; sha256: string; mimeType: 'image/png' } }) => Promise<{ status: string; jobId?: string }> };
 type Session = { cookie?: string | null; now?: number };
-export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled' | 'deleted'; deletedAt?: number; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[]; videoQuality?: QualityRecord[]; videoRedos?: VideoRedo[]; keyframe?: SavedKeyframe; anchorFrame?: AnchorFrame };
+export type GenerationTask = { requirement?: SceneRequirement; materialsRevision?: number; id: string; ownerId: string; goal: string; revision: number; status: 'awaiting_budget' | 'submitting' | 'submission_unknown' | 'script_rejected' | 'video_pending' | 'script_ready' | 'audio_ready' | 'audio_assembled' | 'video_assembled' | 'deleted'; deletedAt?: number; reservedMicros: number; providerCalls: number; simulation: boolean; providerJobId?: string; pid?: number; script?: GeneratedScript; audioAssets?: SavedAudio[]; audioAssembly?: SavedAssembly; encodedAudio?: SavedEncodedAudio[]; audioReviews?: { revision: number; segmentIndex: number; sha256: string; sourceSha256: string; confirmedAt: number }[]; videoJobs?: VideoJob[]; finalVideo?: FinalCheck & { assetId: string; size: number }; videoTimeline?: ReturnType<typeof planVideoTimeline>; referenceImage?: SavedReference; videoRepairs?: { segmentIndex: number; originalAssetId: string; sourceVideoSha256: string; sourceAudioSha256: string; repairedSha256: string }[]; videoChecks?: (VideoCheck & { segmentIndex: number })[]; videoAssets?: { segmentIndex: number; assetId: string; sha256: string; size: number }[]; videoQuality?: QualityRecord[]; videoRedos?: VideoRedo[]; keyframe?: SavedKeyframe; anchorFrame?: AnchorFrame;
+  // C15-4h: each script the local checks refused: codes, field paths and counts only (never the model's text).
+  scriptRejections?: ScriptRejectionRecord[] };
+export type ScriptRejectionRecord = ScriptRejection & { attempt: number; at: number };
+// C15-4h: the first script request plus at most one rewrite that names the refused draft's issue codes.
+export const MAX_SCRIPT_ATTEMPTS = 2;
 export type StopState = { kind: 'cancelled' | 'stop'; at: number };
-type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent }) => Promise<{ requestId: string; script: unknown }> };
+type ScriptProvider = { reservedMicros: number; generate: (input: { goal: string; requirement?: SceneRequirementContent; feedback?: ScriptRejection }) => Promise<{ requestId: string; script: unknown }> };
 const requirementFingerprint = (requirement: SceneRequirement) => createHash('sha256').update(JSON.stringify(['scene-requirement-v1', requirement])).digest('hex');
 // C15-4c: one segment's line timings (relative to that segment) for its video prompt; none when the assembly has no lines.
 function segmentPromptLines(assembly: { lines?: { lineId: string; segmentIndex: number; segmentStart: number; segmentEnd: number }[]; segments?: unknown[] } | undefined, segmentIndex: number) {
@@ -174,6 +179,50 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
     if (!media || media.sha256 !== asset.sha256 || (asset.size !== undefined && media.size !== asset.size) || createHash('sha256').update(media.bytes).digest('hex') !== asset.sha256) throw new Error('Stored media unavailable');
     return media;
   }
+  async function requestScript(input: Session & { id: string }, rewrite: boolean) {
+    // Real execution is opt-in through server configuration, never request fields.
+    if ((!simulation && !budget) || !scriptProvider) throw new Error('Script provider disabled');
+    const ownerId = await owner(input);
+    const reservedMicros = scriptProvider.reservedMicros;
+    if (!Number.isSafeInteger(reservedMicros) || reservedMicros <= 0) throw new Error('Invalid reservation');
+    let feedback: ScriptRejection | undefined;
+    const task = transact(db => {
+      const value = read(db, input.id, ownerId);
+      if (!value || value.simulation !== simulation) throw new Error('Submission prohibited');
+      const rejections = value.scriptRejections ?? [];
+      if (rewrite ? value.status !== 'script_rejected' || rejections.length < 1 || rejections.length >= MAX_SCRIPT_ATTEMPTS || value.script : value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
+      refuseStopped(db, input.id, ownerId);
+      checkReservation(db, reservedMicros);
+      if (rewrite) feedback = sanitizeScriptRejection(rejections.at(-1)) ?? undefined;
+      value.status = 'submitting'; value.pid = process.pid;
+      // The spending ledger only grows: a rewrite adds its own worst-case reservation and call.
+      value.reservedMicros = rewrite ? value.reservedMicros + reservedMicros : reservedMicros; value.providerCalls = rewrite ? value.providerCalls + 1 : 1;
+      save(db, value); return value;
+    });
+    let result: { requestId: string; script: GeneratedScript } | undefined;
+    let rejection: ScriptRejection | null = null;
+    try {
+      // Only the stored, owner-bound requirement reaches the provider; request fields never do.
+      const response = await scriptProvider.generate({ goal: task.goal, ...(task.requirement ? { requirement: task.requirement.content } : {}), ...(feedback ? { feedback } : {}) });
+      const checked = validateGeneratedScript(response?.script);
+      if (!checked.ok) rejection = describeScriptRejection(response?.script);
+      else if (typeof response?.requestId === 'string' && response.requestId.trim() && response.requestId.length <= 500) result = { requestId: response.requestId, script: checked.value };
+    } catch (error) {
+      // C15-4h: the provider answered and the local checks refused the draft: a known outcome with its codes.
+      // Anything else may have reached the provider without an answer. Preserve the reservation; do not retry.
+      const detail = error as { code?: unknown; rejection?: unknown } | null;
+      if (detail && detail.code === 'script_rejected') rejection = sanitizeScriptRejection(detail.rejection);
+    }
+    return transact(db => {
+      if (result) { task.status = 'script_ready'; task.providerJobId = result.requestId; task.script = result.script; }
+      else if (rejection) {
+        const rejections = task.scriptRejections ?? [];
+        task.scriptRejections = [...rejections, { ...rejection, attempt: rejections.length + 1, at: input.now ?? Date.now() }];
+        task.status = 'script_rejected';
+      } else task.status = 'submission_unknown';
+      save(db, task); return task;
+    });
+  }
   return {
     // C14: the runner only runs these steps when the server configured them; otherwise behaviour is unchanged.
     videoQualityEnabled: !!videoQualityGate,
@@ -275,33 +324,10 @@ export function createGenerationTaskStore({ directory, sessionSecret, simulation
         });
       });
     },
-    async runScript(input: Session & { id: string }) {
-      // Real execution is opt-in through server configuration, never request fields.
-      if ((!simulation && !budget) || !scriptProvider) throw new Error('Script provider disabled');
-      const ownerId = await owner(input);
-      const reservedMicros = scriptProvider.reservedMicros;
-      if (!Number.isSafeInteger(reservedMicros) || reservedMicros <= 0) throw new Error('Invalid reservation');
-      const task = transact(db => {
-        const value = read(db, input.id, ownerId);
-        if (!value || value.simulation !== simulation || value.status !== 'awaiting_budget') throw new Error('Submission prohibited');
-        refuseStopped(db, input.id, ownerId);
-        checkReservation(db, reservedMicros);
-        value.status = 'submitting'; value.pid = process.pid; value.reservedMicros = reservedMicros; value.providerCalls = 1;
-        save(db, value); return value;
-      });
-      let result: { requestId: string; script: GeneratedScript } | undefined;
-      try {
-        // Only the stored, owner-bound requirement reaches the provider; request fields never do.
-        const response = await scriptProvider.generate({ goal: task.goal, ...(task.requirement ? { requirement: task.requirement.content } : {}) });
-        const checked = validateGeneratedScript(response?.script);
-        if (typeof response?.requestId === 'string' && response.requestId.trim() && response.requestId.length <= 500 && checked.ok) result = { requestId: response.requestId, script: checked.value };
-      } catch { /* Submission may have reached the provider. Preserve reservation; do not retry. */ }
-      return transact(db => {
-        task.status = result ? 'script_ready' : 'submission_unknown';
-        if (result) { task.providerJobId = result.requestId; task.script = result.script; }
-        save(db, task); return task;
-      });
-    },
+    async runScript(input: Session & { id: string }) { return requestScript(input, false); },
+    // C15-4h: one rewrite after a local refusal. A new, definite request (not a resend of unknown work): it goes
+    // through the same budget guard at its worst case, and a second refusal ends the task as script_rejected.
+    async rewriteScript(input: Session & { id: string }) { return requestScript(input, true); },
     async runAudio(input: Session & { id: string }) {
       if ((!simulation && !budget) || !audioProvider || !mediaStore) throw new Error('Audio provider disabled');
       const ownerId = await owner(input);

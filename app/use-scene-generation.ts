@@ -8,8 +8,8 @@ import { isOffline } from './use-online';
 type Target = number | 'invalid' | null;
 type Result = { owner: string; revision: Target; view?: SceneGenerationView; error?: 'read' | 'version' };
 class VersionFailure extends Error {}
-const statuses = ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending', 'video_assembled'];
-const phases = ['not_submitted', ...statuses.filter(status => status !== 'video_assembled'), 'failed', 'simulation', 'media_unavailable', 'ready', 'cancelled', 'stopped', 'quality_failed'];
+const statuses = ['awaiting_budget', 'submitting', 'submission_unknown', 'script_rejected', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending', 'video_assembled'];
+const phases = ['not_submitted', ...statuses.filter(status => status !== 'video_assembled'), 'failed', 'simulation', 'media_unavailable', 'ready', 'cancelled', 'stopped', 'quality_failed', 'script_rewriting'];
 
 function parseView(input: unknown, revision: number): SceneGenerationView {
   const value = input as SceneGenerationView;
@@ -27,6 +27,10 @@ function parseView(input: unknown, revision: number): SceneGenerationView {
       if (value.phase === 'stopped' && (task.providerCalls < 1 || task.status === 'video_assembled')) throw new Error();
       // C14-1: quality_failed only after a video call and before any course was assembled.
       if (value.phase === 'quality_failed' && (task.providerCalls < 1 || task.status === 'video_assembled')) throw new Error();
+      // C15-4h: rewriting after one refused script; failed after the rewrite was refused too.
+      if (value.phase === 'script_rewriting' && (task.providerCalls < 1 || !['script_rejected', 'submitting'].includes(task.status))) throw new Error();
+      if (value.phase === 'script_rejected' && (task.providerCalls < 2 || task.status !== 'script_rejected')) throw new Error();
+      if (task.status === 'script_rejected' && !['script_rewriting', 'script_rejected', 'cancelled', 'stopped'].includes(value.phase)) throw new Error();
       if (value.phase === 'ready') {
         const course = value.course;
         if (task.status !== 'video_assembled' || !course || course.id !== task.id || course.revision !== revision || (course.materialsRevision !== undefined && (!Number.isSafeInteger(course.materialsRevision) || course.materialsRevision < 1))) throw new Error();
@@ -96,7 +100,7 @@ export function useSceneGeneration(owner: string | null, enabled: boolean) {
         const view = await requestGeneration('GET', target as number, request);
         if (!current() || controller !== request) return;
         setResult({ owner: owner!, revision: target, view });
-        if (['submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(view.phase) && !document.hidden) timer = window.setTimeout(() => void read(), 5000);
+        if (['submitting', 'submission_unknown', 'script_rewriting', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(view.phase) && !document.hidden) timer = window.setTimeout(() => void read(), 5000);
       } catch (error) {
         if (current() && controller === request) setResult({ owner: owner!, revision: target, error: error instanceof VersionFailure ? 'version' : 'read' });
       }

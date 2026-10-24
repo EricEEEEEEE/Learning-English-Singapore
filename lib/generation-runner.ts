@@ -1,12 +1,12 @@
-import type { createGenerationTaskStore, GenerationTask } from './generation-tasks';
+import { MAX_SCRIPT_ATTEMPTS, type createGenerationTaskStore, type GenerationTask } from './generation-tasks';
 import { MAX_SEGMENT_REDOS, redoCount } from './video-quality';
 
-type Store = Partial<Pick<ReturnType<typeof createGenerationTaskStore>, 'stopState' | 'checkVideoQuality' | 'redoVideoSegment' | 'prepareKeyframe' | 'videoQualityEnabled' | 'keyframeEnabled'>> & Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
+type Store = Partial<Pick<ReturnType<typeof createGenerationTaskStore>, 'stopState' | 'checkVideoQuality' | 'redoVideoSegment' | 'prepareKeyframe' | 'videoQualityEnabled' | 'keyframeEnabled' | 'rewriteScript'>> & Pick<ReturnType<typeof createGenerationTaskStore>, 'get' | 'runScript' | 'runAudio' | 'assembleAudio' | 'encodeAudio' | 'confirmEncodedAudio' | 'runVideo' | 'queryVideo' | 'collectVideo' | 'chainReferenceImage' | 'repairVideo' | 'probeVideo' | 'assembleVideo'>;
 type Input = { cookie?: string | null; now?: number; id: string };
 type Encoded = NonNullable<GenerationTask['encodedAudio']>[number];
 type Segment = NonNullable<GenerationTask['audioAssembly']>['segments'][number];
 export type AudioReview = (input: Input & { task: GenerationTask; segmentIndex: number; encoded: Encoded; segment: Segment }) => Promise<boolean>;
-export type RunStop = 'ready' | 'waiting' | 'unknown' | 'failed' | 'budget' | 'needs_review' | 'review_failed' | 'cancelled' | 'quality_failed' | 'error';
+export type RunStop = 'ready' | 'waiting' | 'unknown' | 'failed' | 'budget' | 'needs_review' | 'review_failed' | 'cancelled' | 'quality_failed' | 'script_rejected' | 'error';
 export type RunResult = { stopped: RunStop; status?: GenerationTask['status'] };
 
 const MAX_STEPS = 500;
@@ -22,6 +22,11 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
       case 'video_assembled': return 'ready';
       case 'submission_unknown': case 'submitting': return 'unknown';
       case 'awaiting_budget': await store.runScript(input); return null;
+      // C15-4h: a script the local checks refused is rewritten once with its issue codes (a new, budget-guarded
+      // request, not a resend of unknown work); after a second refusal the run stops for good.
+      case 'script_rejected':
+        if ((task.scriptRejections?.length ?? 0) < MAX_SCRIPT_ATTEMPTS && store.rewriteScript) { await store.rewriteScript(input); return null; }
+        return 'script_rejected';
       case 'script_ready': await store.runAudio(input); return null;
       case 'audio_ready': await store.assembleAudio(input); return null;
       case 'audio_assembled': {
@@ -115,6 +120,7 @@ export function createGenerationRunner({ store, audioReview, wait = (ms: number)
       if (error instanceof Error && error.message === 'Total reservation limit exceeded') return { stopped: 'budget', status: latest?.status };
       if (error instanceof Error && error.message === 'Generation stopped') return { stopped: 'cancelled', status: latest?.status };
       if (latest?.status === 'submission_unknown') return { stopped: 'unknown', status: latest.status };
+      if (latest?.status === 'script_rejected') return { stopped: 'script_rejected', status: latest.status };
       return { stopped: 'error', status: latest?.status };
     }
   }

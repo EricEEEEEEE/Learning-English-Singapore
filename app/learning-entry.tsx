@@ -430,11 +430,11 @@ export default function LearningEntry() {
         : generation.target !== null ? (() => {
           const gen = sceneGenerationCopy[language], c14 = c14Copy[language];
           const phase = generation.view?.phase;
-          const active = !!generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(phase ?? '');
-          const stageIndex = generation.error || !phase ? -1 : ({ not_submitted: 0, awaiting_budget: 0, submitting: 0, submission_unknown: 0, script_ready: 1, audio_ready: 1, audio_assembled: 2, video_pending: 2, video_assembled: 2, simulation: 3, ready: 3 } as Record<string, number>)[phase] ?? -1;
-          const tone = generation.error || phase === 'failed' || phase === 'quality_failed' || phase === 'media_unavailable' ? 'alert' : phase === 'ready' || phase === 'simulation' ? 'done' : phase === 'cancelled' || phase === 'stopped' ? 'stopped' : 'busy';
+          const active = !!generation.view?.task && !generation.error && ['awaiting_budget', 'submitting', 'submission_unknown', 'script_rewriting', 'script_ready', 'audio_ready', 'audio_assembled', 'video_pending'].includes(phase ?? '');
+          const stageIndex = generation.error || !phase ? -1 : ({ not_submitted: 0, awaiting_budget: 0, submitting: 0, submission_unknown: 0, script_rewriting: 0, script_ready: 1, audio_ready: 1, audio_assembled: 2, video_pending: 2, video_assembled: 2, simulation: 3, ready: 3 } as Record<string, number>)[phase] ?? -1;
+          const tone = generation.error || phase === 'failed' || phase === 'quality_failed' || phase === 'script_rejected' || phase === 'media_unavailable' ? 'alert' : phase === 'ready' || phase === 'simulation' ? 'done' : phase === 'cancelled' || phase === 'stopped' ? 'stopped' : 'busy';
           const icon = tone === 'alert' ? 'alert' : tone === 'done' ? 'check' : tone === 'stopped' ? 'stop' : stageIndex === 1 ? 'voice' : stageIndex === 2 ? 'image' : 'script';
-          const primary = phase === 'ready' && !generation.error ? 'watch' : !generation.error && (phase === 'failed' || phase === 'quality_failed' || phase === 'cancelled' || phase === 'stopped') ? 'back' : !active && (generation.error || phase) ? 'retry' : null;
+          const primary = phase === 'ready' && !generation.error ? 'watch' : !generation.error && (phase === 'failed' || phase === 'quality_failed' || phase === 'script_rejected' || phase === 'cancelled' || phase === 'stopped') ? 'back' : !active && (generation.error || phase) ? 'retry' : null;
           const retryButton = (className: string) => <button className={className} type="button" disabled={generation.preparing} onClick={generation.retry}>{gen.retry}</button>;
           const backButton = (className: string) => <button className={className} type="button" onClick={() => {
             if (requirements.draft) requirements.change({ ...requirements.draft, page: 'background' });
