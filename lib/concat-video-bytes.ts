@@ -66,11 +66,16 @@ export async function concatVideoBytes(inputs: { bytes: Uint8Array; sha256: stri
     for (let i = 0; i < segments.length; i++) await writeFile(files[i], segments[i], { flag: 'wx', mode: 0o600 });
     await writeFile(manifest, names.map(name => `file '${name}'\n`).join(''), { flag: 'wx', mode: 0o600 });
     const execute: Execute = options.execute ?? ((executable, args, settings) => run(executable, args, settings));
+    // C15-4i: the picture stops at the last whole 24 fps frame inside the planned length (a trim in the picture filter;
+    // -frames:v would end the whole output and cut the audio short). A length that is not whole frames (attempt 9:
+    // 48.158333 s) otherwise kept one more frame and ran the container past the plan.
+    const frames = duration === undefined ? 0 : Math.floor(duration * FPS + 1e-6);
+    const trim = `trim=end_frame=${frames}`;
     const encode = ['-af', 'apad', '-t', String(duration), '-c:v', 'libx264', '-preset', 'fast', '-crf', '18', '-pix_fmt', 'yuv420p', '-c:a', 'aac', '-b:a', '128k'];
     // Audio always comes from the concat list, as before; with cross-fades the picture comes from the segment files.
     const fade = seamFrames && crossfadeGraph(seamFrames);
-    const streams = fade ? [...names.flatMap(name => ['-i', join(directory, name)]), '-filter_complex', fade.graph, '-map', fade.output, '-map', '0:a:0']
-      : ['-map', '0:v:0', '-map', '0:a:0', ...(duration === undefined ? [] : ['-vf', 'fps=24'])];
+    const streams = fade ? [...names.flatMap(name => ['-i', join(directory, name)]), '-filter_complex', `${fade.graph};${fade.output}${trim}[vout]`, '-map', '[vout]', '-map', '0:a:0']
+      : ['-map', '0:v:0', '-map', '0:a:0', ...(duration === undefined ? [] : ['-vf', `fps=24,${trim}`])];
     const encoding = duration === undefined ? ['-c', 'copy'] : encode;
     const result = await execute(options.executable, ['-nostdin', '-v', 'error', '-n', '-copyts', '-protocol_whitelist', 'file', '-f', 'concat', '-safe', '1', '-i', manifest, ...streams, ...encoding, '-avoid_negative_ts', 'disabled', '-movflags', '+faststart', '-fs', '100000000', output], { shell: false, timeout: fade ? 180_000 : 60_000, maxBuffer: 1_000_000, encoding: 'utf8' });
     if (typeof result.stderr !== 'string' || result.stderr.trim()) throw new Error('Concat reported errors');
