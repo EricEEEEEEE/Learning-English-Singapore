@@ -64,7 +64,9 @@ for (const kind of ['timeout', 'invalid-draft']) test(`T61B task: ${kind} retain
   let calls = 0;
   const { store, reopen, input } = await setup({ reservedMicros: 9000, generate: async () => { calls++; if (kind === 'timeout') throw new Error('synthetic'); return { requestId: 'r', script: { ...script(), phrases: [] } }; } });
   try { await store.runScript(input); } catch { /* Caller may receive an error; persisted state is authoritative. */ }
-  expect(await reopen().get(input)).toMatchObject({ status: 'submission_unknown', reservedMicros: 9000, providerCalls: 1 });
+  // C15-4h: a draft the local checks refused is a known outcome (script_rejected), not an unknown submission; either way
+  // the reservation stays and the first request is never sent again.
+  expect(await reopen().get(input)).toMatchObject({ status: kind === 'timeout' ? 'submission_unknown' : 'script_rejected', reservedMicros: 9000, providerCalls: 1 });
   expect((await reopen().get(input)).script).toBeUndefined();
   await expect(reopen().runScript(input)).rejects.toThrow();
   expect(calls).toBe(1);
