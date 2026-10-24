@@ -1,13 +1,13 @@
 {
   "schema": 1,
   "stage": "4",
-  "phase": "implementing",
+  "phase": "test-writing",
   "cycle": 2,
   "project_name": "Learning English in Singapore",
   "round_count": 14,
   "round_cap": 20,
   "batch_size": 6,
-  "last_round_commit": "10ddfa0eb3793942cdd0c2379e4d6f971db3eea3",
+  "last_round_commit": "abe6038d34012e00187d6cb3b48a764192a1c1ec",
   "milestones": [
     "T01",
     "B2O"
@@ -16,7 +16,7 @@
     "node": "v24.15.0",
     "python3": "3.9.6"
   },
-  "last_session": "2026-10-24T06:33:18+00:00",
+  "last_session": "2026-10-24T07:34:07+00:00",
   "authorized_batch": "C9_audit_gaps_2_zero_cost",
   "setup_status": "note_receipt_verified",
   "hook_runtime_status": "posttooluse_stop_verified",

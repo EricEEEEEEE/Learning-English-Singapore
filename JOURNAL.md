@@ -789,3 +789,5 @@
 - 2026-10-24 06:12 用户看小贩中心尝试 9：「可以，我觉得这两个问题不大，都挺好的继续推进吧」——连同 03:41 学校课尝试 7，两节真实课作为第一版接受；勾 C15-4、T71D，关闭 B-C15-4；成片 /mnt/project-files/les-c15/video/school-ltx-2-3-pro-a7.mp4、hawker-ltx-2-3-pro-a9.mp4；不再付费，瑕疵转 C16 零费用改进
 - 2026-10-24 首版审计重评（docs/evidence/first-version-audit.md，副本 /mnt/project-files/les-plan/first-version-audit.md）：满足 61、部分 16、未满足 3、需负责人 11、需付费 3；登记 C16 七项零费用缺口（C16-1–C16-7），降成本改动放最后
 - [audit] phase → implementing @ 2026-10-24T06:33:18+00:00
+- [audit] phase → test-writing @ 2026-10-24T07:34:07+00:00
+- 2026-10-24 C16 绿存档 abe6038（verify 2623/2623，另有考题纠错 407a4a4：C13-2 课程读取改为等待到达）：C16-1–C16-7 全勾；background_haze 阈值 0.2，离线拦下尝试 9 第 2、3 段，尝试 7 四段通过；尝试 7/9 v3 重组成片与接缝图在 /mnt/project-files/les-c15/video/；截图 /mnt/project-files/les-plan/c16-*.png；首版审计回填为 满足 65、部分 13、未满足 2、需负责人 11、需付费 3；全程未调用付费接口、未部署
